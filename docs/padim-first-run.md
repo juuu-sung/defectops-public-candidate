@@ -71,3 +71,15 @@ git status --short
 `run.json`은 `train=170`, `calibration=43`, `test_reserved_not_loaded=100`,
 `test_evaluated=false`를 기록해야 한다.
 이 실행이 통과하기 전에는 공식 test 평가를 시작하지 않는다.
+
+## 연구실 확인 결과
+
+2026-09-14 연구실 Windows RTX 5060에서 seed 42 재시도 실행이 완료됐다.
+
+- 상태: `fit_calibrated`
+- 실행 ID: `padim-transistor-seed42-retry1`
+- 이미지 임곗값: `56.027042388916016`
+- fit+calibration 시간: `20.22541330003878`초
+
+Hugging Face 비인증 및 Windows symlink cache 경고는 다운로드와 비효율적 중복 캐시에 관한 경고이며
+실행은 정상 완료됐다. 다음 단계는 [고정 test 평가](padim-test-evaluation.md)다.

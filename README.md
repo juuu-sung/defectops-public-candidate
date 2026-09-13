@@ -12,7 +12,9 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 정상 train 170장 / calibration 43장 / 공식 test 100장으로 manifest를 고정했다.
 데이터 관련 테스트 17개 통과. [데이터 점검 보고서](reports/transistor-data-audit-v1.md)를 참고한다.
 고정 manifest의 train 170장으로 PaDiM을 fit하고 정상 calibration 43장으로 원시 점수 임곗값을
-산출하는 첫 실행 명령을 구현했다. 연구실 Windows의 실제 실행과 test 평가는 아직 하지 않았다.
+산출하는 첫 실행을 연구실 Windows RTX 5060에서 완료했다. seed 42 실행은 임곗값
+`56.027042388916016`, fit+calibration 20.225초를 기록했다. 고정 test 평가 규칙과 실행 명령을
+구현했으며 연구실 실제 평가는 아직 하지 않았다.
 FastAPI·Streamlit·SQLite 앱도 아직 구현/실행하지 않았다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
 
@@ -23,11 +25,11 @@ FastAPI·Streamlit·SQLite 앱도 아직 구현/실행하지 않았다.
 3. 맥북 데이터는 `data/transistor/`에 준비되어 있다. 원본은 Git 제외 상태다.
 4. 비공개 원격 저장소 `https://github.com/juuu-sung/defectops`의 같은 commit을 연구실에서 받고,
    고정 manifest의 체크섬을 검증한다.
-5. [PaDiM 첫 실행](docs/padim-first-run.md)을 연구실에서 검증한 뒤, 고정 test 평가·추론 어댑터를 구현한다.
+5. [고정 test 평가](docs/padim-test-evaluation.md)를 연구실에서 실행하고 산출물 checksum과 지표를 검토한다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.
-ML 학습용 라이브러리는 아직 포함하지 않는다. 저장소 루트에서 실행한다.
+ML 학습·평가용 Windows 라이브러리는 별도 requirements에 고정했다. 아래는 맥북 데이터 도구 실행이다.
 
 ```sh
 python3 -m pip install -e '.[data]'

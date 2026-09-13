@@ -20,8 +20,9 @@
 3. 비공개 원격 Git 저장소 연결 및 첫 push 완료. 연구실에서 코드·manifest 수신과 검증.
 4. [Windows 설치 안내](windows-setup.md)의 초기 패키지 조합으로 설치 → GPU 연산/모델 로딩 점검 후 버전 확정.
 5. manifest 고정 PaDiM fit·normal-only calibration 명령 구현 완료. 연구실에서 seed 42 첫 실행.
-6. normal-only calibration → 고정 JSON 출력 → bbox/실패 처리 검증.
-7. 평가 규칙 동결 → 공식 test 지표/실패 사례 보고.
+   RTX 5060에서 `fit_calibrated`, 임곗값 `56.027042388916016`, 20.225초로 완료했다.
+6. normal-only pixel calibration·bbox 규칙과 공식 test 평가 구현 완료. 연구실 실행과 산출물 검토.
+7. 고정 test 지표/실패 사례 보고 후 단일 이미지 추론 어댑터와 실패 처리 검증.
 
 첫 완료 판정: 실제 transistor 입력에 대해 모델 버전·split hash·원시 점수·고정 임곗값·판정·
 원본 좌표계의 히트맵/영역·지연시간을 기록한다. 같은 artifact로 맥북 재추론을 확인한다.

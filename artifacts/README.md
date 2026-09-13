@@ -1,7 +1,7 @@
 # 실행 산출물 (Git 제외)
 
 장비별 환경 점검 JSON, 실행별 모델·원시 점수 CSV·히트맵·모의 SQLite DB를 이곳에 저장한다.
-환경 점검 도구를 제외한 실행 번들 생성기는 후속 구현 대상이다.
+PaDiM fit bundle과 고정 test evaluation bundle 생성기를 구현했다. 모든 실제 산출물은 Git에서 제외한다.
 
 ```text
 artifacts/<run_id>/
@@ -14,6 +14,9 @@ artifacts/<run_id>/
   heatmaps/
   checksums.sha256
 ```
+
+현재 구현 경로는 `artifacts/runs/<fit_run_id>/`와 `artifacts/evaluations/<evaluation_id>/`다.
+평가 bundle은 fit bundle을 수정하지 않고 checkpoint·manifest·sample ID·checksum을 확인한 뒤 생성한다.
 
 실행 ID에는 품목·모델·seed·시각 또는 UUID를 포함한다. 실행 디렉터리는 덮어쓰지 않는다.
 결과 복사 후 체크섬을 검증하고, 요약 성능표·실험 결론만 검토하여 `reports/`에 기록한다.
