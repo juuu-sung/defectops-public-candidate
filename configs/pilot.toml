@@ -1,0 +1,27 @@
+# Project protocol, not a directly executable Anomalib training configuration.
+protocol = "A-normal-only-v1"
+categories = ["transistor"]
+split_seed = 42
+calibration_fraction = 0.2
+
+[experiment]
+model = "padim"
+backbone = "resnet18"
+layers = ["layer1", "layer2", "layer3"]
+n_features = 100
+image_size = 256
+model_seeds = [42, 43, 44]
+
+[calibration]
+# Exploratory operating point, NOT a guaranteed 5% population false-positive rate.
+image_quantile = 0.95
+quantile_method = "higher"
+score_space = "raw"
+decision_rule = "score >= threshold"
+
+[benchmark]
+batch_size = 1
+warmup_iterations = 20
+measured_iterations = 300
+target_end_to_end_p95_ms = 1500
+# CPU architecture, threads, backend and request concurrency must be recorded per run.

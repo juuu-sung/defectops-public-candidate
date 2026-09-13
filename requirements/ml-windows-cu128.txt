@@ -1,0 +1,15 @@
+# Windows/Python 3.12 candidate; basic RTX 5060 GPU/import validation passed on 2026-09-13.
+# Full repository smoke test and training validation are pending.
+# Install torch/torchvision from https://download.pytorch.org/whl/cu128 first.
+# Then install this file. This pins key packages, not all transitive dependencies.
+torch==2.8.0+cu128
+torchvision==0.23.0+cu128
+anomalib==2.2.0
+lightning==2.5.5
+pytorch-lightning==2.5.5
+torchmetrics==1.8.2
+timm==1.0.20
+numpy==2.3.3
+Pillow==11.3.0
+opencv-python==4.11.0.86
+requests==2.34.2
