@@ -8,7 +8,7 @@
 
 - Windows 프로젝트: `C:\개인 프로젝트\defectops`
 - 전용 Python: `C:\개인 프로젝트\defectops\.venv\Scripts\python.exe`
-- 데이터 루트: `C:\PBL\datasets\mvtec_ad`
+- 데이터 루트: `C:\개인 프로젝트\defectops\data`
 - `scripts/check_ml_environment.py` 결과의 `status`가 `passed`
 - `scripts/prepare_data.py verify` 결과 manifest SHA-256이
   `9695055446c1aafdb77dc28eb91d270b8b7335e650c7e74f400d386e9d8bf585`
@@ -23,7 +23,7 @@
 ```powershell
 $projectPath = "C:\개인 프로젝트\defectops"
 $defectPython = "$projectPath\.venv\Scripts\python.exe"
-$datasetRoot = "C:\PBL\datasets\mvtec_ad"
+$datasetRoot = "$projectPath\data"
 Set-Location $projectPath
 ```
 

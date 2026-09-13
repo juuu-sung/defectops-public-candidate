@@ -133,7 +133,7 @@ print("BASIC_GPU_CHECK_OK")
 |---|---|
 | 가상환경 | `C:\개인 프로젝트\defectops\.venv` |
 | 프로젝트 폴더 | `C:\개인 프로젝트\defectops` — 2026-09-13 사용자 확인, Git 연결은 별도 |
-| 원본 데이터 | `C:\PBL\datasets\mvtec_ad\transistor` |
+| 원본 데이터 | `C:\개인 프로젝트\defectops\data\transistor` |
 
 프로젝트 폴더는 사용자가 확인한 `C:\개인 프로젝트\defectops`를 사용한다.
 전용 가상환경은 위에서 만든 Python 3.12 환경을 사용한다.
@@ -141,8 +141,7 @@ print("BASIC_GPU_CHECK_OK")
 Git 연결 전에는 해당 폴더의 기존 파일을 확인한다. 비어 있지 않은 폴더에 바로 clone하지 않는다.
 맥북이 코드 기준이며, 환경 준비를 위해 연구실에서 별도 원본 코드를 새로 만들지 않는다.
 비공개 원격 Git URL은 `https://github.com/juuu-sung/defectops.git`다.
-실제 Windows 데이터 위치는 아직 미확인이다.
-원본 데이터가 다른 위치에 있으면 --root만 변경한다.
+원본 데이터도 프로젝트의 Git 제외 `data\transistor` 폴더에 둔다.
 
 코드와 데이터가 준비된 후 저장소 루트에서 실행한다.
 
@@ -152,7 +151,7 @@ $defectPython = "C:\개인 프로젝트\defectops\.venv\Scripts\python.exe"
 & $defectPython -m pip install -e ".[data]"
 & $defectPython -m pip check
 & $defectPython scripts/check_ml_environment.py --output artifacts/environment-lab-gpu.json
-& $defectPython scripts/prepare_data.py verify --root "C:\PBL\datasets\mvtec_ad" --manifest data/manifests/transistor-v1.json
+& $defectPython scripts/prepare_data.py verify --root "C:\개인 프로젝트\defectops\data" --manifest data/manifests/transistor-v1.json
 & $defectPython -m pip freeze | Out-File -Encoding utf8 artifacts/environment-lab-freeze.txt
 ```
 
