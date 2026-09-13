@@ -14,7 +14,9 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 고정 manifest의 train 170장으로 PaDiM을 fit하고 정상 calibration 43장으로 원시 점수 임곗값을
 산출하는 첫 실행을 연구실 Windows RTX 5060에서 완료했다. seed 42 실행은 임곗값
 `56.027042388916016`, fit+calibration 20.225초를 기록했다. 고정 test 평가 규칙과 실행 명령을
-구현했으며 연구실 실제 평가는 아직 하지 않았다.
+구현하고 연구실에서 공식 test 100장 파일럿 평가까지 완료했다. Image AUROC 0.9013,
+고정 임곗값 recall 0.55, Pixel AUROC 0.9689를 기록했다. 낮은 recall 때문에 현재 모델을
+실제 자동 PASS 용도로 사용할 수 없다. [파일럿 평가 보고서](reports/padim-transistor-seed42-pilot.md)를 참고한다.
 FastAPI·Streamlit·SQLite 앱도 아직 구현/실행하지 않았다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
 
@@ -25,7 +27,8 @@ FastAPI·Streamlit·SQLite 앱도 아직 구현/실행하지 않았다.
 3. 맥북 데이터는 `data/transistor/`에 준비되어 있다. 원본은 Git 제외 상태다.
 4. 비공개 원격 저장소 `https://github.com/juuu-sung/defectops`의 같은 commit을 연구실에서 받고,
    고정 manifest의 체크섬을 검증한다.
-5. [고정 test 평가](docs/padim-test-evaluation.md)를 연구실에서 실행하고 산출물 checksum과 지표를 검토한다.
+5. 고정 test 파일럿 평가 완료. 같은 checkpoint·임곗값을 사용하는
+   [단일 이미지 검사](docs/padim-single-image.md)를 연구실 Windows에서 검증한다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.
@@ -47,7 +50,8 @@ Windows에서는 `python3` 대신 `python`, 데이터 경로는 해당 장비의
 
 transistor 한 장 → 원시 이상 점수·고정 임곗값·PASS/REVIEW_REQUIRED·히트맵·영역 좌표를 JSON으로 반환.
 추론 오류/입력 오류는 INSPECTION_FAILED. 모델·분할·설정 버전까지 추적 가능해야 한다.
-이는 **다음 단계의 목표**이며 현재 구현된 기능은 아니다.
+추론·고정 판정·JSON·heatmap·영역·실패 기록을 구현했고 자동화 테스트를 통과했다.
+연구실 Windows에서 실제 checkpoint로 한 장을 검사하여 산출물을 확인하면 첫 완료 목표가 충족된다.
 
 최소 범위는 transistor + PaDiM, 이후 PatchCore 비교 → 3품목 → API/검토/SOP/티켓 순서다.
 EfficientAD, AD 2, 모델 변환, embedding drift는 확장 단계로 둔다.

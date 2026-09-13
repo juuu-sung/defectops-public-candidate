@@ -10,6 +10,8 @@
 - [x] 실제 transistor 이미지 313장·마스크 40장 무결성/디코딩 점검 (오류 0건)
 - [x] train 170장 / calibration 43장 / test 100장 분할 고정 및 checksum 재검증
 - [x] 정상 데이터 밝기·선명도 기초 통계, 데이터 점검 테스트 포함 총 17개 통과
+- [x] Windows RTX 5060에서 PaDiM fit·normal calibration·고정 test 100장 평가
+- [x] 단일 이미지 추론 JSON·heatmap·overlay·원본 좌표 영역·실패 기록 구현
 
 ## 다음 순서
 
@@ -21,8 +23,10 @@
 4. [Windows 설치 안내](windows-setup.md)의 초기 패키지 조합으로 설치 → GPU 연산/모델 로딩 점검 후 버전 확정.
 5. manifest 고정 PaDiM fit·normal-only calibration 명령 구현 완료. 연구실에서 seed 42 첫 실행.
    RTX 5060에서 `fit_calibrated`, 임곗값 `56.027042388916016`, 20.225초로 완료했다.
-6. normal-only pixel calibration·bbox 규칙과 공식 test 평가 구현 완료. 연구실 실행과 산출물 검토.
-7. 고정 test 지표/실패 사례 보고 후 단일 이미지 추론 어댑터와 실패 처리 검증.
+6. normal-only pixel calibration·bbox 규칙과 공식 test 평가 완료. Image AUROC 0.9013,
+   고정 임곗값 recall 0.55, Pixel AUROC 0.9689. 현재 임곗값은 자동 PASS에 사용하지 않는다.
+7. 단일 이미지 검사 어댑터 구현 완료. 연구실 Windows에서 실제 fit·evaluation
+   bundle로 산출물을 확인한다.
 
 첫 완료 판정: 실제 transistor 입력에 대해 모델 버전·split hash·원시 점수·고정 임곗값·판정·
 원본 좌표계의 히트맵/영역·지연시간을 기록한다. 같은 artifact로 맥북 재추론을 확인한다.

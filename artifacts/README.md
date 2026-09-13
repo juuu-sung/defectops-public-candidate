@@ -17,6 +17,8 @@ artifacts/<run_id>/
 
 현재 구현 경로는 `artifacts/runs/<fit_run_id>/`와 `artifacts/evaluations/<evaluation_id>/`다.
 평가 bundle은 fit bundle을 수정하지 않고 checkpoint·manifest·sample ID·checksum을 확인한 뒤 생성한다.
+단일 이미지 검사는 `artifacts/inspections/<inspection_id>/`에 JSON·원본 복사·heatmap·overlay·
+원시 anomaly map을 저장하며, fit·evaluation bundle과 commit·checksum을 먼저 검증한다.
 
 실행 ID에는 품목·모델·seed·시각 또는 UUID를 포함한다. 실행 디렉터리는 덮어쓰지 않는다.
 결과 복사 후 체크섬을 검증하고, 요약 성능표·실험 결론만 검토하여 `reports/`에 기록한다.

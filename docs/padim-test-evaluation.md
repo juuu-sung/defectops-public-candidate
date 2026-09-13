@@ -74,3 +74,19 @@ $evaluation.latency_ms
 
 평가 폴더도 덮어쓰지 않는다. 실패 후 재시도는 원인을 확인한 뒤 `-retry1` 같은 새 출력 이름을 사용한다.
 이번 값은 MVTec transistor seed-42 파이프라인 파일럿이며, 실제 공장 성능이나 최종 모델 비교 결과가 아니다.
+
+## 연구실 확인 결과
+
+2026-09-14 `padim-transistor-seed42-eval-v1` 평가가 완료됐다.
+
+- Image AUROC: `0.90125`
+- Image AP: `0.8810328434918546`
+- 고정 임곗값: TP 22 / FP 3 / TN 57 / FN 18
+- Precision / Recall / F1: `0.88 / 0.55 / 0.676923076923077`
+- Escape / Overkill / Review rate: `0.45 / 0.05 / 0.25`
+- Pixel AUROC: `0.9688963900174326`
+- Pixel AUPRO @ FPR 0.30: `0.9005312410862503`
+
+원시 점수와 위치 map의 순위 성능은 유의미하지만, 현재 고정 임곗값은 이상 40장 중 18장을
+놓쳤다. 이 결과로 같은 test에 임곗값을 다시 맞추지 않으며 실제 자동 PASS에 사용하지 않는다.
+상세 해석은 [파일럿 평가 보고서](../reports/padim-transistor-seed42-pilot.md)에 기록했다.
