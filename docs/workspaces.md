@@ -4,7 +4,8 @@
 
 Git에 저장된 코드·문서·설정·manifest가 기준이다. 맥북은 개발, API/UI, 모의 SQLite DB를 담당한다.
 연구실은 같은 commit을 checkout하여 학습·평가하고 실행별 artifact를 생성한다.
-원격 Git 저장소 URL은 아직 정하지 않았으므로 clone/push는 아직 실행하지 않았다.
+비공개 원격 Git 저장소는 `https://github.com/juuu-sung/defectops`다.
+맥북의 `main`을 코드 기준으로 사용한다.
 
 | 항목 | 전달 방법 |
 |---|---|
@@ -16,7 +17,7 @@ Git에 저장된 코드·문서·설정·manifest가 기준이다. 맥북은 개
 
 ## 실행 절차
 
-1. 맥북에서 코드와 설정을 검증하고 commit한다. 원격 저장소를 연결한 뒤 push한다.
+1. 맥북에서 코드와 설정을 검증하고 commit한 뒤 `origin/main`에 push한다.
 2. 연구실에서 동일 commit을 가져온다. 학습 실행 시 변경 파일이 없는지 확인한다.
 3. `check_environment.py`로 OS/CPU/Python/GPU 드라이버/설치 패키지 버전을 기록한다.
 4. 연구실 데이터 경로를 `--root`로 지정해 맥북에서 만든 manifest를 verify한다.

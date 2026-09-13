@@ -11,7 +11,9 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 데이터 준비 단계 완료. 실제 transistor 이미지 313장·마스크 40장의 디코딩과 무결성을 확인하고
 정상 train 170장 / calibration 43장 / 공식 test 100장으로 manifest를 고정했다.
 데이터 관련 테스트 17개 통과. [데이터 점검 보고서](reports/transistor-data-audit-v1.md)를 참고한다.
-모델 학습, FastAPI·Streamlit·SQLite 앱은 아직 구현/실행하지 않았다.
+고정 manifest의 train 170장으로 PaDiM을 fit하고 정상 calibration 43장으로 원시 점수 임곗값을
+산출하는 첫 실행 명령을 구현했다. 연구실 Windows의 실제 실행과 test 평가는 아직 하지 않았다.
+FastAPI·Streamlit·SQLite 앱도 아직 구현/실행하지 않았다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
 
 ## 먼저 할 일
@@ -19,8 +21,9 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 1. [계획 검토](docs/plan-review.md)와 [실험 규칙](docs/data-protocol.md)을 기준으로 진행한다.
 2. 연구실 Windows의 드라이버/Python/실행 방식을 확인한 뒤 ML 의존성을 고정한다.
 3. 맥북 데이터는 `data/transistor/`에 준비되어 있다. 원본은 Git 제외 상태다.
-4. 첫 commit과 원격 저장소를 준비해 고정 manifest를 공유하고, 연구실에서 같은 파일의 체크섬을 검증한다.
-5. 다음 개발 단계는 manifest를 직접 읽는 PaDiM 학습·추론 어댑터다.
+4. 비공개 원격 저장소 `https://github.com/juuu-sung/defectops`의 같은 commit을 연구실에서 받고,
+   고정 manifest의 체크섬을 검증한다.
+5. [PaDiM 첫 실행](docs/padim-first-run.md)을 연구실에서 검증한 뒤, 고정 test 평가·추론 어댑터를 구현한다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.

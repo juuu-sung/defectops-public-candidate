@@ -127,7 +127,7 @@ print("BASIC_GPU_CHECK_OK")
 예상: Python 3.12.x / PyTorch 2.8.0+cu128 / CUDA runtime 12.8 / GPU available True / RTX 5060 / Anomalib 2.2.0 /
 `BASIC_GPU_CHECK_OK`. 이것은 기본 연산·import 성공이며 PaDiM 학습 완료가 아니다.
 
-## 5. 코드·데이터 연결 — 원격 Git 준비 후
+## 5. 코드·데이터 연결
 
 | 종류 | Windows 권장 위치 |
 |---|---|
@@ -140,7 +140,8 @@ print("BASIC_GPU_CHECK_OK")
 프로젝트 경로에 공백이 있으므로 PowerShell에서는 따옴표로 감싼다.
 Git 연결 전에는 해당 폴더의 기존 파일을 확인한다. 비어 있지 않은 폴더에 바로 clone하지 않는다.
 맥북이 코드 기준이며, 환경 준비를 위해 연구실에서 별도 원본 코드를 새로 만들지 않는다.
-원격 Git URL은 첫 비공개 저장소 생성 후 이 문서에 기록한다. 실제 Windows 데이터 위치도 아직 미확인이다.
+비공개 원격 Git URL은 `https://github.com/juuu-sung/defectops.git`다.
+실제 Windows 데이터 위치는 아직 미확인이다.
 원본 데이터가 다른 위치에 있으면 --root만 변경한다.
 
 코드와 데이터가 준비된 후 저장소 루트에서 실행한다.
@@ -158,8 +159,9 @@ $defectPython = "C:\개인 프로젝트\defectops\.venv\Scripts\python.exe"
 전체 GPU 점검은 행렬곱·torchvision CUDA 연산·PaDiM 특징 추출까지 확인한다.
 검사에서는 사전학습 가중치를 내려받지 않으며, 실제 학습은 사전학습 가중치와 고정 manifest로 별도 실행한다.
 GPU 점검이 passed인 뒤에 freeze 기록을 확정한다. freeze는 환경 기록이며 CUDA 설치 인덱스까지 대신하지는 않는다.
-첫 학습 연결 예정 설정은 PaDiM/resnet18, 입력 256, batch 1, num_workers 0, model seed 42다.
+첫 실행 설정은 PaDiM/resnet18, 입력 256, batch 1, num_workers 0, model seed 42다.
 이미 고정한 train 170 / calibration 43 / test 100 명단을 사용한다.
+실행 명령과 산출물은 [PaDiM 첫 실행](padim-first-run.md)을 따른다.
 
 ## 확인 근거
 

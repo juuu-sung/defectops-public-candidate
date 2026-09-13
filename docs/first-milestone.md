@@ -17,9 +17,9 @@
    프로젝트 내부 `.venv`에서 PyTorch 2.8.0+cu128/CUDA runtime 12.8/Anomalib 2.2.0
    기본 GPU 점검을 통과했다. 저장소 전체 점검과 실제 학습 검증은 남아 있다.
 2. 맥북 실제 데이터 준비·manifest·기초 EDA 완료. [보고서](../reports/transistor-data-audit-v1.md) 참고.
-3. 원격 Git 저장소 연결 → 코드·manifest 공유 가능한 상태.
+3. 비공개 원격 Git 저장소 연결 및 첫 push 완료. 연구실에서 코드·manifest 수신과 검증.
 4. [Windows 설치 안내](windows-setup.md)의 초기 패키지 조합으로 설치 → GPU 연산/모델 로딩 점검 후 버전 확정.
-5. manifest loader → PaDiM 학습(seed 42) → 원시 점수/맵 저장.
+5. manifest 고정 PaDiM fit·normal-only calibration 명령 구현 완료. 연구실에서 seed 42 첫 실행.
 6. normal-only calibration → 고정 JSON 출력 → bbox/실패 처리 검증.
 7. 평가 규칙 동결 → 공식 test 지표/실패 사례 보고.
 
