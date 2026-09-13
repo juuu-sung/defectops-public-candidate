@@ -3,10 +3,55 @@ import math
 import unittest
 from pathlib import Path
 
-from defectops.padim_experiment import higher_quantile, load_experiment, records_for_split
+from defectops.padim_experiment import higher_quantile, initialize_cuda_device, load_experiment, records_for_split
+
+
+class _FakeCuda:
+    def __init__(self, calls):
+        self.calls = calls
+
+    def set_device(self, device):
+        self.calls.append(("set_device", device))
+
+    def synchronize(self):
+        self.calls.append(("synchronize",))
+
+    def reset_peak_memory_stats(self):
+        self.calls.append(("reset_peak_memory_stats",))
+
+
+class _FakeTorch:
+    def __init__(self):
+        self.calls = []
+        self.cuda = _FakeCuda(self.calls)
+
+    def device(self, value):
+        self.calls.append(("device", value))
+        return value
+
+    def empty(self, size, *, device):
+        self.calls.append(("empty", size, device))
+        return object()
 
 
 class PaDimExperimentTests(unittest.TestCase):
+    def test_cuda_allocator_is_initialized_before_peak_reset(self):
+        torch = _FakeTorch()
+
+        device = initialize_cuda_device(torch)
+
+        self.assertEqual(device, "cuda:0")
+        self.assertEqual(
+            torch.calls,
+            [
+                ("set_device", 0),
+                ("device", "cuda:0"),
+                ("empty", 1, "cuda:0"),
+                ("synchronize",),
+                ("reset_peak_memory_stats",),
+            ],
+        )
+
     def test_higher_quantile_matches_defined_order_statistic(self):
         self.assertEqual(higher_quantile([0.0, 1.0, 2.0, 3.0, 4.0], 0.5), 2.0)
         self.assertEqual(higher_quantile([0.0, 1.0, 2.0, 3.0], 0.5), 2.0)

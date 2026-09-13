@@ -177,6 +177,17 @@ def installed_versions() -> dict[str, str]:
     return actual
 
 
+def initialize_cuda_device(torch_module: Any) -> Any:
+    """Initialize CUDA's allocator before resetting its peak-memory counters."""
+    torch_module.cuda.set_device(0)
+    device = torch_module.device("cuda:0")
+    initialization_probe = torch_module.empty(1, device=device)
+    torch_module.cuda.synchronize()
+    del initialization_probe
+    torch_module.cuda.reset_peak_memory_stats()
+    return device
+
+
 def _safe_data_path(data_root: Path, relative_path: str) -> Path:
     path = (data_root / relative_path).resolve(strict=True)
     path.relative_to(data_root)
@@ -193,7 +204,10 @@ def run_fit_calibration(args: argparse.Namespace) -> dict[str, Any]:
     output_path = args.output.resolve()
     output_path.relative_to(output_root)
     if output_path.exists():
-        raise FileExistsError(f"Run output already exists and will not be overwritten: {output_path}")
+        raise FileExistsError(
+            "Run output already exists and will not be overwritten. "
+            f"Keep the previous attempt and choose a new --output directory: {output_path}"
+        )
 
     manifest = read_json(manifest_path)
     verify_manifest(data_root, manifest)
@@ -239,8 +253,7 @@ def run_fit_calibration(args: argparse.Namespace) -> dict[str, Any]:
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
-    device = torch.device("cuda:0")
-    torch.cuda.reset_peak_memory_stats(device)
+    device = initialize_cuda_device(torch)
 
     mean = torch.tensor([0.485, 0.456, 0.406], dtype=torch.float32).view(3, 1, 1)
     std = torch.tensor([0.229, 0.224, 0.225], dtype=torch.float32).view(3, 1, 1)
@@ -367,10 +380,10 @@ def run_fit_calibration(args: argparse.Namespace) -> dict[str, Any]:
             "executable": sys.executable,
             "packages": versions,
             "torch_cuda_runtime": torch.version.cuda,
-            "gpu": torch.cuda.get_device_name(device),
-            "compute_capability": list(torch.cuda.get_device_capability(device)),
-            "cuda_peak_allocated_bytes": torch.cuda.max_memory_allocated(device),
-            "cuda_peak_reserved_bytes": torch.cuda.max_memory_reserved(device),
+            "gpu": torch.cuda.get_device_name(),
+            "compute_capability": list(torch.cuda.get_device_capability()),
+            "cuda_peak_allocated_bytes": torch.cuda.max_memory_allocated(),
+            "cuda_peak_reserved_bytes": torch.cuda.max_memory_reserved(),
             "pid": os.getpid(),
         },
         "artifacts": {
