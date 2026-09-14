@@ -1,7 +1,8 @@
 # 실행 산출물 (Git 제외)
 
 장비별 환경 점검 JSON, 실행별 모델·원시 점수 CSV·히트맵·모의 SQLite DB를 이곳에 저장한다.
-PaDiM fit bundle과 고정 test evaluation bundle 생성기를 구현했다. 모든 실제 산출물은 Git에서 제외한다.
+PaDiM 및 탐색적 PatchCore fit bundle과 고정 test evaluation bundle 생성기를 구현했다.
+모든 실제 산출물은 Git에서 제외한다.
 
 ```text
 artifacts/<run_id>/
@@ -17,6 +18,8 @@ artifacts/<run_id>/
 
 현재 구현 경로는 `artifacts/runs/<fit_run_id>/`와 `artifacts/evaluations/<evaluation_id>/`다.
 평가 bundle은 fit bundle을 수정하지 않고 checkpoint·manifest·sample ID·checksum을 확인한 뒤 생성한다.
+PatchCore bundle에는 coreset memory-bank shape와 크기도 기록하며, PaDiM test 관찰 이후의
+비교라는 탐색적 상태를 fit·평가 양쪽에 보존한다.
 단일 이미지 검사는 `artifacts/inspections/<inspection_id>/`에 JSON·원본 복사·heatmap·overlay·
 원시 anomaly map을 저장하며, fit·evaluation bundle과 commit·checksum을 먼저 검증한다.
 탐색적 오류 분석은 `artifacts/analyses/<analysis_id>/`, 모델 1회 로드 속도 측정은
