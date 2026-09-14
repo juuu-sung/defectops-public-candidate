@@ -81,3 +81,17 @@ Get-Content "$benchmarkPath\benchmark.json" -Raw -Encoding UTF8
 3. contact sheet에서 위치 신호 부재, 넓은 경계 잡음, 작은 결함 문제를 구분한다.
 4. warm GPU 추론 median/p95와 전체 sample median/p95를 따로 본다.
 5. 결과를 보고 같은 test에 임곗값을 맞추지 않는다. 개선안은 별도 development protocol에서 선택한다.
+
+## 연구실 확인 결과
+
+2026-09-15 두 실행이 모두 완료됐다.
+
+- 오류 분석: TP 22 / FP 3 / TN 57 / FN 18 재현
+- 유형별 recall: `bent_lead` 0.70, `cut_lead` 0.20, `damaged_case` 0.30, `misplaced` 1.00
+- warm 처리량: 19.8264 images/s
+- GPU 추론·map 전송: median 5.27 ms, p95 20.19 ms
+- 전체 sample: median 43.79 ms, p95 78.22 ms
+
+FN/FP contact sheet를 시각 검토했다. `cut_lead`의 작은 국소 결함과 배경·테두리 반응이 주요
+취약점이며, `damaged_case`는 위치 신호가 있어도 이미지 임곗값을 넘지 못하는 사례가 많았다.
+상세 해석은 [오류 분석 및 warm 추론 보고서](../reports/padim-error-analysis-warm-v1.md)에 기록했다.

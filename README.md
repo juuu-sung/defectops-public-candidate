@@ -20,8 +20,9 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 같은 checkpoint·고정 임곗값으로 실제 `bent_lead/000.png` 한 장을 검사해
 `REVIEW_REQUIRED`, heatmap·overlay·영역 JSON 생성과 실행 추적을 확인했다.
 [단일 이미지 검증 보고서](reports/padim-single-image-smoke.md)를 참고한다.
-고정 결과의 [오류 분석과 warm 추론 측정](docs/padim-error-analysis-and-benchmark.md) 도구를 구현했으며
-연구실 Windows 실행을 기다리고 있다.
+고정 결과의 [오류 분석과 warm 추론 측정](docs/padim-error-analysis-and-benchmark.md)을 완료했다.
+`cut_lead` recall 0.20이 가장 큰 취약점이었고, 모델 1회 로드 시 19.83 images/s를 기록했다.
+[오류 분석 및 속도 보고서](reports/padim-error-analysis-warm-v1.md)를 참고한다.
 FastAPI·Streamlit·SQLite 앱도 아직 구현/실행하지 않았다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
 
@@ -32,7 +33,8 @@ FastAPI·Streamlit·SQLite 앱도 아직 구현/실행하지 않았다.
 3. 맥북 데이터는 `data/transistor/`에 준비되어 있다. 원본은 Git 제외 상태다.
 4. 비공개 원격 저장소 `https://github.com/juuu-sung/defectops`의 같은 commit을 연구실에서 받고,
    고정 manifest의 체크섬을 검증한다.
-5. 단일 이미지 검사까지 완료. 고정 test의 탐색적 오류 분석과 모델 1회 로드 warm 속도를 측정한다.
+5. 단일 이미지 검사·탐색적 오류 분석·모델 1회 로드 warm 속도 측정 완료.
+6. 같은 평가 계약으로 PatchCore baseline을 구현하고 탐색적으로 비교한다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.

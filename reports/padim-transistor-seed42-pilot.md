@@ -63,7 +63,7 @@
 
 ## 다음 작업
 
-1. 고정 bundle에서 FN 18장·FP 3장, 결함 유형별 recall과 픽셀 겹침을 탐색적으로 분석한다.
-2. 모델을 한 번 로드한 warm 100장 처리의 median·p95·처리량·GPU memory를 측정한다.
+1. 오류 분석과 warm 100장 속도 측정 완료. [후속 보고서](padim-error-analysis-warm-v1.md) 참고.
+2. 동일 평가 계약으로 PatchCore baseline을 구현하고 탐색적으로 비교한다.
 3. 입력/모델 오류를 `INSPECTION_FAILED`로 기록하고 자동 PASS를 금지한다.
 4. 이후 변경은 test 재튜닝이 아니라 별도 development protocol을 먼저 설계한다.
