@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import time
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -36,6 +37,24 @@ from defectops.padim_experiment import (
 
 class InputValidationError(ValueError):
     """Raised when an inspection image violates the frozen input contract."""
+
+
+@dataclass
+class PadimRuntime:
+    """One validated, loaded PaDiM runtime that can inspect multiple images."""
+
+    current_git: dict[str, str]
+    fit_run: dict[str, Any]
+    fit_config: dict[str, Any]
+    calibration_contract: dict[str, Any]
+    checkpoint_path: Path
+    checkpoint_sha256: str
+    versions: dict[str, str]
+    torch: Any
+    functional: Any
+    model: Any
+    device: Any
+    setup_ms: float
 
 
 def colorize_anomaly_values(values: np.ndarray) -> np.ndarray:
@@ -208,14 +227,13 @@ def _load_validated_png(path: Path) -> tuple[np.ndarray, tuple[int, int]]:
         raise InputValidationError(f"PNG decode failed: {exc}") from exc
 
 
-def _execute_inspection(
-    output_path: Path,
+def load_inference_runtime(
     project_root: Path,
     fit_path: Path,
     evaluation_path: Path,
-    input_path: Path,
-) -> dict[str, Any]:
-    total_started = time.perf_counter()
+) -> PadimRuntime:
+    """Validate the immutable bundles and load one reusable CUDA model."""
+    setup_started = time.perf_counter()
     current_git = git_state(project_root)
     fit_run, fit_config, calibration_contract, checkpoint_path = validate_inference_bundles(
         fit_path, evaluation_path, project_root
@@ -256,7 +274,8 @@ def _execute_inspection(
         or checkpoint.get("model") != fit_config
         or checkpoint.get("manifest_sha256") != fit_run["manifest_sha256"]
         or checkpoint.get("git_commit") != fit_run["git"]["commit"]
-        or float(checkpoint.get("threshold")) != float(calibration_contract["image"]["threshold"])
+        or float(checkpoint.get("threshold"))
+        != float(calibration_contract["image"]["threshold"])
     ):
         raise ValueError("Checkpoint metadata differs from the validated bundles")
     model = Padim(
@@ -273,14 +292,33 @@ def _execute_inspection(
     model.to(device)
     model._is_fitted.fill_(True)
     model.model.eval()
-    setup_and_model_load_ms = (time.perf_counter() - total_started) * 1000.0
+    return PadimRuntime(
+        current_git=current_git,
+        fit_run=fit_run,
+        fit_config=fit_config,
+        calibration_contract=calibration_contract,
+        checkpoint_path=checkpoint_path,
+        checkpoint_sha256=checksum(checkpoint_path),
+        versions=versions,
+        torch=torch,
+        functional=functional,
+        model=model,
+        device=device,
+        setup_ms=(time.perf_counter() - setup_started) * 1000.0,
+    )
 
+
+def predict_validated_png(runtime: PadimRuntime, input_path: Path) -> dict[str, Any]:
+    """Decode, preprocess and score one image without reloading the model."""
+    sample_started = time.perf_counter()
     decode_started = time.perf_counter()
     original, original_size = _load_validated_png(input_path)
     input_sha256 = checksum(input_path)
     decode_ms = (time.perf_counter() - decode_started) * 1000.0
 
-    model_size = fit_config["image_size"]
+    torch = runtime.torch
+    functional = runtime.functional
+    model_size = runtime.fit_config["image_size"]
     preprocess_started = time.perf_counter()
     tensor = torch.from_numpy(original).permute(2, 0, 1).to(torch.float32).div_(255.0)
     tensor = functional.interpolate(
@@ -292,12 +330,12 @@ def _execute_inspection(
     ).squeeze(0)
     mean = torch.tensor([0.485, 0.456, 0.406], dtype=torch.float32).view(3, 1, 1)
     std = torch.tensor([0.229, 0.224, 0.225], dtype=torch.float32).view(3, 1, 1)
-    image_batch = ((tensor - mean) / std).unsqueeze(0).to(device)
+    image_batch = ((tensor - mean) / std).unsqueeze(0).to(runtime.device)
     preprocess_ms = (time.perf_counter() - preprocess_started) * 1000.0
 
     inference_started = time.perf_counter()
     with torch.no_grad():
-        predictions = model.model(image_batch)
+        predictions = runtime.model.model(image_batch)
     torch.cuda.synchronize()
     inference_ms = (time.perf_counter() - inference_started) * 1000.0
     score_values = predictions.pred_score.detach().cpu().reshape(-1)
@@ -316,10 +354,41 @@ def _execute_inspection(
         raise RuntimeError("Model returned an invalid anomaly map")
     if not math.isfinite(raw_score):
         raise RuntimeError("Model returned a non-finite image score")
+    return {
+        "original": original,
+        "original_size": original_size,
+        "input_sha256": input_sha256,
+        "raw_score": raw_score,
+        "anomaly_map": anomaly_map,
+        "latency_ms": {
+            "decode_and_checksum": decode_ms,
+            "preprocess": preprocess_ms,
+            "gpu_inference_and_map_transfer": inference_ms,
+            "sample_total": (time.perf_counter() - sample_started) * 1000.0,
+        },
+    }
+
+
+def _execute_inspection(
+    output_path: Path,
+    project_root: Path,
+    fit_path: Path,
+    evaluation_path: Path,
+    input_path: Path,
+) -> dict[str, Any]:
+    total_started = time.perf_counter()
+    runtime = load_inference_runtime(project_root, fit_path, evaluation_path)
+    prediction = predict_validated_png(runtime, input_path)
+    original = prediction["original"]
+    original_size = prediction["original_size"]
+    input_sha256 = prediction["input_sha256"]
+    raw_score = prediction["raw_score"]
+    anomaly_map = prediction["anomaly_map"]
+    prediction_latency = prediction["latency_ms"]
 
     postprocess_started = time.perf_counter()
-    image_threshold = float(calibration_contract["image"]["threshold"])
-    pixel_threshold = float(calibration_contract["pixel"]["threshold"])
+    image_threshold = float(runtime.calibration_contract["image"]["threshold"])
+    pixel_threshold = float(runtime.calibration_contract["pixel"]["threshold"])
     if pixel_threshold <= 0:
         raise ValueError("Pixel threshold must be positive for the fixed display scale")
     decision = "REVIEW_REQUIRED" if raw_score >= image_threshold else "PASS"
@@ -415,27 +484,29 @@ def _execute_inspection(
             "size_wh": list(original_size),
         },
         "trace": {
-            "inspection_git": current_git,
-            "fit_run_id": fit_run["run_id"],
-            "fit_git_commit": fit_run["git"]["commit"],
+            "inspection_git": runtime.current_git,
+            "fit_run_id": runtime.fit_run["run_id"],
+            "fit_git_commit": runtime.fit_run["git"]["commit"],
             "evaluation_id": evaluation_path.name,
-            "manifest_sha256": fit_run["manifest_sha256"],
-            "checkpoint_sha256": checksum(checkpoint_path),
-            "model_seed": fit_config["model_seed"],
+            "manifest_sha256": runtime.fit_run["manifest_sha256"],
+            "checkpoint_sha256": runtime.checkpoint_sha256,
+            "model_seed": runtime.fit_config["model_seed"],
         },
         "latency_ms": {
-            "setup_and_model_load": setup_and_model_load_ms,
-            "decode": decode_ms,
-            "preprocess": preprocess_ms,
-            "gpu_inference_and_map_transfer": inference_ms,
+            "setup_and_model_load": runtime.setup_ms,
+            "decode": prediction_latency["decode_and_checksum"],
+            "preprocess": prediction_latency["preprocess"],
+            "gpu_inference_and_map_transfer": prediction_latency[
+                "gpu_inference_and_map_transfer"
+            ],
             "postprocess_and_artifact_write": postprocess_ms,
             "total": total_ms,
         },
         "environment": {
             "python": platform.python_version(),
-            "packages": versions,
-            "torch_cuda_runtime": torch.version.cuda,
-            "gpu": torch.cuda.get_device_name(),
+            "packages": runtime.versions,
+            "torch_cuda_runtime": runtime.torch.version.cuda,
+            "gpu": runtime.torch.cuda.get_device_name(),
         },
         "artifacts": {
             "input": input_copy_path.name,

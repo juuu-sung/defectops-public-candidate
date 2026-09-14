@@ -28,6 +28,8 @@
    고정 임곗값 recall 0.55, Pixel AUROC 0.9689. 현재 임곗값은 자동 PASS에 사용하지 않는다.
 7. 단일 이미지 검사 어댑터와 연구실 Windows 검증 완료. `bent_lead/000.png`를
    `REVIEW_REQUIRED`로 판정하고 JSON·heatmap·overlay·원시 map과 checksum을 생성했다.
+8. FN/FP·결함 유형별·픽셀 겹침 오류 분석과 warm 일괄 추론 측정 도구 구현 완료.
+   연구실 Windows에서 실행해 결과를 보존한다.
 
 첫 완료 판정: 실제 transistor 입력에 대해 모델 버전·split hash·원시 점수·고정 임곗값·판정·
 원본 좌표계의 히트맵/영역·지연시간을 기록하고 artifact checksum으로 실행 추적을 확인한다.

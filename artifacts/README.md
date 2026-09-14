@@ -19,6 +19,8 @@ artifacts/<run_id>/
 평가 bundle은 fit bundle을 수정하지 않고 checkpoint·manifest·sample ID·checksum을 확인한 뒤 생성한다.
 단일 이미지 검사는 `artifacts/inspections/<inspection_id>/`에 JSON·원본 복사·heatmap·overlay·
 원시 anomaly map을 저장하며, fit·evaluation bundle과 commit·checksum을 먼저 검증한다.
+탐색적 오류 분석은 `artifacts/analyses/<analysis_id>/`, 모델 1회 로드 속도 측정은
+`artifacts/benchmarks/<benchmark_id>/`에 저장한다. 이 산출물도 Git에 넣지 않는다.
 
 실행 ID에는 품목·모델·seed·시각 또는 UUID를 포함한다. 실행 디렉터리는 덮어쓰지 않는다.
 결과 복사 후 체크섬을 검증하고, 요약 성능표·실험 결론만 검토하여 `reports/`에 기록한다.

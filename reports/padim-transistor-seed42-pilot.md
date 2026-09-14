@@ -63,7 +63,7 @@
 
 ## 다음 작업
 
-1. 평가 bundle의 결함 유형별 recall, 지연시간, calibration pixel threshold를 보존한다.
-2. 구현된 단일 이미지 검사기를 연구실 Windows의 같은 checkpoint·동결 임곗값으로 검증한다.
+1. 고정 bundle에서 FN 18장·FP 3장, 결함 유형별 recall과 픽셀 겹침을 탐색적으로 분석한다.
+2. 모델을 한 번 로드한 warm 100장 처리의 median·p95·처리량·GPU memory를 측정한다.
 3. 입력/모델 오류를 `INSPECTION_FAILED`로 기록하고 자동 PASS를 금지한다.
 4. 이후 변경은 test 재튜닝이 아니라 별도 development protocol을 먼저 설계한다.
