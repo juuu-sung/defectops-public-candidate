@@ -17,6 +17,9 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 구현하고 연구실에서 공식 test 100장 파일럿 평가까지 완료했다. Image AUROC 0.9013,
 고정 임곗값 recall 0.55, Pixel AUROC 0.9689를 기록했다. 낮은 recall 때문에 현재 모델을
 실제 자동 PASS 용도로 사용할 수 없다. [파일럿 평가 보고서](reports/padim-transistor-seed42-pilot.md)를 참고한다.
+같은 checkpoint·고정 임곗값으로 실제 `bent_lead/000.png` 한 장을 검사해
+`REVIEW_REQUIRED`, heatmap·overlay·영역 JSON 생성과 실행 추적을 확인했다.
+[단일 이미지 검증 보고서](reports/padim-single-image-smoke.md)를 참고한다.
 FastAPI·Streamlit·SQLite 앱도 아직 구현/실행하지 않았다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
 
@@ -51,7 +54,7 @@ Windows에서는 `python3` 대신 `python`, 데이터 경로는 해당 장비의
 transistor 한 장 → 원시 이상 점수·고정 임곗값·PASS/REVIEW_REQUIRED·히트맵·영역 좌표를 JSON으로 반환.
 추론 오류/입력 오류는 INSPECTION_FAILED. 모델·분할·설정 버전까지 추적 가능해야 한다.
 추론·고정 판정·JSON·heatmap·영역·실패 기록을 구현했고 자동화 테스트를 통과했다.
-연구실 Windows에서 실제 checkpoint로 한 장을 검사하여 산출물을 확인하면 첫 완료 목표가 충족된다.
+연구실 Windows에서 실제 checkpoint로 한 장을 검사하고 산출물·checksum을 확인해 첫 기술 마일스톤을 완료했다.
 
 최소 범위는 transistor + PaDiM, 이후 PatchCore 비교 → 3품목 → API/검토/SOP/티켓 순서다.
 EfficientAD, AD 2, 모델 변환, embedding drift는 확장 단계로 둔다.

@@ -40,7 +40,7 @@ $defectPython = "$projectPath\.venv\Scripts\python.exe"
 
 ```powershell
 $inspectionPath = ".\artifacts\inspections\transistor-bent-lead-000"
-Get-Content "$inspectionPath\inspection.json" -Raw
+Get-Content "$inspectionPath\inspection.json" -Raw -Encoding UTF8
 Start-Process "$inspectionPath\overlay.png"
 ```
 
@@ -60,3 +60,10 @@ Start-Process "$inspectionPath\overlay.png"
 
 파일별 최소·최대에 맞춘 시각화는 불량 신호를 과장할 수 있어 사용하지 않는다.
 heatmap과 overlay는 평가 때 고정한 픽셀 임계값을 동일하게 사용한다.
+
+## 연구실 확인 결과
+
+2026-09-14 `bent_lead/000.png` 검사에서 `completed`, `REVIEW_REQUIRED`가 반환됐다.
+원시 점수는 `56.80778884887695`, 이미지 임곗값은 `56.027042388916016`이었다.
+7개 영역과 모든 예정 산출물이 생성됐으며 입력·manifest checksum도 일치했다.
+상세 내용은 [단일 이미지 검사 검증 보고서](../reports/padim-single-image-smoke.md)에 기록했다.
