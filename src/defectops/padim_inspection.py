@@ -1,4 +1,4 @@
-"""Run one traceable PaDiM inspection from immutable fit and evaluation bundles."""
+"""Run one traceable anomaly inspection from immutable validated bundles."""
 
 from __future__ import annotations
 
@@ -46,7 +46,7 @@ class InputValidationError(ValueError):
 
 @dataclass
 class PadimRuntime:
-    """One validated, loaded anomaly runtime that can inspect multiple images."""
+    """One validated, loaded PaDiM or PatchCore runtime."""
 
     current_git: dict[str, str]
     fit_run: dict[str, Any]
@@ -440,15 +440,56 @@ def predict_validated_png(runtime: PadimRuntime, input_path: Path) -> dict[str, 
     }
 
 
+def validate_expected_model(actual_model: str, expected_model: str | None) -> None:
+    """Prevent a model-specific CLI from silently loading the wrong bundle type."""
+    supported = {"padim", "patchcore"}
+    if actual_model not in supported:
+        raise ValueError(f"Unsupported inspection model: {actual_model!r}")
+    if expected_model is not None and expected_model not in supported:
+        raise ValueError(f"Unsupported expected inspection model: {expected_model!r}")
+    if expected_model is not None and actual_model != expected_model:
+        raise ValueError(
+            f"This command requires a {expected_model} fit bundle, found {actual_model}"
+        )
+
+
+def inspection_limitations(model: str) -> list[str]:
+    """Return model-specific limitations for the frozen transistor baselines."""
+    common = [
+        "The anomaly score is not a defect probability, severity or root-cause label.",
+        "PASS is a model output for review workflow design, not a safety certification.",
+    ]
+    if model == "padim":
+        return [
+            common[0],
+            "The frozen PaDiM threshold recalled only 22 of 40 anomalies in the test set.",
+            common[1],
+        ]
+    if model == "patchcore":
+        return [
+            common[0],
+            "The frozen PatchCore threshold recalled 37 of 40 anomalies in the test set.",
+            (
+                "This PatchCore configuration is exploratory because it was fixed after "
+                "the PaDiM test result had been observed."
+            ),
+            common[1],
+        ]
+    raise ValueError(f"Unsupported inspection model: {model!r}")
+
+
 def _execute_inspection(
     output_path: Path,
     project_root: Path,
     fit_path: Path,
     evaluation_path: Path,
     input_path: Path,
+    expected_model: str | None,
 ) -> dict[str, Any]:
     total_started = time.perf_counter()
     runtime = load_inference_runtime(project_root, fit_path, evaluation_path)
+    model_name = runtime.fit_config["model"]
+    validate_expected_model(model_name, expected_model)
     prediction = predict_validated_png(runtime, input_path)
     original = prediction["original"]
     original_size = prediction["original_size"]
@@ -522,6 +563,8 @@ def _execute_inspection(
         "status": "completed",
         "inspection_id": output_path.name,
         "category": "transistor",
+        "model": model_name,
+        "comparison_status": runtime.fit_run.get("comparison_status"),
         "decision": decision,
         "automatic_pass": False,
         "automatic_pass_allowed": False,
@@ -555,6 +598,8 @@ def _execute_inspection(
             "size_wh": list(original_size),
         },
         "trace": {
+            "model": model_name,
+            "comparison_status": runtime.fit_run.get("comparison_status"),
             "inspection_git": runtime.current_git,
             "fit_run_id": runtime.fit_run["run_id"],
             "fit_git_commit": runtime.fit_run["git"]["commit"],
@@ -589,16 +634,14 @@ def _execute_inspection(
             "anomaly_map": raw_map_path.name,
             "anomaly_map_sha256": raw_map_sha256,
         },
-        "limitations": [
-            "The anomaly score is not a defect probability, severity or root-cause label.",
-            "The pilot fixed threshold recalled only 22 of 40 anomalies in the frozen test set.",
-            "PASS is a model output for review workflow design, not a safety certification.",
-        ],
+        "limitations": inspection_limitations(model_name),
     }
     return result
 
 
-def run_inspection(args: argparse.Namespace) -> dict[str, Any]:
+def run_inspection(
+    args: argparse.Namespace, *, expected_model: str | None = None
+) -> dict[str, Any]:
     """Create one immutable inspection bundle, including explicit failure records."""
     project_root = Path(__file__).resolve().parents[2]
     artifacts_root = (project_root / "artifacts").resolve()
@@ -621,7 +664,12 @@ def run_inspection(args: argparse.Namespace) -> dict[str, Any]:
         fit_path.relative_to(fit_root)
         evaluation_path.relative_to(evaluation_root)
         result = _execute_inspection(
-            output_path, project_root, fit_path, evaluation_path, input_path
+            output_path,
+            project_root,
+            fit_path,
+            evaluation_path,
+            input_path,
+            expected_model,
         )
     except Exception as exc:
         failure = {
@@ -660,11 +708,13 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(
+    argv: list[str] | None = None, *, expected_model: str | None = None
+) -> int:
     """Run one inspection and print a compact machine-readable result."""
     args = build_parser().parse_args(argv)
     try:
-        result = run_inspection(args)
+        result = run_inspection(args, expected_model=expected_model)
     except Exception as exc:  # noqa: BLE001 - CLI boundary records failure before returning
         print(f"ERROR: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 1
@@ -673,6 +723,8 @@ def main(argv: list[str] | None = None) -> int:
             {
                 "status": result["status"],
                 "inspection_id": result["inspection_id"],
+                "model": result["model"],
+                "comparison_status": result["comparison_status"],
                 "decision": result["decision"],
                 "raw_score": result["raw_score"],
                 "image_threshold": result["image_threshold"],

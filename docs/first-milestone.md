@@ -13,6 +13,8 @@
 - [x] Windows RTX 5060에서 PaDiM fit·normal calibration·고정 test 100장 평가
 - [x] 단일 이미지 추론 JSON·heatmap·overlay·원본 좌표 영역·실패 기록 구현
 - [x] 연구실 Windows에서 실제 `bent_lead/000.png` 단일 이미지 검사와 산출물 checksum 확인
+- [x] PatchCore 전용 단일 이미지 검사 명령·모델 bundle 차단·탐색 상태 추적 구현
+- [ ] 연구실 Windows에서 PatchCore 단일 이미지 smoke test와 산출물 확인
 
 ## 다음 순서
 
@@ -39,6 +41,9 @@
    95.91 ms다. [최종 탐색 비교 보고서](../reports/padim-vs-patchcore-transistor-exploratory-v1.md)에
    정확도·오류·속도 판단과 contact sheet 판독을 기록했다. FN은 모두 임곗값에서 4.60 이내였고,
    FP는 제품 밖 배경 표식 반응으로 보인다.
+10. [PatchCore 단일 이미지 검사](patchcore-single-image.md)를 구현했다. PaDiM bundle을 잘못 넘기면
+    실패하도록 모델 계약을 고정했고, 결과 JSON에 `model`과 탐색 비교 상태를 기록한다. 연구실
+    Windows에서 실제 checkpoint smoke test와 산출물 확인은 남아 있다.
 
 첫 완료 판정: 실제 transistor 입력에 대해 모델 버전·split hash·원시 점수·고정 임곗값·판정·
 원본 좌표계의 히트맵/영역·지연시간을 기록하고 artifact checksum으로 실행 추적을 확인한다.
