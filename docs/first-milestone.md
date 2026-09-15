@@ -35,7 +35,9 @@
    구현하고 연구실 Windows에서 실행했다. Image AUROC 0.9904, recall 0.925,
    TP 37 / FP 1 / TN 59 / FN 3이다. PaDiM test 관찰 이후 고정한 설정이므로 모든 산출물은
    탐색적 비교로 표시한다. [PatchCore 기준선 안내](patchcore-exploratory-baseline.md)를 따라
-   FN/FP 시각화와 warm 속도 측정을 진행한다.
+   FN/FP 시각화와 warm 속도 측정도 완료했다. 처리량은 12.56 images/s, 전체 sample p95는
+   95.91 ms다. [최종 탐색 비교 보고서](../reports/padim-vs-patchcore-transistor-exploratory-v1.md)에
+   정확도·오류·속도 판단을 기록했다.
 
 첫 완료 판정: 실제 transistor 입력에 대해 모델 버전·split hash·원시 점수·고정 임곗값·판정·
 원본 좌표계의 히트맵/영역·지연시간을 기록하고 artifact checksum으로 실행 추적을 확인한다.

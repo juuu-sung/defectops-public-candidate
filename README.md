@@ -27,7 +27,9 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 연구실 Windows에서 fit·평가했다. Image AUROC 0.9904, 고정 임곗값 recall 0.925,
 Pixel AUPRO 0.9454였으며 TP 37 / FP 1 / TN 59 / FN 3을 기록했다. PaDiM test 결과를 이미
 관찰한 뒤 설정했으므로 확증적 모델 선택이 아닌 탐색적 비교다. PatchCore 오류 시각화와
-warm 속도 측정 도구를 구현했고 연구실 실행은 남아 있다.
+warm 속도 측정도 완료했다. PatchCore warm 처리량은 12.56 images/s, 전체 sample p95는
+95.91 ms였다. 정확도 우선 주력 후보는 PatchCore, 가벼운 비교 baseline은 PaDiM으로 유지한다.
+[PaDiM–PatchCore 최종 탐색 비교 보고서](reports/padim-vs-patchcore-transistor-exploratory-v1.md)를 참고한다.
 FastAPI·Streamlit·SQLite 앱도 아직 구현/실행하지 않았다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
 
@@ -39,7 +41,7 @@ FastAPI·Streamlit·SQLite 앱도 아직 구현/실행하지 않았다.
 4. 비공개 원격 저장소 `https://github.com/juuu-sung/defectops`의 같은 commit을 연구실에서 받고,
    고정 manifest의 체크섬을 검증한다.
 5. 단일 이미지 검사·탐색적 오류 분석·모델 1회 로드 warm 속도 측정 완료.
-6. PatchCore fit·고정 test 평가는 완료. FN/FP 시각화와 warm 속도를 측정해 PaDiM과 비교한다.
+6. PatchCore fit·평가·오류 분석·warm 측정 완료. FN/FP contact sheet를 판독하고 검사 앱으로 연결한다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.

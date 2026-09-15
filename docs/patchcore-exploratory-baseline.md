@@ -120,3 +120,14 @@ FP 1장의 contact sheet를 만든다. 두 번째 명령은 모델을 한 번만
     --count 100 `
     --output ".\artifacts\benchmarks\patchcore-transistor-seed42-warm-v1"
 ```
+
+두 실행은 연구실 Windows에서 완료했다. 오류 분석 결과는 TP 37 / FP 1 / TN 59 / FN 3으로
+평가 bundle과 일치했다. 결함 유형별 평균 IoU / pixel recall은 각각 `bent_lead`
+0.2035 / 0.9550, `cut_lead` 0.2154 / 0.7270, `damaged_case` 0.3301 / 0.9428,
+`misplaced` 0.4864 / 0.6075다.
+
+warm 측정은 12.5621 images/s였다. GPU 추론·map 전송 중앙값 / p95는 44.13 / 61.59 ms,
+전체 sample 중앙값 / p95는 79.88 / 95.91 ms였다. PaDiM의 19.8264 images/s보다 느리지만
+현재 1.5초 목표 안이다. 정확도·오류·속도 비교와 결정은
+[PaDiM vs PatchCore 탐색적 비교 보고서](../reports/padim-vs-patchcore-transistor-exploratory-v1.md)에
+기록했다.
