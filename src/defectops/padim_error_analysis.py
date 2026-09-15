@@ -1,4 +1,4 @@
-"""Analyze fixed PaDiM test errors without changing the model or thresholds."""
+"""Analyze fixed anomaly-detection errors without changing model or thresholds."""
 
 from __future__ import annotations
 
@@ -382,6 +382,8 @@ def run_error_analysis(args: argparse.Namespace) -> dict[str, Any]:
     analysis = {
         "schema_version": 1,
         "status": "analyzed_exploratory",
+        "model": fit_run["config"]["model"],
+        "comparison_status": fit_run.get("comparison_status"),
         "analysis_id": output_path.name,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "purpose": "post-evaluation error analysis only",
@@ -438,7 +440,7 @@ def run_error_analysis(args: argparse.Namespace) -> dict[str, Any]:
     return analysis
 
 
-def build_parser() -> argparse.ArgumentParser:
+def build_parser(default_output_name: str = "padim-error-analysis-v1") -> argparse.ArgumentParser:
     project_root = Path(__file__).resolve().parents[2]
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True, help="Dataset parent directory")
@@ -449,14 +451,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output",
         type=Path,
-        default=project_root / "artifacts" / "analyses" / "padim-error-analysis-v1",
+        default=project_root / "artifacts" / "analyses" / default_output_name,
         help="New directory below artifacts/analyses",
     )
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+def main(
+    argv: list[str] | None = None,
+    *,
+    default_output_name: str = "padim-error-analysis-v1",
+) -> int:
+    args = build_parser(default_output_name).parse_args(argv)
     try:
         result = run_error_analysis(args)
     except Exception as exc:  # noqa: BLE001 - CLI boundary

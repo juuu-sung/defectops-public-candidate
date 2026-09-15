@@ -1,4 +1,4 @@
-"""Benchmark warm PaDiM inference with one model load and fixed test inputs."""
+"""Benchmark warm anomaly inference with one model load and fixed test inputs."""
 
 from __future__ import annotations
 
@@ -158,6 +158,8 @@ def run_warm_benchmark(args: argparse.Namespace) -> dict[str, Any]:
     benchmark = {
         "schema_version": 1,
         "status": "benchmarked_warm",
+        "model": runtime.fit_config["model"],
+        "comparison_status": runtime.fit_run.get("comparison_status"),
         "benchmark_id": output_path.name,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "purpose": "performance measurement only; labels and thresholds are not tuned",
@@ -204,7 +206,7 @@ def run_warm_benchmark(args: argparse.Namespace) -> dict[str, Any]:
     return benchmark
 
 
-def build_parser() -> argparse.ArgumentParser:
+def build_parser(default_output_name: str = "padim-warm-v1") -> argparse.ArgumentParser:
     project_root = Path(__file__).resolve().parents[2]
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True, help="Dataset parent directory")
@@ -220,14 +222,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output",
         type=Path,
-        default=project_root / "artifacts" / "benchmarks" / "padim-warm-v1",
+        default=project_root / "artifacts" / "benchmarks" / default_output_name,
         help="New directory below artifacts/benchmarks",
     )
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+def main(
+    argv: list[str] | None = None,
+    *,
+    default_output_name: str = "padim-warm-v1",
+) -> int:
+    args = build_parser(default_output_name).parse_args(argv)
     try:
         result = run_warm_benchmark(args)
     except Exception as exc:  # noqa: BLE001 - CLI boundary

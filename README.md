@@ -23,9 +23,11 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 고정 결과의 [오류 분석과 warm 추론 측정](docs/padim-error-analysis-and-benchmark.md)을 완료했다.
 `cut_lead` recall 0.20이 가장 큰 취약점이었고, 모델 1회 로드 시 19.83 images/s를 기록했다.
 [오류 분석 및 속도 보고서](reports/padim-error-analysis-warm-v1.md)를 참고한다.
-같은 고정 manifest와 평가 규칙을 사용하는 [PatchCore 탐색적 기준선](docs/patchcore-exploratory-baseline.md)의
-fit·평가 명령을 구현했다. PaDiM test 결과를 이미 관찰했으므로 PatchCore 결과는 확증적 모델
-선택이 아니라 탐색적 비교로만 기록한다. 실제 연구실 Windows 실행은 아직 남아 있다.
+같은 고정 manifest와 평가 규칙을 사용하는 [PatchCore 탐색적 기준선](docs/patchcore-exploratory-baseline.md)을
+연구실 Windows에서 fit·평가했다. Image AUROC 0.9904, 고정 임곗값 recall 0.925,
+Pixel AUPRO 0.9454였으며 TP 37 / FP 1 / TN 59 / FN 3을 기록했다. PaDiM test 결과를 이미
+관찰한 뒤 설정했으므로 확증적 모델 선택이 아닌 탐색적 비교다. PatchCore 오류 시각화와
+warm 속도 측정 도구를 구현했고 연구실 실행은 남아 있다.
 FastAPI·Streamlit·SQLite 앱도 아직 구현/실행하지 않았다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
 
@@ -37,7 +39,7 @@ FastAPI·Streamlit·SQLite 앱도 아직 구현/실행하지 않았다.
 4. 비공개 원격 저장소 `https://github.com/juuu-sung/defectops`의 같은 commit을 연구실에서 받고,
    고정 manifest의 체크섬을 검증한다.
 5. 단일 이미지 검사·탐색적 오류 분석·모델 1회 로드 warm 속도 측정 완료.
-6. 고정한 PatchCore baseline을 연구실 Windows에서 fit·평가하고 탐색적으로 비교한다.
+6. PatchCore fit·고정 test 평가는 완료. FN/FP 시각화와 warm 속도를 측정해 PaDiM과 비교한다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.

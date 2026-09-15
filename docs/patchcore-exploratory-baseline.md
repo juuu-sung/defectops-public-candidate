@@ -75,3 +75,48 @@ pixel AUROC/AUPRO, 결함 유형별 recall을 기록한다.
 
 두 디렉터리 모두 원본 데이터와 마찬가지로 Git에 올리지 않는다. 비교 보고서는 실제 Windows
 결과를 받은 뒤 생성한다.
+
+## seed 42 탐색적 결과
+
+연구실 Windows RTX 5060에서 fit과 공식 test 평가를 완료했다.
+
+| 항목 | 결과 |
+|---|---:|
+| Fit + calibration | 141.677초 |
+| Memory bank | 17,408 × 1,536, 약 102 MiB |
+| Image AUROC | 0.9904 |
+| Image average precision | 0.9884 |
+| TP / FP / TN / FN | 37 / 1 / 59 / 3 |
+| Precision / Recall / F1 | 0.9737 / 0.9250 / 0.9487 |
+| Escape / Overkill | 0.0750 / 0.0167 |
+| Pixel AUROC / AUPRO | 0.9720 / 0.9454 |
+
+checkpoint를 다시 로드한 calibration 43장의 최대 점수 차이는 `0.0`이었다. 결함 유형별
+recall은 `bent_lead` 0.9, `cut_lead` 1.0, `damaged_case` 1.0, `misplaced` 0.8이다.
+따라서 FN 3장은 유형 기준으로 bent lead 1장과 misplaced 2장이다. 유형마다 표본이 10장뿐이라
+유형별 수치는 탐색적으로만 해석한다.
+
+## 고정 결과 오류 분석과 warm 측정
+
+최신 코드를 받은 뒤 다음 두 명령을 순서대로 실행한다. 첫 명령은 저장된 결과만 읽어 FN 3장과
+FP 1장의 contact sheet를 만든다. 두 번째 명령은 모델을 한 번만 로드한 뒤 같은 test 100장을
+속도 측정 용도로 재사용한다. 모델·임곗값·평가 성능은 변경하지 않는다.
+
+```powershell
+& $defectPython scripts\analyze_patchcore_errors.py `
+    --root $datasetRoot `
+    --fit-run ".\artifacts\runs\patchcore-transistor-seed42" `
+    --evaluation ".\artifacts\evaluations\patchcore-transistor-seed42-eval-v1" `
+    --output ".\artifacts\analyses\patchcore-transistor-seed42-errors-v1"
+```
+
+```powershell
+& $defectPython scripts\benchmark_patchcore_warm.py `
+    --root $datasetRoot `
+    --fit-run ".\artifacts\runs\patchcore-transistor-seed42" `
+    --evaluation ".\artifacts\evaluations\patchcore-transistor-seed42-eval-v1" `
+    --warmup 5 `
+    --repeats 1 `
+    --count 100 `
+    --output ".\artifacts\benchmarks\patchcore-transistor-seed42-warm-v1"
+```

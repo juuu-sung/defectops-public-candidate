@@ -33,6 +33,11 @@ from defectops.padim_experiment import (
     read_json,
     write_json,
 )
+from defectops.patchcore_evaluation import load_patchcore_evaluation_config
+from defectops.patchcore_experiment import (
+    EXPECTED_COMPARISON_STATUS,
+    load_patchcore_experiment,
+)
 
 
 class InputValidationError(ValueError):
@@ -41,7 +46,7 @@ class InputValidationError(ValueError):
 
 @dataclass
 class PadimRuntime:
-    """One validated, loaded PaDiM runtime that can inspect multiple images."""
+    """One validated, loaded anomaly runtime that can inspect multiple images."""
 
     current_git: dict[str, str]
     fit_run: dict[str, Any]
@@ -119,12 +124,40 @@ def validate_inference_bundles(
     evaluation_path: Path,
     project_root: Path,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], Path]:
-    """Validate immutable fit/evaluation bundles without reopening labeled test data."""
+    """Validate immutable PaDiM or PatchCore bundles without reopening test data."""
     fit_run = read_json(_safe_named_file(fit_path, "run.json"))
     evaluation = read_json(_safe_named_file(evaluation_path, "evaluation.json"))
-    if fit_run.get("status") != "fit_calibrated" or fit_run.get("test_evaluated") is not False:
+    model_name = fit_run.get("config", {}).get("model")
+    if model_name == "padim":
+        expected_fit_status = "fit_calibrated"
+        expected_evaluation_status = "evaluated"
+        expected_calibration_status = "frozen_before_test_images_loaded"
+        fit_config_name = "pilot.toml"
+        evaluation_config_name = "evaluation-v1.toml"
+    elif model_name == "patchcore":
+        expected_fit_status = "fit_calibrated_exploratory"
+        expected_evaluation_status = "evaluated_exploratory"
+        expected_calibration_status = (
+            "exploratory_rules_frozen_before_test_images_loaded"
+        )
+        fit_config_name = "patchcore-pilot.toml"
+        evaluation_config_name = "patchcore-evaluation-v1.toml"
+        if (
+            fit_run.get("comparison_status") != EXPECTED_COMPARISON_STATUS
+            or evaluation.get("comparison_status") != EXPECTED_COMPARISON_STATUS
+        ):
+            raise ValueError("PatchCore bundles lost their exploratory comparison status")
+    else:
+        raise ValueError(f"Unsupported inference bundle model: {model_name!r}")
+    if (
+        fit_run.get("status") != expected_fit_status
+        or fit_run.get("test_evaluated") is not False
+    ):
         raise ValueError("Fit bundle is not a completed calibration-only run")
-    if evaluation.get("status") != "evaluated" or evaluation.get("test_evaluated") is not True:
+    if (
+        evaluation.get("status") != expected_evaluation_status
+        or evaluation.get("test_evaluated") is not True
+    ):
         raise ValueError("Evaluation bundle is not complete")
     if evaluation.get("evaluation_id") != evaluation_path.name:
         raise ValueError("Evaluation ID differs from its directory name")
@@ -141,12 +174,18 @@ def validate_inference_bundles(
         raise ValueError("Evaluation fit-run snapshot differs from the source fit bundle")
 
     model_seed = fit_run.get("config", {}).get("model_seed")
-    fit_config = load_experiment(_safe_named_file(fit_path, "pilot.toml"), manifest, model_seed)
+    fit_config_path = _safe_named_file(fit_path, fit_config_name)
+    if model_name == "padim":
+        fit_config = load_experiment(fit_config_path, manifest, model_seed)
+    else:
+        fit_config = load_patchcore_experiment(fit_config_path, manifest, model_seed)
     if fit_run.get("config") != fit_config:
         raise ValueError("Fit configuration snapshot differs from run.json")
-    evaluation_config = load_evaluation_config(
-        _safe_named_file(evaluation_path, "evaluation-v1.toml")
-    )
+    evaluation_config_path = _safe_named_file(evaluation_path, evaluation_config_name)
+    if model_name == "padim":
+        evaluation_config = load_evaluation_config(evaluation_config_path)
+    else:
+        evaluation_config = load_patchcore_evaluation_config(evaluation_config_path)
     if evaluation.get("evaluation_config") != evaluation_config:
         raise ValueError("Evaluation configuration snapshot differs from evaluation.json")
 
@@ -178,8 +217,12 @@ def validate_inference_bundles(
     calibration_contract = read_json(calibration_path)
     if calibration_contract != evaluation.get("calibration_contract"):
         raise ValueError("Calibration contract differs from evaluation.json")
-    if calibration_contract.get("status") != "frozen_before_test_images_loaded":
+    if calibration_contract.get("status") != expected_calibration_status:
         raise ValueError("Calibration contract was not frozen before test evaluation")
+    if model_name == "patchcore" and (
+        calibration_contract.get("comparison_status") != EXPECTED_COMPARISON_STATUS
+    ):
+        raise ValueError("PatchCore calibration contract lost its exploratory status")
     if calibration_contract.get("fit_run_id") != fit_run.get("run_id"):
         raise ValueError("Calibration contract references a different fit")
     if float(calibration_contract.get("image", {}).get("threshold", math.nan)) != float(
@@ -247,7 +290,7 @@ def load_inference_runtime(
     import torch
     import torch.nn.functional as functional
     import torchvision
-    from anomalib.models import Padim
+    from anomalib.models import Padim, Patchcore
 
     if (
         torch.__version__ != EXPECTED_PACKAGES["torch"]
@@ -278,17 +321,45 @@ def load_inference_runtime(
         != float(calibration_contract["image"]["threshold"])
     ):
         raise ValueError("Checkpoint metadata differs from the validated bundles")
-    model = Padim(
-        backbone=fit_config["backbone"],
-        layers=fit_config["layers"],
-        pre_trained=False,
-        n_features=fit_config["n_features"],
-        pre_processor=False,
-        post_processor=False,
-        evaluator=False,
-        visualizer=False,
-    )
-    model.load_state_dict(checkpoint["state_dict"], strict=True)
+    if fit_config["model"] == "padim":
+        model = Padim(
+            backbone=fit_config["backbone"],
+            layers=fit_config["layers"],
+            pre_trained=False,
+            n_features=fit_config["n_features"],
+            pre_processor=False,
+            post_processor=False,
+            evaluator=False,
+            visualizer=False,
+        )
+        model.load_state_dict(checkpoint["state_dict"], strict=True)
+    elif fit_config["model"] == "patchcore":
+        if (
+            checkpoint.get("memory_bank_shape")
+            != fit_run.get("memory_bank", {}).get("shape")
+        ):
+            raise ValueError("PatchCore checkpoint memory-bank metadata differs")
+        model = Patchcore(
+            backbone=fit_config["backbone"],
+            layers=fit_config["layers"],
+            pre_trained=False,
+            coreset_sampling_ratio=fit_config["coreset_sampling_ratio"],
+            num_neighbors=fit_config["num_neighbors"],
+            pre_processor=False,
+            post_processor=False,
+            evaluator=False,
+            visualizer=False,
+        )
+        state_dict = checkpoint.get("state_dict")
+        if not isinstance(state_dict, dict) or "model.memory_bank" not in state_dict:
+            raise ValueError("Checkpoint is missing the PatchCore memory bank")
+        saved_memory_bank = state_dict["model.memory_bank"]
+        if list(saved_memory_bank.shape) != checkpoint["memory_bank_shape"]:
+            raise ValueError("PatchCore memory-bank tensor shape differs")
+        model.model.memory_bank = torch.empty_like(saved_memory_bank)
+        model.load_state_dict(state_dict, strict=True)
+    else:  # pragma: no cover - bundle validation rejects this first
+        raise ValueError(f"Unsupported inference model: {fit_config['model']!r}")
     model.to(device)
     model._is_fitted.fill_(True)
     model.model.eval()
