@@ -37,7 +37,8 @@
    탐색적 비교로 표시한다. [PatchCore 기준선 안내](patchcore-exploratory-baseline.md)를 따라
    FN/FP 시각화와 warm 속도 측정도 완료했다. 처리량은 12.56 images/s, 전체 sample p95는
    95.91 ms다. [최종 탐색 비교 보고서](../reports/padim-vs-patchcore-transistor-exploratory-v1.md)에
-   정확도·오류·속도 판단을 기록했다.
+   정확도·오류·속도 판단과 contact sheet 판독을 기록했다. FN은 모두 임곗값에서 4.60 이내였고,
+   FP는 제품 밖 배경 표식 반응으로 보인다.
 
 첫 완료 판정: 실제 transistor 입력에 대해 모델 버전·split hash·원시 점수·고정 임곗값·판정·
 원본 좌표계의 히트맵/영역·지연시간을 기록하고 artifact checksum으로 실행 추적을 확인한다.

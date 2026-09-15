@@ -86,11 +86,28 @@ PatchCore의 FN 3장은 유형 기준으로 `bent_lead` 1장과 `misplaced` 2장
 `damaged_case`는 이미지 recall과 pixel recall이 모두 크게 개선됐다. `bent_lead`,
 `damaged_case`, `misplaced`는 pixel recall이 증가했지만 평균 IoU는 소폭 감소했다. 이는 실제
 결함을 더 넓게 덮는 대신 결함 외 영역까지 포함하는 과분할 가능성을 시사한다. Pixel AUPRO가
-전체적으로 개선됐으므로 위치 순위 품질은 좋아졌지만, 정확한 공간 오류 원인은 contact sheet를
-직접 확인해야 한다.
+전체적으로 개선됐으므로 위치 순위 품질은 좋아졌지만, 정확한 공간 오류는 contact sheet와 함께
+해석해야 한다.
 
-현재 대화에는 생성된 `false-negatives.png`와 `false-positives.png`가 첨부되지 않아 개별 파일명,
-배경 반응, 임곗값 margin에 대한 시각 판독은 이 보고서에서 보류한다.
+### PatchCore contact sheet 판독
+
+| 판정 | 파일 | 점수 | 임곗값 margin | 시각 판독 |
+|---|---|---:|---:|---|
+| FN | `bent_lead/001.png` | 39.7323 | -1.0589 | 실제 결함은 우측 리드 끝의 매우 작은 영역이다. anomaly map은 부품 전체로 넓게 반응하지만 이미지 점수가 임곗값 바로 아래라 놓쳤다. |
+| FN | `misplaced/002.png` | 36.1934 | -4.5978 | 부품이 사라진 큰 GT 영역과 예측 영역이 상당히 겹치지만 이미지 점수가 낮다. pixel 증거가 있는데 image 판정 계약에서 탈락한 사례다. |
+| FN | `misplaced/003.png` | 38.7042 | -2.0871 | `misplaced/002.png`와 마찬가지로 큰 예측 영역이 GT와 겹치지만 image threshold를 넘지 못했다. |
+| FP | `good/014.png` | 45.3069 | +4.5156 | 예측 영역이 부품이 아니라 영상 상단 우측의 문자·흠집처럼 보이는 배경 표식에 있다. 배경 편차에 의한 오탐 가능성이 높다. |
+
+FN 3장은 모두 임곗값에서 4.60 이내로, 특징을 전혀 못 찾은 사례보다 **image-level 의사결정의
+경계 사례**에 가깝다. 특히 두 `misplaced` 이미지는 pixel-level 예측이 GT와 겹치므로 이미지
+점수 하나만으로 PASS/REVIEW를 정하는 계약이 공간 증거를 버릴 수 있음을 보여준다. 또한
+PatchCore는 위치 고정 통계가 아니라 가장 가까운 정상 patch를 찾으므로, 정상 배경 patch로
+대체되는 전역 배치 이상에 상대적으로 덜 민감할 가능성이 있다. 이는 PaDiM의 `misplaced`
+recall 1.00보다 PatchCore가 0.80인 결과와 일관되지만 추가 데이터로 확인해야 한다.
+
+후속 후보는 제품 ROI 밖 예측을 억제하는 마스크와 image score·이상 영역 크기를 함께 쓰는
+REVIEW 규칙이다. 다만 이 네 test 사례에 맞춰 임곗값이나 규칙을 변경하면 test leakage가 되므로,
+새 validation/holdout에서 규칙을 먼저 고정한 뒤 평가한다.
 
 ## Warm 속도 비교
 
@@ -125,10 +142,11 @@ worker에서 모델을 한 번 로드해야 한다.
 1. PatchCore seed-42 fit과 평가 결과를 현재 주력 후보 baseline으로 동결한다.
 2. PaDiM은 속도가 빠른 비교 baseline과 fallback 후보로 보존한다.
 3. 두 결과 모두 자동 PASS나 안전 판정에 사용하지 않는다.
-4. PatchCore FN 3장·FP 1장 contact sheet를 사람이 확인해 실패 양상을 기록한다.
-5. 새 미관찰 데이터 없이 현재 test 기반 임곗값·해상도·후처리를 튜닝하지 않는다.
+4. PatchCore FN 3장·FP 1장 contact sheet 판독을 완료했고 경계 점수·공간 증거 유실·배경 반응을 실패 양상으로 기록한다.
+5. 새 미관찰 데이터 없이 현재 test 기반 임곗값·ROI·복합 판정 규칙을 튜닝하지 않는다.
 6. 다음 구현은 PatchCore 단일 이미지 검사와 모델 상주 FastAPI worker를 우선한다.
-7. 실제 line rate와 검토 비용 요구사항을 받은 뒤 속도·recall 운영점을 다시 설계한다.
+7. 새 validation/holdout에서 ROI 마스크와 image score·이상 영역 크기 복합 REVIEW 규칙을 설계한다.
+8. 실제 line rate와 검토 비용 요구사항을 받은 뒤 속도·recall 운영점을 다시 설계한다.
 
 ## 한계
 
@@ -136,4 +154,4 @@ worker에서 모델을 한 번 로드해야 한다.
 - seed 42 한 번과 공개 MVTec 한 품목의 결과이며 실제 공장 domain shift를 다루지 않는다.
 - 각 결함 유형은 10장뿐이라 유형별 비율의 불확실성이 크다.
 - 현재 비교는 알고리즘뿐 아니라 backbone 크기 차이도 포함한다.
-- contact sheet 미첨부로 개별 PatchCore FN/FP의 시각 원인 분석은 남아 있다.
+- contact sheet 판독은 시각적 추정이며, 배경 표식의 실제 발생 원인과 복합 판정 규칙의 효과는 새 데이터로 검증해야 한다.

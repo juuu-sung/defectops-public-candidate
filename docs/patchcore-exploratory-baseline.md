@@ -131,3 +131,9 @@ warm 측정은 12.5621 images/s였다. GPU 추론·map 전송 중앙값 / p95는
 현재 1.5초 목표 안이다. 정확도·오류·속도 비교와 결정은
 [PaDiM vs PatchCore 탐색적 비교 보고서](../reports/padim-vs-patchcore-transistor-exploratory-v1.md)에
 기록했다.
+
+contact sheet 판독 결과 FN 3장은 모두 image threshold에서 4.60 이내였다. 두 `misplaced`
+사례는 pixel 예측 영역이 GT와 겹치지만 image score가 낮아 FN이 되었고, `bent_lead/001.png`는
+작은 리드 결함보다 부품 전체에 넓게 반응했다. 유일한 FP `good/014.png`의 예측 영역은 부품이
+아닌 상단 우측 배경 표식에 있었다. 이 결과는 ROI 마스크와 공간 증거를 포함한 REVIEW 규칙의
+검토 근거지만, 현재 test에 맞춰 조정하지 않고 새 validation/holdout에서만 설계·고정한다.

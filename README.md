@@ -29,6 +29,8 @@ Pixel AUPRO 0.9454였으며 TP 37 / FP 1 / TN 59 / FN 3을 기록했다. PaDiM t
 관찰한 뒤 설정했으므로 확증적 모델 선택이 아닌 탐색적 비교다. PatchCore 오류 시각화와
 warm 속도 측정도 완료했다. PatchCore warm 처리량은 12.56 images/s, 전체 sample p95는
 95.91 ms였다. 정확도 우선 주력 후보는 PatchCore, 가벼운 비교 baseline은 PaDiM으로 유지한다.
+contact sheet 판독 결과 FN 3장은 모두 임곗값 근처였고, 두 `misplaced` 사례는 pixel 예측이
+GT와 겹치는데도 image score 기준에서 탈락했다. FP 1장은 제품 밖 배경 표식 반응으로 보인다.
 [PaDiM–PatchCore 최종 탐색 비교 보고서](reports/padim-vs-patchcore-transistor-exploratory-v1.md)를 참고한다.
 FastAPI·Streamlit·SQLite 앱도 아직 구현/실행하지 않았다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
@@ -41,7 +43,7 @@ FastAPI·Streamlit·SQLite 앱도 아직 구현/실행하지 않았다.
 4. 비공개 원격 저장소 `https://github.com/juuu-sung/defectops`의 같은 commit을 연구실에서 받고,
    고정 manifest의 체크섬을 검증한다.
 5. 단일 이미지 검사·탐색적 오류 분석·모델 1회 로드 warm 속도 측정 완료.
-6. PatchCore fit·평가·오류 분석·warm 측정 완료. FN/FP contact sheet를 판독하고 검사 앱으로 연결한다.
+6. PatchCore fit·평가·오류 분석·warm 측정과 FN/FP contact sheet 판독 완료. 검사 앱으로 연결한다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.
