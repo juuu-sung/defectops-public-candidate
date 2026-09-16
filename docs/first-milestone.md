@@ -14,7 +14,9 @@
 - [x] 단일 이미지 추론 JSON·heatmap·overlay·원본 좌표 영역·실패 기록 구현
 - [x] 연구실 Windows에서 실제 `bent_lead/000.png` 단일 이미지 검사와 산출물 checksum 확인
 - [x] PatchCore 전용 단일 이미지 검사 명령·모델 bundle 차단·탐색 상태 추적 구현
-- [ ] 연구실 Windows에서 PatchCore 단일 이미지 smoke test와 산출물 확인
+- [x] 연구실 Windows에서 PatchCore 단일 이미지 smoke test와 산출물 확인
+- [x] 모델 1회 로드·요청 재사용·실패 시 통과 금지 로컬 FastAPI 구현
+- [ ] 연구실 Windows에서 로컬 FastAPI 실제 GPU smoke test와 상주 RAM 측정
 
 ## 다음 순서
 
@@ -43,7 +45,11 @@
    FP는 제품 밖 배경 표식 반응으로 보인다.
 10. [PatchCore 단일 이미지 검사](patchcore-single-image.md)를 구현했다. PaDiM bundle을 잘못 넘기면
     실패하도록 모델 계약을 고정했고, 결과 JSON에 `model`과 탐색 비교 상태를 기록한다. 연구실
-    Windows에서 실제 checkpoint smoke test와 산출물 확인은 남아 있다.
+    Windows에서 실제 checkpoint smoke test와 산출물 확인을 완료했다. 모델 로드 포함 총 25.44초,
+    이 중 설정 검증·모델 로드가 24.13초였다. 입력/overlay SHA-256은 원본·기록과 일치했다.
+11. [로컬 PatchCore 검사 API](patchcore-local-api.md)를 구현했다. 모델 1회 로드, 요청 직렬화,
+    실패 기록·artifact checksum 조회를 자동 테스트로 검증했다. Windows 실제 GPU·상주 RAM
+    확인은 남아 있다.
 
 첫 완료 판정: 실제 transistor 입력에 대해 모델 버전·split hash·원시 점수·고정 임곗값·판정·
 원본 좌표계의 히트맵/영역·지연시간을 기록하고 artifact checksum으로 실행 추적을 확인한다.

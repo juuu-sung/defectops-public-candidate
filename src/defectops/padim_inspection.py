@@ -49,6 +49,8 @@ class PadimRuntime:
     """One validated, loaded PaDiM or PatchCore runtime."""
 
     current_git: dict[str, str]
+    fit_path: Path
+    evaluation_path: Path
     fit_run: dict[str, Any]
     fit_config: dict[str, Any]
     calibration_contract: dict[str, Any]
@@ -256,13 +258,13 @@ def _load_validated_png(path: Path) -> tuple[np.ndarray, tuple[int, int]]:
         raise InputValidationError("Input PNG exceeds the 50 MiB safety limit")
     try:
         with Image.open(path) as image:
-            image.load()
             if image.format != "PNG":
                 raise InputValidationError("Input content is not PNG")
             if image.mode != "RGB":
                 raise InputValidationError(f"Expected RGB input, found {image.mode}")
             if image.size != (1024, 1024):
                 raise InputValidationError(f"Expected 1024x1024 input, found {image.size}")
+            image.load()
             return np.array(image, dtype=np.uint8, copy=True), image.size
     except InputValidationError:
         raise
@@ -365,6 +367,8 @@ def load_inference_runtime(
     model.model.eval()
     return PadimRuntime(
         current_git=current_git,
+        fit_path=fit_path.resolve(strict=True),
+        evaluation_path=evaluation_path.resolve(strict=True),
         fit_run=fit_run,
         fit_config=fit_config,
         calibration_contract=calibration_contract,
@@ -485,9 +489,18 @@ def _execute_inspection(
     evaluation_path: Path,
     input_path: Path,
     expected_model: str | None,
+    runtime: PadimRuntime | None = None,
+    input_source: str | None = None,
 ) -> dict[str, Any]:
     total_started = time.perf_counter()
-    runtime = load_inference_runtime(project_root, fit_path, evaluation_path)
+    model_reused = runtime is not None
+    if runtime is None:
+        runtime = load_inference_runtime(project_root, fit_path, evaluation_path)
+    elif (
+        runtime.fit_path != fit_path.resolve(strict=True)
+        or runtime.evaluation_path != evaluation_path.resolve(strict=True)
+    ):
+        raise ValueError("Resident runtime does not match the requested fit/evaluation")
     model_name = runtime.fit_config["model"]
     validate_expected_model(model_name, expected_model)
     prediction = predict_validated_png(runtime, input_path)
@@ -565,6 +578,7 @@ def _execute_inspection(
         "category": "transistor",
         "model": model_name,
         "comparison_status": runtime.fit_run.get("comparison_status"),
+        "model_reused": model_reused,
         "decision": decision,
         "automatic_pass": False,
         "automatic_pass_allowed": False,
@@ -590,7 +604,7 @@ def _execute_inspection(
             "overlay_alpha": "0.15 + 0.45 * normalized_score",
         },
         "input": {
-            "source_path": str(input_path),
+            "source_path": input_source or str(input_path),
             "filename": input_path.name,
             "sha256": input_sha256,
             "format": "PNG",
@@ -609,7 +623,7 @@ def _execute_inspection(
             "model_seed": runtime.fit_config["model_seed"],
         },
         "latency_ms": {
-            "setup_and_model_load": runtime.setup_ms,
+            "setup_and_model_load": 0.0 if model_reused else runtime.setup_ms,
             "decode": prediction_latency["decode_and_checksum"],
             "preprocess": prediction_latency["preprocess"],
             "gpu_inference_and_map_transfer": prediction_latency[
@@ -640,7 +654,11 @@ def _execute_inspection(
 
 
 def run_inspection(
-    args: argparse.Namespace, *, expected_model: str | None = None
+    args: argparse.Namespace,
+    *,
+    expected_model: str | None = None,
+    runtime: PadimRuntime | None = None,
+    input_source: str | None = None,
 ) -> dict[str, Any]:
     """Create one immutable inspection bundle, including explicit failure records."""
     project_root = Path(__file__).resolve().parents[2]
@@ -670,6 +688,8 @@ def run_inspection(
             evaluation_path,
             input_path,
             expected_model,
+            runtime,
+            input_source,
         )
     except Exception as exc:
         failure = {
@@ -678,10 +698,11 @@ def run_inspection(
             "inspection_id": output_path.name,
             "started_at": started_at.isoformat(),
             "finished_at": datetime.now(timezone.utc).isoformat(),
-            "input_path": str(requested_input_path),
+            "input_path": input_source or str(requested_input_path),
             "error_type": type(exc).__name__,
             "error": str(exc),
             "automatic_pass": False,
+            "automatic_pass_allowed": False,
         }
         write_json(output_path / "inspection.json", failure)
         raise

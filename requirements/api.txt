@@ -1,0 +1,4 @@
+# Local-only model-resident inspection service and its HTTP test client.
+fastapi==0.117.1
+uvicorn==0.37.0
+httpx==0.28.1

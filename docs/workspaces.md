@@ -2,8 +2,10 @@
 
 ## 원본과 역할
 
-Git에 저장된 코드·문서·설정·manifest가 기준이다. 맥북은 개발, API/UI, 모의 SQLite DB를 담당한다.
-연구실은 같은 commit을 checkout하여 학습·평가하고 실행별 artifact를 생성한다.
+Git에 저장된 코드·문서·설정·manifest가 기준이다. 맥북은 개발·UI·모의 SQLite DB를 담당한다.
+연구실은 같은 commit을 checkout하여 학습·평가하고 실행별 artifact를 생성한다. GPU 모델을
+상주시켜 검사하는 첫 API는 연구실 Windows의 `127.0.0.1` 전용이며, 맥북에서 접근하는
+API/UI 연결은 인증·전송 경로를 정한 뒤 진행한다.
 비공개 원격 Git 저장소는 `https://github.com/juuu-sung/defectops`다.
 맥북의 `main`을 코드 기준으로 사용한다.
 
