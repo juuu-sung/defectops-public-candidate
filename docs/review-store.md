@@ -49,5 +49,9 @@ python3 scripts/review_inspections.py history \
 ```
 
 기본 DB는 `artifacts/review/reviews.sqlite3`다. DB와 원본 산출물은 모두 Git 제외 상태다.
-실제 Windows bundle을 맥북으로 옮겨 등록하는 통합 검증은 아직 하지 않았다. 다음 단계는
+2026-09-17 실제 Windows bundle `1977cc17d97c4c3f95d8cc2124e9285d`를 ZIP으로 받아
+맥북에 보관·등록·재검증했다. `inspection.json` SHA-256은
+`968b290d9c4d746810b8a4f0035256a5b632d71c5fde44b9f2f7e4aefd403f5f`, 입력 PNG는
+맥북 원본과 같은 `82bf661fb868a80558fc45f4fc356c96888bf26827005a57aea6aa707e13483a`다.
+`review_revision=0`, `human_verdict=null`이며 사람의 판정은 아직 기록하지 않았다. 다음 단계는
 이 저장소 위에 로컬 작업자 UI를 만들고, 이후 인증된 장비 간 전송 경로를 정하는 것이다.

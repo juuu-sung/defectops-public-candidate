@@ -37,7 +37,8 @@ GT와 겹치는데도 image score 기준에서 탈락했다. FP 1장은 제품 �
 모델을 한 번만 로드하는 [로컬 PatchCore 검사 API](docs/patchcore-local-api.md)를 구현하고
 연구실 Windows에서 실제 이미지·오버레이를 확인했다. 첫 요청 총 902.63 ms, 상주 RAM
 1.891 GiB를 관찰했다. [맥북 로컬 SQLite 검토 이력](docs/review-store.md)도 구현했다.
-실제 Windows 산출물의 맥북 등록과 작업자 UI는 아직 검증·구현 전이다.
+실제 Windows 산출물의 맥북 등록·체크섬 재검증도 완료했다. 작업자 UI와 사람의 검토
+판정 입력은 아직 구현·수행 전이다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
 
 ## 먼저 할 일
@@ -50,8 +51,8 @@ GT와 겹치는데도 image score 기준에서 탈락했다. FP 1장은 제품 �
 5. 단일 이미지 검사·탐색적 오류 분석·모델 1회 로드 warm 속도 측정 완료.
 6. PatchCore fit·평가·오류 분석·warm 측정과 FN/FP contact sheet 판독 완료.
 7. PatchCore 단일 이미지 검사 구현·연구실 Windows smoke test 완료.
-8. 로컬 상주 검사 API의 연구실 Windows smoke test 완료. SQLite 검토 이력 코드를 구현했고
-   실제 산출물 전송·등록 검증 후 UI로 연결한다.
+8. 로컬 상주 검사 API의 연구실 Windows smoke test와 실제 산출물의 맥북 SQLite 등록 완료.
+   다음은 사람이 판정을 남기는 로컬 UI다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.
