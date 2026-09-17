@@ -2,8 +2,9 @@
 
 연구실 Windows에서 생성한 `artifacts/inspections/<inspection_id>/` **전체 폴더**를 안전한
 오프라인 방법으로 맥북에 복사한 뒤 등록한다. Git에는 원본 이미지, 시각화 산출물, SQLite DB를
-넣지 않는다. 등록과 검토는 현재 맥북 로컬 CLI에서만 가능하며 인증된 작업자 UI나 원격 연결은
-아직 없다.
+넣지 않는다. 등록과 검토 이력은 맥북 로컬 CLI에서 관리하며, 등록된 검사 확인과 명시적
+의견 입력은 [로컬 작업자 화면](review-ui.md)에서도 가능하다. 인증된 다중 사용자 서비스나
+원격 연결은 아직 없다.
 
 ## 보존 규칙
 
@@ -53,5 +54,6 @@ python3 scripts/review_inspections.py history \
 맥북에 보관·등록·재검증했다. `inspection.json` SHA-256은
 `968b290d9c4d746810b8a4f0035256a5b632d71c5fde44b9f2f7e4aefd403f5f`, 입력 PNG는
 맥북 원본과 같은 `82bf661fb868a80558fc45f4fc356c96888bf26827005a57aea6aa707e13483a`다.
-`review_revision=0`, `human_verdict=null`이며 사람의 판정은 아직 기록하지 않았다. 다음 단계는
-이 저장소 위에 로컬 작업자 UI를 만들고, 이후 인증된 장비 간 전송 경로를 정하는 것이다.
+`review_revision=0`, `human_verdict=null`이며 사람의 판정은 아직 기록하지 않았다.
+2026-09-18 이 저장소 위에 로컬 작업자 화면을 만들고 실제 등록 검사 이미지 표시를 확인했다.
+다음 단계는 실제 작업자의 수동 검토와, 이후 인증된 장비 간 전송 경로 설계다.

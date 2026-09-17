@@ -1,0 +1,2 @@
+# Mac-local human-review screen. Model inference runs on the separate Windows host.
+streamlit==1.64.0
