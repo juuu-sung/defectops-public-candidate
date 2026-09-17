@@ -2,7 +2,9 @@
 
 연구실 Windows에서 동결된 PatchCore fit/evaluation bundle을 서비스 시작 시 한 번 검증·로드하고,
 요청마다 같은 모델을 재사용한다. 학습·임곗값 조정·새 성능 평가는 하지 않는다. 이 단계는
-**127.0.0.1 로컬 접속 전용**이며 인증·외부 네트워크 공개·SQLite·작업자 UI는 아직 없다.
+**127.0.0.1 로컬 접속 전용**이며 인증·외부 네트워크 공개·작업자 UI는 아직 없다.
+맥북 로컬 SQLite [검토 저장소](review-store.md)는 별도로 구현했지만 이 Windows API와
+직접 연결되지는 않는다.
 
 ## 계약과 안전 범위
 
@@ -53,11 +55,13 @@ Set-Location "C:\개인 프로젝트\defectops"
 $health = Invoke-RestMethod "http://127.0.0.1:8000/healthz"
 $health | ConvertTo-Json -Depth 5
 
+$imagePath = "C:\개인 프로젝트\defectops\data\transistor\test\bent_lead\000.png"
+$pngBytes = [System.IO.File]::ReadAllBytes($imagePath)
 $inspection = Invoke-RestMethod `
     -Method Post `
     -Uri "http://127.0.0.1:8000/v1/inspections" `
     -ContentType "image/png" `
-    -InFile ".\data\transistor\test\bent_lead\000.png"
+    -Body $pngBytes
 
 [ordered]@{
     inspection_id = $inspection.inspection_id
@@ -80,6 +84,9 @@ Start-Process ".\artifacts\inspections\$($inspection.inspection_id)\overlay.png"
 `setup_and_model_load_ms=0`, `automatic_pass_allowed=false`. 동일 이미지는 기존 검사에서
 `REVIEW_REQUIRED`, 점수 약 52.6997, 임곗값 40.7913이었다. 부동소수점 점수 차이는
 검증된 환경 허용 오차 안에서 비교하며, 이 한 장으로 새 성능 지표를 만들지 않는다.
+원본 PNG는 Windows에서 읽기 전용이었다. Windows PowerShell의 `-InFile` 접근에서
+`UnauthorizedAccessException`이 발생했지만 `ReadAllBytes` + `-Body` 전송으로 검사를
+완료했다. 원본 파일의 읽기 전용 속성을 바꿀 필요는 없다.
 
 처음 요청의 GPU 시간이 warm benchmark보다 길 수 있다. JSON의 `total_request_work_ms`는
 HTTP 업로드 시간은 제외하지만 PNG decode·추론·overlay/NPZ 작성·checksum은 포함한다.
@@ -105,12 +112,16 @@ nvidia-smi
 
 `healthz`의 GPU 값은 PyTorch 추적 메모리다. `nvidia-smi`의 프로세스 전체 점유량과 다를
 수 있다. 앞선 warm benchmark의 PyTorch 피크는 allocated 0.35 GiB, reserved 0.39 GiB였다.
-RAM working set은 아직 미측정이며, 실제 운영 예산은 여러 요청 후 다시 측정한다.
+2026-09-17 실제 로컬 API 첫 검사에서 모델 재사용 `true`, 점수 `52.6997`, 판정
+`REVIEW_REQUIRED`, 추론+산출물 작성 총 `902.63 ms`를 확인했다. 서버 시작 시 모델 설정은
+`23006.28 ms`였다. 그 직후 상주 프로세스의 RAM working set은 `1.891 GiB`, PyTorch GPU
+allocated `0.203 GiB`, reserved `0.395 GiB`였다. 이는 한 시점의 사용량이지 피크나
+동시 부하 측정이 아니다. 실제 운영 예산은 여러 요청 후 다시 측정한다.
 
 ## 현재 미구현 범위
 
 - 원격 접속 인증·TLS·네트워크 공개
-- SQLite 검사/검토 이력 및 작업자 승인 상태 전이
+- Windows API와 맥북 SQLite 검토 이력의 연결 및 작업자 승인 상태 전이
 - 장기 보관·삭제 정책, 다중 요청 부하 시험
 - 새 holdout에서 ROI 마스크나 복합 REVIEW 규칙 검증
 
