@@ -54,6 +54,7 @@ python3 scripts/review_inspections.py history \
 맥북에 보관·등록·재검증했다. `inspection.json` SHA-256은
 `968b290d9c4d746810b8a4f0035256a5b632d71c5fde44b9f2f7e4aefd403f5f`, 입력 PNG는
 맥북 원본과 같은 `82bf661fb868a80558fc45f4fc356c96888bf26827005a57aea6aa707e13483a`다.
-`review_revision=0`, `human_verdict=null`이며 사람의 판정은 아직 기록하지 않았다.
-2026-09-18 이 저장소 위에 로컬 작업자 화면을 만들고 실제 등록 검사 이미지 표시를 확인했다.
-다음 단계는 실제 작업자의 수동 검토와, 이후 인증된 장비 간 전송 경로 설계다.
+등록 당시에는 `review_revision=0`, `human_verdict=null`이었다. 2026-09-18 이 저장소
+위에 로컬 작업자 화면을 만들고 실제 등록 검사 이미지 표시를 확인했다. 이후 사람의 실제
+검토 의견 1건이 로컬 DB에 추가되었다. 이름·의견 원문은 Git에 포함하지 않는다.
+다음 단계는 [모의 SOP 검색](mock-sop.md)과 이후 승인 상태·모의 티켓 계약 설계다.

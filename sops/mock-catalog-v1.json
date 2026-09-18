@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "purpose": "simulation_only",
+  "documents": [
+    {
+      "document_id": "DEMO-TR-BENT",
+      "revision": 1,
+      "status": "retired",
+      "product": "transistor",
+      "defect_type": "bent_lead",
+      "title": "[폐기된 모의 문서] 리드 굽힘 관찰",
+      "valid_from": "2026-01-01",
+      "valid_to": "2026-08-31",
+      "sections": [
+        {"section_id": "OBSERVE", "text": "폐기된 예시 문구로, 현재 검색 결과에 표시해서는 안 된다."}
+      ]
+    },
+    {
+      "document_id": "DEMO-TR-BENT",
+      "revision": 2,
+      "status": "active",
+      "product": "transistor",
+      "defect_type": "bent_lead",
+      "title": "[모의 문서] 리드 굽힘 관찰 기록",
+      "valid_from": "2026-09-01",
+      "valid_to": null,
+      "sections": [
+        {"section_id": "OBSERVE", "text": "원본 사진에서 굽어 보이는 리드의 위치와 검사 ID를 기록한다. 오버레이의 색만으로 결함이나 전기적 접속 상태를 확정하지 않는다."},
+        {"section_id": "LIMIT", "text": "이 문서는 화면 흐름을 시험하기 위한 모의 근거다. 실제 생산품의 합격·폐기·설비 조치를 지시하지 않으며, 현장 조치는 별도로 승인된 문서와 담당자 확인이 필요하다."}
+      ]
+    },
+    {
+      "document_id": "DEMO-TR-CUT",
+      "revision": 1,
+      "status": "active",
+      "product": "transistor",
+      "defect_type": "cut_lead",
+      "title": "[모의 문서] 리드 절단 의심 관찰 기록",
+      "valid_from": "2026-09-01",
+      "valid_to": null,
+      "sections": [
+        {"section_id": "OBSERVE", "text": "원본 사진에서 리드가 짧거나 일부가 보이지 않는 위치와 검사 ID를 기록한다. 사진만으로 절단 원인이나 기능 상태를 단정하지 않는다."},
+        {"section_id": "LIMIT", "text": "이 문서는 화면 흐름을 시험하기 위한 모의 근거다. 실제 생산품의 합격·폐기·설비 조치를 지시하지 않으며, 현장 조치는 별도로 승인된 문서와 담당자 확인이 필요하다."}
+      ]
+    },
+    {
+      "document_id": "DEMO-TR-CASE",
+      "revision": 1,
+      "status": "active",
+      "product": "transistor",
+      "defect_type": "damaged_case",
+      "title": "[모의 문서] 케이스 손상 의심 관찰 기록",
+      "valid_from": "2026-09-01",
+      "valid_to": null,
+      "sections": [
+        {"section_id": "OBSERVE", "text": "원본 사진에서 케이스 표면의 손상처럼 보이는 범위와 검사 ID를 기록한다. 히트맵 반응만으로 손상 원인을 단정하지 않는다."},
+        {"section_id": "LIMIT", "text": "이 문서는 화면 흐름을 시험하기 위한 모의 근거다. 실제 생산품의 합격·폐기·설비 조치를 지시하지 않으며, 현장 조치는 별도로 승인된 문서와 담당자 확인이 필요하다."}
+      ]
+    },
+    {
+      "document_id": "DEMO-TR-PLACED",
+      "revision": 1,
+      "status": "active",
+      "product": "transistor",
+      "defect_type": "misplaced",
+      "title": "[모의 문서] 부품 위치 이상 의심 관찰 기록",
+      "valid_from": "2026-09-01",
+      "valid_to": null,
+      "sections": [
+        {"section_id": "OBSERVE", "text": "원본 사진에서 부품 위치가 주변 기준과 다르게 보이는 범위와 검사 ID를 기록한다. 영상만으로 장비 정렬 문제를 원인으로 확정하지 않는다."},
+        {"section_id": "LIMIT", "text": "이 문서는 화면 흐름을 시험하기 위한 모의 근거다. 실제 생산품의 합격·폐기·설비 조치를 지시하지 않으며, 현장 조치는 별도로 승인된 문서와 담당자 확인이 필요하다."}
+      ]
+    }
+  ]
+}

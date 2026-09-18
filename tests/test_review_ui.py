@@ -162,6 +162,43 @@ class ReviewUITests(unittest.TestCase):
             self.assertIn("--server.port=8502", command)
             self.assertIn("--server.enableXsrfProtection=true", command)
 
+    def test_mock_sop_requires_explicit_type_after_human_review(self):
+        self.store.add_review(
+            "case-1",
+            expected_revision=0,
+            reviewer="operator-test",
+            human_verdict="ANOMALY_VISIBLE",
+            note="A visible shape difference needs another look.",
+        )
+        app = self._app()
+        self.assertEqual(len(app.exception), 0)
+        self.assertEqual(app.selectbox[-1].value, "UNKNOWN")
+        self.assertFalse(any("DEMO-TR-BENT@r2#OBSERVE" in x.value for x in app.caption))
+        with patch.dict(os.environ, {"DEFECTOPS_REVIEW_DB": str(self.store.database_path)}):
+            app.button[-1].click().run()
+        self.assertTrue(any("유형을 모르면" in warning.value for warning in app.warning))
+
+        app.selectbox[-1].set_value("bent_lead")
+        with patch.dict(os.environ, {"DEFECTOPS_REVIEW_DB": str(self.store.database_path)}):
+            app.button[-1].click().run()
+        self.assertEqual(len(app.exception), 0)
+        self.assertTrue(any("DEMO-TR-BENT@r2#OBSERVE" in x.value for x in app.caption))
+        self.assertTrue(any("가상 문서" in x.value for x in app.caption))
+        self.assertEqual(len(self.store.review_history("case-1")), 1)
+
+    def test_no_sop_form_when_latest_human_review_is_uncertain(self):
+        self.store.add_review(
+            "case-1",
+            expected_revision=0,
+            reviewer="operator-test",
+            human_verdict="UNCERTAIN",
+            note="The image alone is not conclusive.",
+        )
+        app = self._app()
+        self.assertEqual(len(app.exception), 0)
+        self.assertEqual(len(app.selectbox), 2)
+        self.assertTrue(any("근거를 제시하지 않습니다" in message.value for message in app.info))
+
 
 if __name__ == "__main__":
     unittest.main()

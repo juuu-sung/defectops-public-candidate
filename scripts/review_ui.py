@@ -6,18 +6,21 @@ from __future__ import annotations
 import io
 import os
 import sys
+from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import streamlit as st
 
+from defectops.mock_sop import DEFECT_LABELS, find_mock_sop, load_mock_catalog
 from defectops.review_store import ReviewStore
 from defectops.review_ui_data import load_review_case
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DB = PROJECT_ROOT / "artifacts" / "review" / "reviews.sqlite3"
+MOCK_CATALOG = PROJECT_ROOT / "sops" / "mock-catalog-v1.json"
 DB_PATH = Path(os.environ.get("DEFECTOPS_REVIEW_DB", str(DEFAULT_DB)))
 VERDICT_LABELS = {
     "ANOMALY_VISIBLE": "이상 징후가 보임",
@@ -162,6 +165,62 @@ def render() -> None:
             f"#{event['revision']} · {VERDICT_LABELS[event['human_verdict']]} "
             f"· {event['reviewer']} · {event['recorded_at']}\n{event['note']}"
         )
+
+    st.subheader("모의 SOP 근거 찾기")
+    st.caption(
+        "화면 흐름을 시험하기 위한 가상 문서입니다. 기존 관찰 문장에서 결함 유형이나 원인을 "
+        "자동 추측하지 않으며, 실제 현장 절차로 사용할 수 없습니다. "
+        "유형 선택과 검색 결과는 검토 이력에 저장되지 않습니다."
+    )
+    latest = item["latest_review"]
+    if latest is None:
+        st.info("사람의 검토 의견이 저장된 뒤에만 모의 문서를 찾을 수 있습니다.")
+        return
+    if latest["human_verdict"] != "ANOMALY_VISIBLE":
+        st.info("최신 검토 의견이 '이상 징후가 보임'이 아니므로 모의 조치 근거를 제시하지 않습니다.")
+        return
+
+    with st.form(f"mock_sop_form_{inspection_id}_{item['review_revision']}"):
+        defect_type = st.selectbox(
+            "사람이 직접 선택한 의심 유형",
+            options=list(DEFECT_LABELS),
+            format_func=lambda value: DEFECT_LABELS[value],
+            key=f"mock_sop_type_{inspection_id}_{item['review_revision']}",
+        )
+        requested = st.form_submit_button("모의 SOP 근거 찾기")
+    if not requested:
+        return
+    try:
+        catalog = load_mock_catalog(MOCK_CATALOG)
+        result = find_mock_sop(
+            catalog,
+            product=record["category"],
+            defect_type=defect_type,
+            human_verdict=latest["human_verdict"],
+            as_of=date.today(),
+        )
+    except (OSError, ValueError) as exc:
+        st.error(f"유효한 모의 문서를 확인할 수 없어 검색 결과를 표시하지 않습니다: {exc}")
+        return
+    if result["status"] == "defect_type_required":
+        st.warning("유형을 모르면 문서를 임의로 연결하지 않습니다. '모름'을 유지하고 확인을 보류하세요.")
+        return
+    if result["status"] != "found_simulation_only":
+        st.warning("해당 품목·유형·날짜에 유효한 모의 문서가 없습니다. 조치를 제안하지 않습니다.")
+        return
+
+    st.success(f"모의 문서: {result['title']} · 개정 {result['revision']}")
+    st.caption(
+        f"검색 기준: {result['product']} · {DEFECT_LABELS[result['defect_type']]} "
+        f"· 기준일 {result['as_of']} · 유효 기간 {result['valid_from']}~"
+        f"{result['valid_to'] or '종료일 없음'}"
+    )
+    for source in result["sources"]:
+        st.info(source["text"])
+        st.caption(f"원문 근거: {source['citation_id']}")
+    st.warning("이 내용으로 실제 제품 판정·설비 조치·티켓 발행을 하지 않습니다.")
+    with st.expander("모의 문서 파일 무결성 표시"):
+        st.code(f"SHA-256: {result['catalog_sha256']}")
 
 
 render()
