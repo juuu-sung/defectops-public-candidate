@@ -215,6 +215,67 @@ class ReviewUITests(unittest.TestCase):
         self.assertEqual(len(app.selectbox), 2)
         self.assertTrue(any("근거를 제시하지 않습니다" in message.value for message in app.info))
 
+    def test_mock_ticket_flow_requires_three_separate_confirmed_steps(self):
+        self.store.add_review(
+            "case-1",
+            expected_revision=0,
+            reviewer="operator-test",
+            human_verdict="ANOMALY_VISIBLE",
+            note="Left metal leg is not seated in the hole.",
+        )
+        self.store.add_sop_evidence(
+            "case-1",
+            expected_review_revision=1,
+            selected_by="operator-test",
+            defect_type="bent_lead",
+            result={
+                "status": "found_simulation_only",
+                "product": "transistor",
+                "defect_type": "bent_lead",
+                "as_of": "2026-09-21",
+                "document_id": "DEMO-TR-BENT",
+                "revision": 2,
+                "catalog_sha256": "c" * 64,
+                "sources": [
+                    {
+                        "citation_id": "DEMO-TR-BENT@r2#OBSERVE",
+                        "text": "Synthetic source snapshot.",
+                    }
+                ],
+            },
+        )
+        app = self._app()
+        self.assertTrue(any("조치 초안 없음" in message.value for message in app.info))
+        with patch.dict(os.environ, {"DEFECTOPS_REVIEW_DB": str(self.store.database_path)}):
+            app.button[-1].click().run()
+        self.assertEqual(self.store.action_draft_history("case-1"), [])
+        self.assertTrue(any("동의" in message.value for message in app.error))
+
+        app.checkbox[-1].set_value(True)
+        with patch.dict(os.environ, {"DEFECTOPS_REVIEW_DB": str(self.store.database_path)}):
+            app.button[-1].click().run()
+        drafts = self.store.action_draft_history("case-1")
+        self.assertEqual(len(drafts), 1)
+        self.assertTrue(any("승인 대기" in message.value for message in app.info))
+
+        app.selectbox[-1].set_value("APPROVED_FOR_MOCK_TICKET")
+        app.text_area[-1].set_value("Local workflow test only.")
+        app.checkbox[-1].set_value(True)
+        with patch.dict(os.environ, {"DEFECTOPS_REVIEW_DB": str(self.store.database_path)}):
+            app.button[-1].click().run()
+        approvals = self.store.action_approval_history("case-1")
+        self.assertEqual(len(approvals), 1)
+        self.assertEqual(approvals[0]["decision"], "APPROVED_FOR_MOCK_TICKET")
+        self.assertEqual(self.store.mock_ticket_history("case-1"), [])
+
+        app.checkbox[-1].set_value(True)
+        with patch.dict(os.environ, {"DEFECTOPS_REVIEW_DB": str(self.store.database_path)}):
+            app.button[-1].click().run()
+        tickets = self.store.mock_ticket_history("case-1")
+        self.assertEqual(len(tickets), 1)
+        self.assertFalse(tickets[0]["payload"]["external_delivery"])
+        self.assertTrue(any("모의 티켓 발행 완료" in message.value for message in app.success))
+
 
 if __name__ == "__main__":
     unittest.main()

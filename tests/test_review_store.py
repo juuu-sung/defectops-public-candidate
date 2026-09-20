@@ -277,6 +277,123 @@ class ReviewStoreTests(unittest.TestCase):
                 result=self.mock_sop_result(),
             )
 
+    def test_local_mock_ticket_requires_evidence_draft_and_explicit_approval(self):
+        bundle, _ = self.make_bundle()
+        self.store.register(bundle)
+        self.store.add_review(
+            "inspection-1",
+            expected_revision=0,
+            reviewer="operator-1",
+            human_verdict="ANOMALY_VISIBLE",
+            note="Left metal leg is not seated in the hole.",
+        )
+        with self.assertRaisesRegex(ValueError, "SOP evidence"):
+            self.store.create_action_draft(
+                "inspection-1", expected_review_revision=1, created_by="operator-1"
+            )
+        self.store.add_sop_evidence(
+            "inspection-1",
+            expected_review_revision=1,
+            selected_by="operator-1",
+            defect_type="bent_lead",
+            result=self.mock_sop_result(),
+        )
+        draft = self.store.create_action_draft(
+            "inspection-1", expected_review_revision=1, created_by="operator-1"
+        )
+        self.assertEqual(draft["status"], "recorded")
+        self.assertIn("제품 합격·폐기·재작업·설비 변경을 수행하지 않는다", draft["action_text"])
+        repeated_draft = self.store.create_action_draft(
+            "inspection-1", expected_review_revision=1, created_by="operator-1"
+        )
+        self.assertEqual(repeated_draft["status"], "already_recorded")
+        with self.assertRaisesRegex(ValueError, "already exists"):
+            self.store.create_action_draft(
+                "inspection-1", expected_review_revision=1, created_by="another-operator"
+            )
+        with self.assertRaisesRegex(ValueError, "APPROVED_FOR_MOCK_TICKET"):
+            self.store.issue_mock_ticket(
+                "inspection-1",
+                expected_review_revision=1,
+                approval_event_id=999,
+                issued_by="operator-1",
+            )
+        approval = self.store.decide_action_draft(
+            "inspection-1",
+            expected_review_revision=1,
+            action_draft_event_id=draft["event_id"],
+            approver="operator-1",
+            decision="APPROVED_FOR_MOCK_TICKET",
+            note="Local workflow test only.",
+        )
+        self.assertEqual(approval["status"], "recorded")
+        ticket = self.store.issue_mock_ticket(
+            "inspection-1",
+            expected_review_revision=1,
+            approval_event_id=approval["event_id"],
+            issued_by="operator-1",
+        )
+        self.assertEqual(ticket["status"], "recorded")
+        self.assertTrue(ticket["ticket_id"].startswith("MOCK-"))
+        self.assertTrue(ticket["payload"]["simulation_only"])
+        self.assertFalse(ticket["payload"]["external_delivery"])
+        self.assertEqual(ticket["payload"]["review"]["revision"], 1)
+        self.assertEqual(ticket["payload"]["sop_evidence"]["document_id"], "DEMO-TR-BENT")
+        self.assertEqual(len(ticket["payload_sha256"]), 64)
+        repeated_ticket = self.store.issue_mock_ticket(
+            "inspection-1",
+            expected_review_revision=1,
+            approval_event_id=approval["event_id"],
+            issued_by="operator-1",
+        )
+        self.assertEqual(repeated_ticket["status"], "already_recorded")
+        self.assertEqual(len(self.store.action_draft_history("inspection-1")), 1)
+        self.assertEqual(len(self.store.action_approval_history("inspection-1")), 1)
+        self.assertEqual(len(self.store.mock_ticket_history("inspection-1")), 1)
+        with sqlite3.connect(self.store.database_path) as connection:
+            with self.assertRaisesRegex(sqlite3.IntegrityError, "append-only action draft"):
+                connection.execute("UPDATE action_draft_events SET created_by = 'changed'")
+            with self.assertRaisesRegex(sqlite3.IntegrityError, "append-only action approval"):
+                connection.execute("DELETE FROM action_approval_events")
+            with self.assertRaisesRegex(sqlite3.IntegrityError, "append-only mock ticket"):
+                connection.execute("UPDATE mock_ticket_events SET issued_by = 'changed'")
+
+    def test_rejected_action_cannot_create_mock_ticket(self):
+        bundle, _ = self.make_bundle()
+        self.store.register(bundle)
+        self.store.add_review(
+            "inspection-1",
+            expected_revision=0,
+            reviewer="operator",
+            human_verdict="ANOMALY_VISIBLE",
+            note="Visible anomaly.",
+        )
+        self.store.add_sop_evidence(
+            "inspection-1",
+            expected_review_revision=1,
+            selected_by="operator",
+            defect_type="bent_lead",
+            result=self.mock_sop_result(),
+        )
+        draft = self.store.create_action_draft(
+            "inspection-1", expected_review_revision=1, created_by="operator"
+        )
+        rejection = self.store.decide_action_draft(
+            "inspection-1",
+            expected_review_revision=1,
+            action_draft_event_id=draft["event_id"],
+            approver="operator",
+            decision="REJECTED",
+            note="Needs a new human review.",
+        )
+        with self.assertRaisesRegex(ValueError, "APPROVED_FOR_MOCK_TICKET"):
+            self.store.issue_mock_ticket(
+                "inspection-1",
+                expected_review_revision=1,
+                approval_event_id=rejection["event_id"],
+                issued_by="operator",
+            )
+
     def test_schema_one_database_migrates_without_losing_reviews(self):
         bundle, _ = self.make_bundle()
         self.store.register(bundle)
@@ -296,7 +413,45 @@ class ReviewStoreTests(unittest.TestCase):
         self.assertEqual(len(self.store.review_history("inspection-1")), 1)
         self.assertEqual(self.store.sop_evidence_history("inspection-1"), [])
         with sqlite3.connect(self.store.database_path) as connection:
-            self.assertEqual(connection.execute("PRAGMA user_version").fetchone()[0], 2)
+            self.assertEqual(connection.execute("PRAGMA user_version").fetchone()[0], 3)
+
+    def test_schema_two_database_migrates_to_mock_ticket_workflow(self):
+        bundle, _ = self.make_bundle()
+        self.store.register(bundle)
+        self.store.add_review(
+            "inspection-1",
+            expected_revision=0,
+            reviewer="operator",
+            human_verdict="ANOMALY_VISIBLE",
+            note="Visible anomaly.",
+        )
+        self.store.add_sop_evidence(
+            "inspection-1",
+            expected_review_revision=1,
+            selected_by="operator",
+            defect_type="bent_lead",
+            result=self.mock_sop_result(),
+        )
+        with sqlite3.connect(self.store.database_path) as connection:
+            connection.execute("DROP TRIGGER action_draft_events_no_update")
+            connection.execute("DROP TRIGGER action_draft_events_no_delete")
+            connection.execute("DROP TRIGGER action_approval_events_no_update")
+            connection.execute("DROP TRIGGER action_approval_events_no_delete")
+            connection.execute("DROP TRIGGER mock_ticket_events_no_update")
+            connection.execute("DROP TRIGGER mock_ticket_events_no_delete")
+            connection.execute("DROP TABLE mock_ticket_events")
+            connection.execute("DROP TABLE action_approval_events")
+            connection.execute("DROP TABLE action_draft_events")
+            connection.execute("PRAGMA user_version = 2")
+        self.store.initialize()
+        self.assertEqual(len(self.store.review_history("inspection-1")), 1)
+        self.assertEqual(len(self.store.sop_evidence_history("inspection-1")), 1)
+        draft = self.store.create_action_draft(
+            "inspection-1", expected_review_revision=1, created_by="operator"
+        )
+        self.assertEqual(draft["status"], "recorded")
+        with sqlite3.connect(self.store.database_path) as connection:
+            self.assertEqual(connection.execute("PRAGMA user_version").fetchone()[0], 3)
 
 
 if __name__ == "__main__":

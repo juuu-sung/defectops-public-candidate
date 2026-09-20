@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import re
@@ -23,6 +24,7 @@ ARTIFACT_NAMES = {
 }
 HUMAN_VERDICTS = frozenset({"ANOMALY_VISIBLE", "NO_ANOMALY_VISIBLE", "UNCERTAIN"})
 SOP_DEFECT_TYPES = frozenset({"bent_lead", "cut_lead", "damaged_case", "misplaced"})
+ACTION_APPROVAL_DECISIONS = frozenset({"APPROVED_FOR_MOCK_TICKET", "REJECTED"})
 MAX_ARTIFACT_BYTES = 200 * 1024 * 1024
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 SOP_ID_PATTERN = re.compile(r"[A-Z0-9][A-Z0-9_-]{1,63}\Z")
@@ -144,7 +146,7 @@ class ReviewStore:
         try:
             connection.execute("PRAGMA foreign_keys = ON")
             version = connection.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1, 2):
+            if version not in (0, 1, 2, 3):
                 raise ValueError(f"Unsupported review database schema version: {version}")
             connection.executescript(
                 """
@@ -189,6 +191,49 @@ class ReviewStore:
                     FOREIGN KEY(inspection_id, review_revision)
                         REFERENCES review_events(inspection_id, revision)
                 );
+                CREATE TABLE IF NOT EXISTS action_draft_events (
+                    event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    inspection_id TEXT NOT NULL,
+                    review_revision INTEGER NOT NULL CHECK(review_revision > 0),
+                    created_by TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    action_text TEXT NOT NULL,
+                    recorded_at TEXT NOT NULL,
+                    UNIQUE(inspection_id, review_revision),
+                    FOREIGN KEY(inspection_id, review_revision)
+                        REFERENCES sop_evidence_events(inspection_id, review_revision)
+                );
+                CREATE TABLE IF NOT EXISTS action_approval_events (
+                    event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    inspection_id TEXT NOT NULL,
+                    review_revision INTEGER NOT NULL CHECK(review_revision > 0),
+                    action_draft_event_id INTEGER NOT NULL UNIQUE
+                        REFERENCES action_draft_events(event_id),
+                    approver TEXT NOT NULL,
+                    decision TEXT NOT NULL CHECK(
+                        decision IN ('APPROVED_FOR_MOCK_TICKET', 'REJECTED')
+                    ),
+                    note TEXT NOT NULL,
+                    recorded_at TEXT NOT NULL,
+                    UNIQUE(inspection_id, review_revision),
+                    FOREIGN KEY(inspection_id, review_revision)
+                        REFERENCES action_draft_events(inspection_id, review_revision)
+                );
+                CREATE TABLE IF NOT EXISTS mock_ticket_events (
+                    event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ticket_id TEXT NOT NULL UNIQUE,
+                    inspection_id TEXT NOT NULL,
+                    review_revision INTEGER NOT NULL CHECK(review_revision > 0),
+                    approval_event_id INTEGER NOT NULL UNIQUE
+                        REFERENCES action_approval_events(event_id),
+                    issued_by TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    payload_sha256 TEXT NOT NULL,
+                    recorded_at TEXT NOT NULL,
+                    UNIQUE(inspection_id, review_revision),
+                    FOREIGN KEY(inspection_id, review_revision)
+                        REFERENCES action_approval_events(inspection_id, review_revision)
+                );
                 CREATE TRIGGER IF NOT EXISTS inspections_no_update
                     BEFORE UPDATE ON inspections BEGIN SELECT RAISE(ABORT, 'immutable inspection'); END;
                 CREATE TRIGGER IF NOT EXISTS inspections_no_delete
@@ -203,7 +248,25 @@ class ReviewStore:
                 CREATE TRIGGER IF NOT EXISTS sop_evidence_events_no_delete
                     BEFORE DELETE ON sop_evidence_events
                     BEGIN SELECT RAISE(ABORT, 'append-only SOP evidence'); END;
-                PRAGMA user_version = 2;
+                CREATE TRIGGER IF NOT EXISTS action_draft_events_no_update
+                    BEFORE UPDATE ON action_draft_events
+                    BEGIN SELECT RAISE(ABORT, 'append-only action draft'); END;
+                CREATE TRIGGER IF NOT EXISTS action_draft_events_no_delete
+                    BEFORE DELETE ON action_draft_events
+                    BEGIN SELECT RAISE(ABORT, 'append-only action draft'); END;
+                CREATE TRIGGER IF NOT EXISTS action_approval_events_no_update
+                    BEFORE UPDATE ON action_approval_events
+                    BEGIN SELECT RAISE(ABORT, 'append-only action approval'); END;
+                CREATE TRIGGER IF NOT EXISTS action_approval_events_no_delete
+                    BEFORE DELETE ON action_approval_events
+                    BEGIN SELECT RAISE(ABORT, 'append-only action approval'); END;
+                CREATE TRIGGER IF NOT EXISTS mock_ticket_events_no_update
+                    BEFORE UPDATE ON mock_ticket_events
+                    BEGIN SELECT RAISE(ABORT, 'append-only mock ticket'); END;
+                CREATE TRIGGER IF NOT EXISTS mock_ticket_events_no_delete
+                    BEFORE DELETE ON mock_ticket_events
+                    BEGIN SELECT RAISE(ABORT, 'append-only mock ticket'); END;
+                PRAGMA user_version = 3;
                 """
             )
         finally:
@@ -526,6 +589,352 @@ class ReviewStore:
             for row in rows:
                 item = dict(row)
                 item["sources"] = json.loads(item.pop("sources_json"))
+                result.append(item)
+            return result
+        finally:
+            connection.close()
+
+    @staticmethod
+    def _actor(value: str, label: str) -> str:
+        if not isinstance(value, str):
+            raise ValueError(f"{label} must be text")
+        value = value.strip()
+        if not 1 <= len(value) <= 80 or any(char in value for char in "\r\n"):
+            raise ValueError(f"{label} must be 1–80 characters on one line")
+        return value
+
+    @staticmethod
+    def _verified_current_revision(connection: sqlite3.Connection, inspection_id: str) -> int:
+        inspection = connection.execute(
+            "SELECT bundle_path, inspection_json_sha256, status FROM inspections "
+            "WHERE inspection_id = ?",
+            (inspection_id,),
+        ).fetchone()
+        if inspection is None:
+            raise KeyError(f"Unknown inspection ID: {inspection_id}")
+        if inspection["status"] != "completed":
+            raise ValueError("Failed inspections cannot enter the mock action workflow")
+        _, current_sha256 = validate_bundle(Path(inspection["bundle_path"]))
+        if current_sha256 != inspection["inspection_json_sha256"]:
+            raise ValueError("Registered inspection JSON was changed after import")
+        return connection.execute(
+            "SELECT COALESCE(MAX(revision), 0) FROM review_events WHERE inspection_id = ?",
+            (inspection_id,),
+        ).fetchone()[0]
+
+    def create_action_draft(
+        self,
+        inspection_id: str,
+        *,
+        expected_review_revision: int,
+        created_by: str,
+    ) -> dict[str, Any]:
+        """Create one conservative, simulation-only field-check draft."""
+        if (
+            isinstance(expected_review_revision, bool)
+            or not isinstance(expected_review_revision, int)
+            or expected_review_revision < 1
+        ):
+            raise ValueError("expected_review_revision must be a positive integer")
+        created_by = self._actor(created_by, "created_by")
+        title = "[모의] 현장 상태 재확인 요청"
+        action_text = (
+            "원본 사진과 사람의 관찰 기록을 바탕으로 표시된 부품 위치와 금속 다리(리드)의 "
+            "삽입 상태를 현장 담당자가 별도로 확인하고, 확인 결과만 기록한다. 이 초안으로 "
+            "제품 합격·폐기·재작업·설비 변경을 수행하지 않는다."
+        )
+        with self._write() as connection:
+            current_revision = self._verified_current_revision(connection, inspection_id)
+            if current_revision != expected_review_revision:
+                raise ValueError(f"Review revision conflict: current revision is {current_revision}")
+            evidence = connection.execute(
+                "SELECT event_id FROM sop_evidence_events "
+                "WHERE inspection_id = ? AND review_revision = ?",
+                (inspection_id, expected_review_revision),
+            ).fetchone()
+            if evidence is None:
+                raise ValueError("A saved SOP evidence snapshot is required before an action draft")
+            existing = connection.execute(
+                "SELECT * FROM action_draft_events "
+                "WHERE inspection_id = ? AND review_revision = ?",
+                (inspection_id, expected_review_revision),
+            ).fetchone()
+            if existing is not None:
+                if existing["created_by"] != created_by:
+                    raise ValueError("An action draft already exists for this review revision")
+                event = dict(existing)
+                event["status"] = "already_recorded"
+                return event
+            recorded_at = _utc_now()
+            cursor = connection.execute(
+                """INSERT INTO action_draft_events
+                   (inspection_id, review_revision, created_by, title, action_text, recorded_at)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (
+                    inspection_id,
+                    expected_review_revision,
+                    created_by,
+                    title,
+                    action_text,
+                    recorded_at,
+                ),
+            )
+            return {
+                "status": "recorded",
+                "event_id": cursor.lastrowid,
+                "inspection_id": inspection_id,
+                "review_revision": expected_review_revision,
+                "created_by": created_by,
+                "title": title,
+                "action_text": action_text,
+                "recorded_at": recorded_at,
+            }
+
+    def action_draft_history(self, inspection_id: str) -> list[dict[str, Any]]:
+        self.get_inspection(inspection_id)
+        connection = self._connect()
+        try:
+            rows = connection.execute(
+                """SELECT event_id, review_revision, created_by, title, action_text, recorded_at
+                   FROM action_draft_events WHERE inspection_id = ? ORDER BY review_revision""",
+                (inspection_id,),
+            ).fetchall()
+            return [dict(row) for row in rows]
+        finally:
+            connection.close()
+
+    def decide_action_draft(
+        self,
+        inspection_id: str,
+        *,
+        expected_review_revision: int,
+        action_draft_event_id: int,
+        approver: str,
+        decision: str,
+        note: str,
+    ) -> dict[str, Any]:
+        """Append a local mock-workflow approval decision for one immutable draft."""
+        if decision not in ACTION_APPROVAL_DECISIONS:
+            raise ValueError("Unsupported action approval decision")
+        if isinstance(action_draft_event_id, bool) or not isinstance(action_draft_event_id, int):
+            raise ValueError("action_draft_event_id must be an integer")
+        approver = self._actor(approver, "approver")
+        if not isinstance(note, str) or not 1 <= len(note.strip()) <= 1000:
+            raise ValueError("Approval note must be 1–1000 characters")
+        note = note.strip()
+        with self._write() as connection:
+            current_revision = self._verified_current_revision(connection, inspection_id)
+            if current_revision != expected_review_revision:
+                raise ValueError(f"Review revision conflict: current revision is {current_revision}")
+            draft = connection.execute(
+                "SELECT * FROM action_draft_events WHERE event_id = ? AND inspection_id = ? "
+                "AND review_revision = ?",
+                (action_draft_event_id, inspection_id, expected_review_revision),
+            ).fetchone()
+            if draft is None:
+                raise ValueError("The action draft does not match the current review revision")
+            existing = connection.execute(
+                "SELECT * FROM action_approval_events WHERE action_draft_event_id = ?",
+                (action_draft_event_id,),
+            ).fetchone()
+            if existing is not None:
+                material = {"approver": approver, "decision": decision, "note": note}
+                if all(existing[key] == value for key, value in material.items()):
+                    event = dict(existing)
+                    event["status"] = "already_recorded"
+                    return event
+                raise ValueError("An approval decision already exists for this action draft")
+            recorded_at = _utc_now()
+            cursor = connection.execute(
+                """INSERT INTO action_approval_events
+                   (inspection_id, review_revision, action_draft_event_id,
+                    approver, decision, note, recorded_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    inspection_id,
+                    expected_review_revision,
+                    action_draft_event_id,
+                    approver,
+                    decision,
+                    note,
+                    recorded_at,
+                ),
+            )
+            return {
+                "status": "recorded",
+                "event_id": cursor.lastrowid,
+                "inspection_id": inspection_id,
+                "review_revision": expected_review_revision,
+                "action_draft_event_id": action_draft_event_id,
+                "approver": approver,
+                "decision": decision,
+                "note": note,
+                "recorded_at": recorded_at,
+            }
+
+    def action_approval_history(self, inspection_id: str) -> list[dict[str, Any]]:
+        self.get_inspection(inspection_id)
+        connection = self._connect()
+        try:
+            rows = connection.execute(
+                """SELECT event_id, review_revision, action_draft_event_id,
+                          approver, decision, note, recorded_at
+                   FROM action_approval_events WHERE inspection_id = ? ORDER BY review_revision""",
+                (inspection_id,),
+            ).fetchall()
+            return [dict(row) for row in rows]
+        finally:
+            connection.close()
+
+    def issue_mock_ticket(
+        self,
+        inspection_id: str,
+        *,
+        expected_review_revision: int,
+        approval_event_id: int,
+        issued_by: str,
+    ) -> dict[str, Any]:
+        """Create a local immutable ticket snapshot; never deliver it externally."""
+        if (
+            isinstance(expected_review_revision, bool)
+            or not isinstance(expected_review_revision, int)
+            or expected_review_revision < 1
+        ):
+            raise ValueError("expected_review_revision must be a positive integer")
+        if isinstance(approval_event_id, bool) or not isinstance(approval_event_id, int):
+            raise ValueError("approval_event_id must be an integer")
+        issued_by = self._actor(issued_by, "issued_by")
+        with self._write() as connection:
+            current_revision = self._verified_current_revision(connection, inspection_id)
+            if current_revision != expected_review_revision:
+                raise ValueError(f"Review revision conflict: current revision is {current_revision}")
+            approval = connection.execute(
+                "SELECT * FROM action_approval_events WHERE event_id = ? AND inspection_id = ? "
+                "AND review_revision = ?",
+                (approval_event_id, inspection_id, expected_review_revision),
+            ).fetchone()
+            if approval is None or approval["decision"] != "APPROVED_FOR_MOCK_TICKET":
+                raise ValueError("An explicit APPROVED_FOR_MOCK_TICKET decision is required")
+            existing = connection.execute(
+                "SELECT * FROM mock_ticket_events WHERE approval_event_id = ?",
+                (approval_event_id,),
+            ).fetchone()
+            if existing is not None:
+                if existing["issued_by"] != issued_by:
+                    raise ValueError("A mock ticket already exists for this approval")
+                event = dict(existing)
+                event["status"] = "already_recorded"
+                payload_json = event.pop("payload_json")
+                if hashlib.sha256(payload_json.encode("utf-8")).hexdigest() != event["payload_sha256"]:
+                    raise ValueError("Stored mock ticket payload checksum differs")
+                event["payload"] = json.loads(payload_json)
+                return event
+            inspection = connection.execute(
+                "SELECT record_json FROM inspections WHERE inspection_id = ?",
+                (inspection_id,),
+            ).fetchone()
+            review = connection.execute(
+                "SELECT * FROM review_events WHERE inspection_id = ? AND revision = ?",
+                (inspection_id, expected_review_revision),
+            ).fetchone()
+            evidence = connection.execute(
+                "SELECT * FROM sop_evidence_events WHERE inspection_id = ? AND review_revision = ?",
+                (inspection_id, expected_review_revision),
+            ).fetchone()
+            draft = connection.execute(
+                "SELECT * FROM action_draft_events WHERE event_id = ?",
+                (approval["action_draft_event_id"],),
+            ).fetchone()
+            ticket_suffix = hashlib.sha256(
+                f"{inspection_id}:{expected_review_revision}".encode("utf-8")
+            ).hexdigest()[:12].upper()
+            ticket_id = f"MOCK-{ticket_suffix}"
+            payload = {
+                "schema_version": 1,
+                "simulation_only": True,
+                "external_delivery": False,
+                "ticket_id": ticket_id,
+                "inspection_id": inspection_id,
+                "review": {
+                    "revision": review["revision"],
+                    "reviewer": review["reviewer"],
+                    "human_verdict": review["human_verdict"],
+                    "note": review["note"],
+                    "recorded_at": review["recorded_at"],
+                },
+                "sop_evidence": {
+                    "defect_type": evidence["defect_type"],
+                    "document_id": evidence["document_id"],
+                    "document_revision": evidence["document_revision"],
+                    "catalog_sha256": evidence["catalog_sha256"],
+                    "lookup_date": evidence["lookup_date"],
+                    "sources": json.loads(evidence["sources_json"]),
+                },
+                "action_draft": {
+                    "event_id": draft["event_id"],
+                    "title": draft["title"],
+                    "action_text": draft["action_text"],
+                    "created_by": draft["created_by"],
+                    "recorded_at": draft["recorded_at"],
+                },
+                "approval": {
+                    "event_id": approval["event_id"],
+                    "approver": approval["approver"],
+                    "decision": approval["decision"],
+                    "note": approval["note"],
+                    "recorded_at": approval["recorded_at"],
+                },
+                "model_record": json.loads(inspection["record_json"]),
+            }
+            payload_json = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+            payload_sha256 = hashlib.sha256(payload_json.encode("utf-8")).hexdigest()
+            recorded_at = _utc_now()
+            cursor = connection.execute(
+                """INSERT INTO mock_ticket_events
+                   (ticket_id, inspection_id, review_revision, approval_event_id,
+                    issued_by, payload_json, payload_sha256, recorded_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    ticket_id,
+                    inspection_id,
+                    expected_review_revision,
+                    approval_event_id,
+                    issued_by,
+                    payload_json,
+                    payload_sha256,
+                    recorded_at,
+                ),
+            )
+            return {
+                "status": "recorded",
+                "event_id": cursor.lastrowid,
+                "ticket_id": ticket_id,
+                "inspection_id": inspection_id,
+                "review_revision": expected_review_revision,
+                "approval_event_id": approval_event_id,
+                "issued_by": issued_by,
+                "payload": payload,
+                "payload_sha256": payload_sha256,
+                "recorded_at": recorded_at,
+            }
+
+    def mock_ticket_history(self, inspection_id: str) -> list[dict[str, Any]]:
+        self.get_inspection(inspection_id)
+        connection = self._connect()
+        try:
+            rows = connection.execute(
+                """SELECT event_id, ticket_id, review_revision, approval_event_id,
+                          issued_by, payload_json, payload_sha256, recorded_at
+                   FROM mock_ticket_events WHERE inspection_id = ? ORDER BY review_revision""",
+                (inspection_id,),
+            ).fetchall()
+            result = []
+            for row in rows:
+                item = dict(row)
+                payload_json = item.pop("payload_json")
+                if hashlib.sha256(payload_json.encode("utf-8")).hexdigest() != item["payload_sha256"]:
+                    raise ValueError("Stored mock ticket payload checksum differs")
+                item["payload"] = json.loads(payload_json)
                 result.append(item)
             return result
         finally:

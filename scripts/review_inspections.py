@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from defectops.mock_sop import DEFECT_LABELS, find_mock_sop, load_mock_catalog
-from defectops.review_store import HUMAN_VERDICTS, ReviewStore
+from defectops.review_store import ACTION_APPROVAL_DECISIONS, HUMAN_VERDICTS, ReviewStore
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -58,6 +58,28 @@ def build_parser() -> argparse.ArgumentParser:
     link_sop.add_argument("--as-of", type=date.fromisoformat, default=date.today())
     sop_history = commands.add_parser("sop-history", help="Read immutable mock SOP source links")
     sop_history.add_argument("--inspection-id", required=True)
+    draft_action = commands.add_parser("draft-action", help="Create one local simulation-only action draft")
+    draft_action.add_argument("--inspection-id", required=True)
+    draft_action.add_argument("--expected-review-revision", type=int, required=True)
+    draft_action.add_argument("--created-by", required=True)
+    action_history = commands.add_parser("action-history", help="Read immutable action drafts")
+    action_history.add_argument("--inspection-id", required=True)
+    decide_action = commands.add_parser("decide-action", help="Approve or reject one local action draft")
+    decide_action.add_argument("--inspection-id", required=True)
+    decide_action.add_argument("--expected-review-revision", type=int, required=True)
+    decide_action.add_argument("--action-draft-event-id", type=int, required=True)
+    decide_action.add_argument("--approver", required=True)
+    decide_action.add_argument("--decision", choices=sorted(ACTION_APPROVAL_DECISIONS), required=True)
+    decide_action.add_argument("--note", required=True)
+    approval_history = commands.add_parser("approval-history", help="Read immutable approval decisions")
+    approval_history.add_argument("--inspection-id", required=True)
+    issue_ticket = commands.add_parser("issue-mock-ticket", help="Create a local-only mock ticket snapshot")
+    issue_ticket.add_argument("--inspection-id", required=True)
+    issue_ticket.add_argument("--expected-review-revision", type=int, required=True)
+    issue_ticket.add_argument("--approval-event-id", type=int, required=True)
+    issue_ticket.add_argument("--issued-by", required=True)
+    ticket_history = commands.add_parser("ticket-history", help="Read immutable local mock tickets")
+    ticket_history.add_argument("--inspection-id", required=True)
     return parser
 
 
@@ -103,8 +125,36 @@ def main(argv: list[str] | None = None) -> int:
                 defect_type=args.defect_type,
                 result=sop_result,
             )
-        else:
+        elif args.command == "sop-history":
             result = {"history": store.sop_evidence_history(args.inspection_id)}
+        elif args.command == "draft-action":
+            result = store.create_action_draft(
+                args.inspection_id,
+                expected_review_revision=args.expected_review_revision,
+                created_by=args.created_by,
+            )
+        elif args.command == "action-history":
+            result = {"history": store.action_draft_history(args.inspection_id)}
+        elif args.command == "decide-action":
+            result = store.decide_action_draft(
+                args.inspection_id,
+                expected_review_revision=args.expected_review_revision,
+                action_draft_event_id=args.action_draft_event_id,
+                approver=args.approver,
+                decision=args.decision,
+                note=args.note,
+            )
+        elif args.command == "approval-history":
+            result = {"history": store.action_approval_history(args.inspection_id)}
+        elif args.command == "issue-mock-ticket":
+            result = store.issue_mock_ticket(
+                args.inspection_id,
+                expected_review_revision=args.expected_review_revision,
+                approval_event_id=args.approval_event_id,
+                issued_by=args.issued_by,
+            )
+        else:
+            result = {"history": store.mock_ticket_history(args.inspection_id)}
     except (FileNotFoundError, KeyError, OSError, ValueError) as exc:
         print(f"ERROR: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 2

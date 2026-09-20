@@ -32,6 +32,10 @@ MODEL_DECISION_LABELS = {
     "REVIEW_REQUIRED": "검토 필요",
     "PASS": "모델 기준 이하",
 }
+APPROVAL_LABELS = {
+    "APPROVED_FOR_MOCK_TICKET": "모의 티켓 발행 승인",
+    "REJECTED": "반려",
+}
 SEOUL = ZoneInfo("Asia/Seoul")
 
 
@@ -43,6 +47,157 @@ def _inspection_label(row: dict) -> str:
     model = row["model"] or "검사 실패"
     decision = row["model_decision"] or row["status"]
     return f"{row['inspection_id']} · {model} · {decision} · 검토 {row['review_revision']}"
+
+
+def _render_mock_workflow(store: ReviewStore, inspection_id: str, item: dict) -> None:
+    """Render a fully local draft → approval → mock-ticket state machine."""
+    revision = item["review_revision"]
+    latest = item["latest_review"]
+    drafts = store.action_draft_history(inspection_id)
+    approvals = store.action_approval_history(inspection_id)
+    tickets = store.mock_ticket_history(inspection_id)
+    draft = next((event for event in drafts if event["review_revision"] == revision), None)
+    approval = next((event for event in approvals if event["review_revision"] == revision), None)
+    ticket = next((event for event in tickets if event["review_revision"] == revision), None)
+
+    st.subheader("모의 조치·승인·티켓")
+    st.caption(
+        "이 단계는 로컬 화면 흐름 검증용입니다. 실제 생산품 상태를 변경하거나 외부 티켓 시스템에 "
+        "전송하지 않습니다. 각 단계는 별도 확인 후 불변 이력으로 저장됩니다."
+    )
+    if draft is None:
+        st.info("승인 상태: 조치 초안 없음")
+        with st.form(f"action_draft_form_{inspection_id}_{revision}"):
+            created_by = st.text_input(
+                "초안 작성자 표기",
+                value=latest["reviewer"],
+                max_chars=80,
+                key=f"action_draft_by_{inspection_id}_{revision}",
+            )
+            st.text_area(
+                "생성될 초안",
+                value=(
+                    "원본 사진과 사람의 관찰 기록을 바탕으로 표시된 부품 위치와 금속 다리(리드)의 "
+                    "삽입 상태를 현장 담당자가 별도로 확인하고, 확인 결과만 기록한다. 이 초안으로 "
+                    "제품 합격·폐기·재작업·설비 변경을 수행하지 않는다."
+                ),
+                disabled=True,
+            )
+            acknowledged = st.checkbox(
+                "이 초안이 실제 작업 지시가 아닌 로컬 모의 기록임을 확인했습니다.",
+                key=f"action_draft_ack_{inspection_id}_{revision}",
+            )
+            save_draft = st.form_submit_button("모의 조치 초안 저장", type="primary")
+        if save_draft:
+            if not acknowledged:
+                st.error("확인 항목에 동의해야 초안을 저장할 수 있습니다.")
+                return
+            try:
+                store.create_action_draft(
+                    inspection_id,
+                    expected_review_revision=revision,
+                    created_by=created_by,
+                )
+                st.session_state[f"saved_message_{inspection_id}"] = "모의 조치 초안을 저장했습니다."
+                st.rerun()
+            except (FileNotFoundError, KeyError, OSError, ValueError) as exc:
+                st.error(f"모의 조치 초안 저장 실패: {exc}")
+        return
+
+    st.info(f"승인 상태: {APPROVAL_LABELS[approval['decision']] if approval else '승인 대기'}")
+    st.success(f"{draft['title']} · 작성자 {draft['created_by']} · {_display_time(draft['recorded_at'])}")
+    st.text(draft["action_text"])
+    if approval is None:
+        with st.form(f"action_approval_form_{inspection_id}_{revision}"):
+            approver = st.text_input(
+                "승인 담당자 표기",
+                value=latest["reviewer"],
+                max_chars=80,
+                key=f"action_approver_{inspection_id}_{revision}",
+            )
+            decision = st.selectbox(
+                "결정",
+                options=list(APPROVAL_LABELS),
+                index=None,
+                placeholder="승인 또는 반려를 선택하세요",
+                format_func=lambda value: APPROVAL_LABELS.get(value, "결정을 선택하세요"),
+                key=f"action_decision_{inspection_id}_{revision}",
+            )
+            note = st.text_area(
+                "승인·반려 근거",
+                max_chars=1000,
+                key=f"action_approval_note_{inspection_id}_{revision}",
+            )
+            acknowledged = st.checkbox(
+                "이 결정은 모의 티켓 흐름에만 적용되며 실제 현장 조치 승인이 아님을 확인했습니다.",
+                key=f"action_approval_ack_{inspection_id}_{revision}",
+            )
+            save_approval = st.form_submit_button("승인 상태 저장", type="primary")
+        if save_approval:
+            if not acknowledged or decision is None:
+                st.error("결정을 선택하고 확인 항목에 동의해야 저장할 수 있습니다.")
+                return
+            try:
+                store.decide_action_draft(
+                    inspection_id,
+                    expected_review_revision=revision,
+                    action_draft_event_id=draft["event_id"],
+                    approver=approver,
+                    decision=decision,
+                    note=note,
+                )
+                st.session_state[f"saved_message_{inspection_id}"] = "모의 승인 상태를 저장했습니다."
+                st.rerun()
+            except (FileNotFoundError, KeyError, OSError, ValueError) as exc:
+                st.error(f"모의 승인 상태 저장 실패: {exc}")
+        return
+
+    st.caption(
+        f"담당자: {approval['approver']} · 기록 시각: {_display_time(approval['recorded_at'])}"
+    )
+    st.text(approval["note"])
+    if approval["decision"] == "REJECTED":
+        st.warning("초안이 반려되어 모의 티켓을 만들 수 없습니다. 기존 기록은 변경되지 않습니다.")
+        return
+
+    if ticket is None:
+        with st.form(f"mock_ticket_form_{inspection_id}_{revision}"):
+            issued_by = st.text_input(
+                "모의 티켓 발행자 표기",
+                value=approval["approver"],
+                max_chars=80,
+                key=f"mock_ticket_by_{inspection_id}_{revision}",
+            )
+            acknowledged = st.checkbox(
+                "외부 전송 없이 이 로컬 DB에 모의 티켓 스냅샷만 저장함을 확인했습니다.",
+                key=f"mock_ticket_ack_{inspection_id}_{revision}",
+            )
+            issue_ticket = st.form_submit_button("로컬 모의 티켓 발행", type="primary")
+        if issue_ticket:
+            if not acknowledged:
+                st.error("확인 항목에 동의해야 모의 티켓을 발행할 수 있습니다.")
+                return
+            try:
+                store.issue_mock_ticket(
+                    inspection_id,
+                    expected_review_revision=revision,
+                    approval_event_id=approval["event_id"],
+                    issued_by=issued_by,
+                )
+                st.session_state[f"saved_message_{inspection_id}"] = "로컬 모의 티켓을 발행했습니다."
+                st.rerun()
+            except (FileNotFoundError, KeyError, OSError, ValueError) as exc:
+                st.error(f"로컬 모의 티켓 발행 실패: {exc}")
+        return
+
+    st.success(
+        f"모의 티켓 발행 완료 · {ticket['ticket_id']} · 발행자 {ticket['issued_by']} · "
+        f"{_display_time(ticket['recorded_at'])}"
+    )
+    st.caption(f"스냅샷 SHA-256: {ticket['payload_sha256']}")
+    st.warning("이 티켓은 로컬 시뮬레이션 기록이며 외부 전송·실제 작업 지시 효력이 없습니다.")
+    with st.expander("모의 티켓 스냅샷"):
+        st.json(ticket["payload"])
 
 
 def render() -> None:
@@ -208,6 +363,7 @@ def render() -> None:
             st.info(source["text"])
             st.caption(f"저장된 원문 근거: {source['citation_id']}")
         st.warning("이 기록은 실제 제품 판정·설비 조치·티켓 발행 승인이 아닙니다.")
+        _render_mock_workflow(store, inspection_id, item)
         return
 
     with st.form(f"mock_sop_form_{inspection_id}_{item['review_revision']}"):
