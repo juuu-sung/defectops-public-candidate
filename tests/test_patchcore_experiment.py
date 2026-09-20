@@ -5,11 +5,13 @@ from pathlib import Path
 
 from defectops.patchcore_evaluation import (
     EXPECTED_EVALUATION_PURPOSE,
+    EXPECTED_PREREGISTERED_EVALUATION_PURPOSE,
     EXPECTED_REPEAT_EVALUATION_PURPOSE,
     load_patchcore_evaluation_config,
 )
 from defectops.patchcore_experiment import (
     EXPECTED_COMPARISON_STATUS,
+    EXPECTED_PREREGISTERED_STATUS,
     load_patchcore_experiment,
 )
 
@@ -85,6 +87,53 @@ class PatchCoreExperimentTests(unittest.TestCase):
             self.root / "configs/patchcore-evaluation-repeat-v1.toml"
         )
         self.assertEqual(repeat["purpose"], EXPECTED_REPEAT_EVALUATION_PURPOSE)
+
+        preregistered = load_patchcore_evaluation_config(
+            self.root / "configs/additional-patchcore-evaluation-v1.toml"
+        )
+        self.assertEqual(
+            preregistered["purpose"], EXPECTED_PREREGISTERED_EVALUATION_PURPOSE
+        )
+        self.assertEqual(
+            preregistered["comparison_status"], EXPECTED_PREREGISTERED_STATUS
+        )
+
+    def test_additional_category_configs_are_preregistered_before_test(self):
+        for category, config_name in (
+            ("cable", "cable-patchcore-v1.toml"),
+            ("metal_nut", "metal-nut-patchcore-v1.toml"),
+        ):
+            manifest = {
+                "protocol": "A-normal-only-v1",
+                "split_seed": 42,
+                "categories": [category],
+            }
+            experiment = load_patchcore_experiment(
+                self.root / "configs" / config_name, manifest, seed=43
+            )
+            self.assertEqual(
+                experiment["comparison_status"], EXPECTED_PREREGISTERED_STATUS
+            )
+            self.assertEqual(experiment["model_seed"], 43)
+
+    def test_preregistered_patchcore_config_rejects_scope_relabeling(self):
+        original = (self.root / "configs/cable-patchcore-v1.toml").read_text(
+            encoding="utf-8"
+        )
+        changed = original.replace(
+            'comparison_status = "preregistered_before_cable_and_metal_nut_test_observed"',
+            'comparison_status = "confirmatory"',
+        )
+        manifest = {
+            "protocol": "A-normal-only-v1",
+            "split_seed": 42,
+            "categories": ["cable"],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "changed.toml"
+            path.write_text(changed, encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "comparison_status"):
+                load_patchcore_experiment(path, manifest, seed=42)
 
 
 if __name__ == "__main__":

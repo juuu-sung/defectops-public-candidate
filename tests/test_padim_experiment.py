@@ -95,6 +95,24 @@ class PaDimExperimentTests(unittest.TestCase):
         self.assertEqual(experiment["model_seed"], 42)
         self.assertEqual(experiment["batch_size"], 1)
 
+    def test_additional_category_configs_are_preregistered_before_test(self):
+        root = Path(__file__).resolve().parents[1]
+        for category, config_name in (
+            ("cable", "cable-padim-v1.toml"),
+            ("metal_nut", "metal-nut-padim-v1.toml"),
+        ):
+            manifest = {
+                "protocol": "A-normal-only-v1",
+                "split_seed": 42,
+                "categories": [category],
+            }
+            experiment = load_experiment(
+                root / "configs" / config_name, manifest, seed=44
+            )
+            self.assertEqual(experiment["model_seed"], 44)
+            self.assertEqual(experiment["image_size"], 256)
+            self.assertEqual(experiment["backbone"], "resnet18")
+
 
 if __name__ == "__main__":
     unittest.main()

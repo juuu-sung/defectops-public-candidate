@@ -1,6 +1,6 @@
 # 데이터 준비
 
-공식 [MVTec AD](https://www.mvtec.com/research-teaching/datasets/mvtec-ad)에서 transistor 품목을 받는다.
+공식 [MVTec AD](https://www.mvtec.com/research-teaching/datasets/mvtec-ad)에서 대상 품목을 받는다.
 다운로드·압축 해제 후 아래 구조를 확인한다. `--root`는 transistor의 **부모 폴더**다.
 
 ```text
@@ -48,3 +48,20 @@ Git에 포함할 요약은 [점검 보고서](../reports/transistor-data-audit-v
 Windows에서 심볼릭 링크 생성 권한이 없으면 경로 탈출용 링크 fixture 테스트 1개만 skip될 수 있다.
 나머지 점검은 실행하며, skip은 실제 데이터 점검 성공을 대신하지 않는다.
 실제 데이터가 없는 상태에서 생성한 가짜 manifest는 저장소에 넣지 않는다.
+
+## cable·metal_nut 추가 등록
+
+3품목 비교의 추가 품목은 cable과 metal_nut으로 test 열람 전에 고정했다. 두 archive는 공식
+MVTec 페이지의 폼을 통해 연구실 Windows에서 받고 `data/cable/`, `data/metal_nut/`에 압축
+해제한다. 자세한 순서와 사전 고정 조건은
+[3품목 비교 사전등록](../docs/three-category-preregistration.md)을 따른다.
+
+원본을 준비한 뒤 다음 스크립트를 한 번 실행한다.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+    -File ".\scripts\prepare_additional_categories.ps1"
+```
+
+생성된 handoff ZIP을 이 작업으로 전달해 manifest와 데이터 점검 보고서를 먼저 커밋한다.
+그 전에는 추가 품목의 학습이나 test 평가를 시작하지 않는다.

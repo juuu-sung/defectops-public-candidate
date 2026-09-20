@@ -48,6 +48,7 @@ from defectops.padim_experiment import (
 )
 from defectops.patchcore_experiment import (
     EXPECTED_COMPARISON_STATUS,
+    EXPECTED_PREREGISTERED_STATUS,
     load_patchcore_experiment,
 )
 
@@ -58,20 +59,29 @@ EXPECTED_EVALUATION_PURPOSE = (
 EXPECTED_REPEAT_EVALUATION_PURPOSE = (
     "exploratory frozen-rule evaluation of a post-seed-42 PatchCore repeat"
 )
+EXPECTED_PREREGISTERED_EVALUATION_PURPOSE = (
+    "preregistered frozen-rule evaluation of an untouched additional category"
+)
 
 
 def load_patchcore_evaluation_config(path: Path) -> dict[str, Any]:
     """Load the shared metric contract and its PatchCore-specific purpose."""
     raw_config = tomllib.loads(path.read_text(encoding="utf-8"))
-    if raw_config.get("comparison_status") != EXPECTED_COMPARISON_STATUS:
+    comparison_status = raw_config.get("comparison_status")
+    if comparison_status not in {
+        EXPECTED_COMPARISON_STATUS,
+        EXPECTED_PREREGISTERED_STATUS,
+    }:
         raise ValueError("Unexpected PatchCore evaluation comparison status")
     config = load_evaluation_config(path)
-    if config["purpose"] not in {
-        EXPECTED_EVALUATION_PURPOSE,
-        EXPECTED_REPEAT_EVALUATION_PURPOSE,
-    }:
+    expected_purposes = (
+        {EXPECTED_PREREGISTERED_EVALUATION_PURPOSE}
+        if comparison_status == EXPECTED_PREREGISTERED_STATUS
+        else {EXPECTED_EVALUATION_PURPOSE, EXPECTED_REPEAT_EVALUATION_PURPOSE}
+    )
+    if config["purpose"] not in expected_purposes:
         raise ValueError("Unexpected PatchCore evaluation purpose")
-    config["comparison_status"] = EXPECTED_COMPARISON_STATUS
+    config["comparison_status"] = comparison_status
     return config
 
 
@@ -85,12 +95,6 @@ def validate_patchcore_fit_artifact(
 ) -> tuple[dict[str, Any], dict[str, Any], Path, Path]:
     """Validate an immutable calibration-only PatchCore fit bundle."""
     fit_run = read_json(_safe_child(fit_path, "run.json"))
-    if (
-        fit_run.get("status") != "fit_calibrated_exploratory"
-        or fit_run.get("comparison_status") != EXPECTED_COMPARISON_STATUS
-        or fit_run.get("test_evaluated") is not False
-    ):
-        raise ValueError("Fit bundle is not a completed exploratory calibration-only run")
     if fit_run.get("manifest_sha256") != manifest.get("manifest_sha256"):
         raise ValueError("Fit and evaluation manifest hashes differ")
     fit_manifest = read_json(_safe_child(fit_path, "manifest.json"))
@@ -101,6 +105,16 @@ def validate_patchcore_fit_artifact(
     fit_config = load_patchcore_experiment(
         _safe_child(fit_path, "patchcore-pilot.toml"), manifest, fit_seed
     )
+    preregistered = fit_config["comparison_status"] == EXPECTED_PREREGISTERED_STATUS
+    expected_status = (
+        "fit_calibrated_preregistered" if preregistered else "fit_calibrated_exploratory"
+    )
+    if (
+        fit_run.get("status") != expected_status
+        or fit_run.get("comparison_status") != fit_config["comparison_status"]
+        or fit_run.get("test_evaluated") is not False
+    ):
+        raise ValueError("Fit bundle is not a completed calibration-only comparison run")
     if fit_run.get("config") != fit_config:
         raise ValueError("Fit configuration snapshot differs from run.json")
     expected_counts = {
@@ -170,10 +184,10 @@ def run_patchcore_evaluation(args: argparse.Namespace) -> dict[str, Any]:
     train_records = records_for_split(manifest, "train")
     calibration_records = records_for_split(manifest, "calibration")
     test_records = records_for_split(manifest, "test")
-    if len(test_records) != 100 or sum(record["label"] for record in test_records) != 40:
-        raise ValueError(
-            "Frozen transistor test split must contain 60 normal and 40 anomalous images"
-        )
+    if not any(record["label"] == 0 for record in test_records) or not any(
+        record["label"] == 1 for record in test_records
+    ):
+        raise ValueError("Frozen test split must contain both normal and anomalous images")
     evaluator_git = git_state(project_root)
     fit_run, fit_config, checkpoint_path, calibration_scores_path = (
         validate_patchcore_fit_artifact(
@@ -185,6 +199,8 @@ def run_patchcore_evaluation(args: argparse.Namespace) -> dict[str, Any]:
             project_root,
         )
     )
+    if evaluation_config["comparison_status"] != fit_config["comparison_status"]:
+        raise ValueError("Fit and evaluation comparison statuses differ")
 
     if sys.version_info[:2] != (3, 12):
         raise RuntimeError(
@@ -269,7 +285,7 @@ def run_patchcore_evaluation(args: argparse.Namespace) -> dict[str, Any]:
     def load_image(record: dict[str, Any]) -> tuple[Any, tuple[int, int]]:
         image_path = _safe_data_path(data_root, record["image_path"])
         with Image.open(image_path) as image:
-            if image.format != "PNG" or image.mode != "RGB" or image.size != (1024, 1024):
+            if image.format != "PNG" or image.mode != "RGB":
                 raise ValueError(f"Unexpected PatchCore input contract: {record['image_path']}")
             original_size = image.size
             array = np.array(image, dtype=np.uint8, copy=True)
@@ -320,9 +336,14 @@ def run_patchcore_evaluation(args: argparse.Namespace) -> dict[str, Any]:
         )
     )
     image_threshold = float(fit_run["calibration"]["threshold"])
+    preregistered = fit_config["comparison_status"] == EXPECTED_PREREGISTERED_STATUS
     calibration_contract = {
-        "status": "exploratory_rules_frozen_before_test_images_loaded",
-        "comparison_status": EXPECTED_COMPARISON_STATUS,
+        "status": (
+            "preregistered_rules_frozen_before_test_images_loaded"
+            if preregistered
+            else "exploratory_rules_frozen_before_test_images_loaded"
+        ),
+        "comparison_status": fit_config["comparison_status"],
         "fit_run_id": fit_run["run_id"],
         "manifest_sha256": manifest["manifest_sha256"],
         "score_space": "raw",
@@ -488,7 +509,7 @@ def run_patchcore_evaluation(args: argparse.Namespace) -> dict[str, Any]:
     }
     metrics = {
         "schema_version": 1,
-        "comparison_status": EXPECTED_COMPARISON_STATUS,
+        "comparison_status": fit_config["comparison_status"],
         "image": image_metrics,
         "image_by_defect_type": defect_type_metrics,
         "pixel": pixel_metrics,
@@ -519,8 +540,8 @@ def run_patchcore_evaluation(args: argparse.Namespace) -> dict[str, Any]:
     latency_array = np.asarray(latencies_ms, dtype=np.float64)
     evaluation = {
         "schema_version": 1,
-        "status": "evaluated_exploratory",
-        "comparison_status": EXPECTED_COMPARISON_STATUS,
+        "status": "evaluated_preregistered" if preregistered else "evaluated_exploratory",
+        "comparison_status": fit_config["comparison_status"],
         "test_evaluated": True,
         "purpose": evaluation_config["purpose"],
         "evaluation_id": output_path.name,
@@ -578,13 +599,23 @@ def run_patchcore_evaluation(args: argparse.Namespace) -> dict[str, Any]:
             "manifest_snapshot": "manifest.json",
             "fit_run_snapshot": "fit-run.json",
         },
-        "limitations": [
-            "The PaDiM official test result was observed before PatchCore was configured.",
-            "This result is exploratory and is not a confirmatory model-selection estimate.",
-            "MVTec test prevalence does not represent factory prevalence.",
-            "Pixel confidence intervals do not treat pixels as independent samples.",
-            "Any further tuning requires new untouched data for an unbiased comparison.",
-        ],
+        "limitations": (
+            [
+                "The transistor results were observed before this additional-category protocol was registered.",
+                "This category was preregistered before its test images were inspected, but the combined three-category evidence is mixed.",
+                "MVTec test prevalence does not represent factory prevalence.",
+                "Pixel confidence intervals do not treat pixels as independent samples.",
+                "Any further tuning requires new untouched data for an unbiased comparison.",
+            ]
+            if preregistered
+            else [
+                "The PaDiM official test result was observed before PatchCore was configured.",
+                "This result is exploratory and is not a confirmatory model-selection estimate.",
+                "MVTec test prevalence does not represent factory prevalence.",
+                "Pixel confidence intervals do not treat pixels as independent samples.",
+                "Any further tuning requires new untouched data for an unbiased comparison.",
+            ]
+        ),
     }
     evaluation_path = output_path / "evaluation.json"
     write_json(evaluation_path, evaluation)

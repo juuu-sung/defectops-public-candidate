@@ -1,0 +1,25 @@
+protocol = "A-normal-only-v1"
+comparison_status = "preregistered_before_cable_and_metal_nut_test_observed"
+registration_status = "registered_before_cable_and_metal_nut_test_observed"
+categories = ["cable"]
+split_seed = 42
+calibration_fraction = 0.20
+
+[experiment]
+model = "patchcore"
+backbone = "wide_resnet50_2"
+layers = ["layer2", "layer3"]
+coreset_sampling_ratio = 0.10
+num_neighbors = 9
+image_size = 256
+model_seeds = [42, 43, 44]
+
+[calibration]
+image_quantile = 0.95
+quantile_method = "higher"
+score_space = "raw"
+decision_rule = "score >= threshold"
+
+[benchmark]
+batch_size = 1
+target_end_to_end_p95_ms = 1500

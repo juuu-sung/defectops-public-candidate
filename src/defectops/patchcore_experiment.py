@@ -29,10 +29,14 @@ from defectops.padim_experiment import (
     records_for_split,
     write_json,
 )
+from defectops.manifest import CATEGORIES
 
 
 EXPECTED_COMPARISON_STATUS = "exploratory_after_padim_test_observed"
 EXPECTED_REPEAT_STATUS = "exploratory_repeat_after_patchcore_seed42_test_observed"
+EXPECTED_PREREGISTERED_STATUS = (
+    "preregistered_before_cable_and_metal_nut_test_observed"
+)
 
 
 def load_patchcore_experiment(
@@ -45,12 +49,18 @@ def load_patchcore_experiment(
     experiment = config.get("experiment", {})
     calibration = config.get("calibration", {})
     benchmark = config.get("benchmark", {})
+    categories = config.get("categories")
+    comparison_status = config.get("comparison_status")
     checks = {
         "protocol": config.get("protocol") == EXPECTED_PROTOCOL,
         "manifest_protocol": manifest.get("protocol") == EXPECTED_PROTOCOL,
-        "comparison_status": config.get("comparison_status") == EXPECTED_COMPARISON_STATUS,
+        "comparison_status": comparison_status
+        in {EXPECTED_COMPARISON_STATUS, EXPECTED_PREREGISTERED_STATUS},
         "split_seed": config.get("split_seed") == manifest.get("split_seed"),
-        "categories": config.get("categories") == manifest.get("categories") == ["transistor"],
+        "categories": categories == manifest.get("categories")
+        and isinstance(categories, list)
+        and len(categories) == 1
+        and categories[0] in CATEGORIES,
         "model": experiment.get("model") == "patchcore",
         "backbone": experiment.get("backbone") == "wide_resnet50_2",
         "layers": experiment.get("layers") == ["layer2", "layer3"],
@@ -63,10 +73,18 @@ def load_patchcore_experiment(
     if failed:
         raise ValueError("PatchCore configuration contract mismatch: " + ", ".join(failed))
     model_seeds = experiment.get("model_seeds")
-    if not isinstance(model_seeds, list) or model_seeds not in ([42], [43, 44]):
-        raise ValueError("PatchCore model_seeds must be [42] or the exploratory repeat [43, 44]")
-    if model_seeds == [43, 44] and config.get("repeat_status") != EXPECTED_REPEAT_STATUS:
-        raise ValueError("PatchCore repeat_status must disclose that seed-42 test was observed")
+    if comparison_status == EXPECTED_COMPARISON_STATUS:
+        if not isinstance(model_seeds, list) or model_seeds not in ([42], [43, 44]):
+            raise ValueError(
+                "Legacy transistor PatchCore model_seeds must be [42] or [43, 44]"
+            )
+        if model_seeds == [43, 44] and config.get("repeat_status") != EXPECTED_REPEAT_STATUS:
+            raise ValueError("PatchCore repeat_status must disclose that seed-42 test was observed")
+    else:
+        if categories not in (["cable"], ["metal_nut"]):
+            raise ValueError("The preregistered status is only for cable and metal_nut")
+        if model_seeds != [42, 43, 44]:
+            raise ValueError("Preregistered PatchCore model_seeds must be [42, 43, 44]")
     selected_seed = model_seeds[0] if seed is None else seed
     if selected_seed not in model_seeds:
         raise ValueError(f"seed must be one of the configured model seeds: {model_seeds}")
@@ -84,7 +102,7 @@ def load_patchcore_experiment(
         raise ValueError("PatchCore exploratory comparison is locked to image_size=256")
     return {
         "model": "patchcore",
-        "comparison_status": EXPECTED_COMPARISON_STATUS,
+        "comparison_status": comparison_status,
         "backbone": "wide_resnet50_2",
         "layers": ["layer2", "layer3"],
         "coreset_sampling_ratio": float(coreset_ratio),
@@ -178,7 +196,7 @@ def run_patchcore_fit(args: argparse.Namespace) -> dict[str, Any]:
     def load_image(record: dict[str, Any]) -> Any:
         image_path = _safe_data_path(data_root, record["image_path"])
         with Image.open(image_path) as image:
-            if image.format != "PNG" or image.mode != "RGB" or image.size != (1024, 1024):
+            if image.format != "PNG" or image.mode != "RGB":
                 raise ValueError(f"Unexpected PatchCore input contract: {record['image_path']}")
             array = np.array(image, dtype=np.uint8, copy=True)
         tensor = torch.from_numpy(array).permute(2, 0, 1).to(torch.float32).div_(255.0)
@@ -266,13 +284,16 @@ def run_patchcore_fit(args: argparse.Namespace) -> dict[str, Any]:
 
     elapsed_seconds = time.perf_counter() - start_time
     finished_at = datetime.now(timezone.utc)
+    preregistered = experiment["comparison_status"] == EXPECTED_PREREGISTERED_STATUS
     run = {
         "schema_version": 1,
-        "status": "fit_calibrated_exploratory",
-        "comparison_status": EXPECTED_COMPARISON_STATUS,
+        "status": "fit_calibrated_preregistered" if preregistered else "fit_calibrated_exploratory",
+        "comparison_status": experiment["comparison_status"],
         "test_evaluated": False,
         "purpose": (
-            "exploratory PatchCore fit and normal-only calibration after PaDiM test observation"
+            "preregistered PatchCore fit and normal-only calibration before category test observation"
+            if preregistered
+            else "exploratory PatchCore fit and normal-only calibration after PaDiM test observation"
         ),
         "run_id": output_path.name,
         "started_at": started_at.isoformat(),
@@ -326,17 +347,19 @@ def run_patchcore_fit(args: argparse.Namespace) -> dict[str, Any]:
             "config_snapshot": "patchcore-pilot.toml",
             "manifest_snapshot": "manifest.json",
         },
-        "limitations": [
-            (
-                "The PaDiM official test result was observed before this PatchCore "
-                "configuration was fixed."
-            ),
-            (
-                "This fit is eligible only for exploratory comparison, not confirmatory "
-                "model selection."
-            ),
-            "The official test images were not loaded by this fit command.",
-        ],
+        "limitations": (
+            [
+                "The transistor results were observed before the additional-category protocol was registered.",
+                "The cable or metal_nut official test images were not loaded by this fit command.",
+                "Cross-category conclusions remain mixed evidence rather than a new untouched three-category benchmark.",
+            ]
+            if preregistered
+            else [
+                "The PaDiM official test result was observed before this PatchCore configuration was fixed.",
+                "This fit is eligible only for exploratory comparison, not confirmatory model selection.",
+                "The official test images were not loaded by this fit command.",
+            ]
+        ),
     }
     write_json(output_path / "run.json", run)
     print(

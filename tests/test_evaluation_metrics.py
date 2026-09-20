@@ -29,6 +29,14 @@ class EvaluationMetricTests(unittest.TestCase):
             "exploratory frozen-rule evaluation of a configured PaDiM repeat",
         )
         self.assertEqual(repeat["pixel_calibration_quantile"], 0.995)
+        additional = load_evaluation_config(
+            root / "configs/additional-padim-evaluation-v1.toml"
+        )
+        self.assertEqual(
+            additional["purpose"],
+            "preregistered frozen-rule evaluation of an untouched additional category",
+        )
+        self.assertEqual(additional["bootstrap_seed"], 20260921)
 
     def test_ranking_metrics_are_perfect_for_separated_scores(self):
         labels = np.asarray([0, 0, 1, 1])

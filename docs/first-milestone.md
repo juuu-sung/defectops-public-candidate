@@ -25,6 +25,8 @@
 - [x] 실제 로컬 전체 시연 완료 및 개인정보 제외 완료 보고서·포트폴리오 체크리스트 작성
 - [x] PaDiM·PatchCore seed 43·44 실행·검증·3-seed 집계 도구 준비
 - [x] 연구실 Windows에서 seed 43·44 GPU 실행 및 3-seed 결과 수집
+- [x] cable·metal_nut 추가 품목과 3품목 비교 규칙을 test 열람 전에 사전등록
+- [ ] cable·metal_nut 공식 데이터 manifest 생성·무결성 audit·커밋
 
 ## 다음 순서
 
@@ -81,6 +83,10 @@
     재사용한 탐색 반복이므로 seed 44의 근소한 순위 지표를 보고 교체하지 않고, 현재 연결된
     PatchCore seed 42를 동결 유지한다. 상세 결과는
     [3-seed 보고서](../reports/transistor-multiseed-exploratory-v1.md)에 기록했다.
+18. 초기 allowlist를 유지해 추가 품목을 cable·metal_nut으로 확정했다.
+    [3품목 비교 사전등록](three-category-preregistration.md)에 두 모델 × 3 seed, 전처리,
+    calibration, 평가 지표와 선택 규칙을 test 열람 전에 고정했다. 다음 체크포인트는 공식
+    archive를 연구실 Windows에 받아 manifest·무결성 audit 결과를 이 저장소로 돌려받는 것이다.
 
 첫 완료 판정: 실제 transistor 입력에 대해 모델 버전·split hash·원시 점수·고정 임곗값·판정·
 원본 좌표계의 히트맵/영역·지연시간을 기록하고 artifact checksum으로 실행 추적을 확인한다.

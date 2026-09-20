@@ -269,8 +269,10 @@ def run_evaluation(args: argparse.Namespace) -> dict[str, Any]:
     train_records = records_for_split(manifest, "train")
     calibration_records = records_for_split(manifest, "calibration")
     test_records = records_for_split(manifest, "test")
-    if len(test_records) != 100 or sum(record["label"] for record in test_records) != 40:
-        raise ValueError("Frozen transistor test split must contain 60 normal and 40 anomalous images")
+    if not any(record["label"] == 0 for record in test_records) or not any(
+        record["label"] == 1 for record in test_records
+    ):
+        raise ValueError("Frozen test split must contain both normal and anomalous images")
     evaluator_git = git_state(project_root)
     fit_run, fit_config, checkpoint_path, calibration_scores_path = validate_fit_artifact(
         fit_path,

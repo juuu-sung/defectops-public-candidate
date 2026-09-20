@@ -1,0 +1,52 @@
+schema_version = 1
+protocol = "A-normal-only-v1"
+registration_status = "registered_before_cable_and_metal_nut_test_observed"
+evidence_status = "mixed_transistor_observed_additional_categories_preregistered"
+categories = ["transistor", "cable", "metal_nut"]
+observed_test_categories = ["transistor"]
+untouched_test_categories = ["cable", "metal_nut"]
+split_seed = 42
+calibration_fraction = 0.20
+model_seeds = [42, 43, 44]
+modeling_unit = "separate_model_and_threshold_per_category"
+
+[input]
+source_encoding = "png"
+source_color = "rgb"
+resize = "stretch_to_square_bilinear_antialias"
+image_size = 256
+normalization = "imagenet_mean_std"
+augmentation = "none"
+
+[padim]
+backbone = "resnet18"
+layers = ["layer1", "layer2", "layer3"]
+n_features = 100
+
+[patchcore]
+backbone = "wide_resnet50_2"
+layers = ["layer2", "layer3"]
+coreset_sampling_ratio = 0.10
+num_neighbors = 9
+
+[calibration]
+image_quantile = 0.95
+pixel_quantile = 0.995
+quantile_method = "higher"
+score_space = "raw"
+decision_rule = "score >= threshold"
+morphology = "none"
+
+[evaluation]
+image_metrics = ["auroc", "average_precision", "fixed_threshold_confusion"]
+pixel_metrics = ["auroc", "aupro", "fixed_threshold_confusion"]
+aupro_fpr_limit = 0.30
+bootstrap_unit = "image_stratified"
+reporting = "category_and_seed_values_plus_macro_mean_sample_std"
+
+[selection]
+scope = "portfolio_candidate_not_unbiased_deployment_estimate"
+primary_rule = "lowest_macro_escape_rate_at_frozen_threshold"
+tie_breakers = ["highest_macro_image_auroc", "lowest_macro_overkill_rate", "lowest_warm_p95_latency"]
+automatic_pass_allowed = false
+post_test_tuning_requires_new_untouched_data = true

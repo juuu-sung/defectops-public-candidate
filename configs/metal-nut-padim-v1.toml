@@ -1,0 +1,23 @@
+protocol = "A-normal-only-v1"
+registration_status = "registered_before_cable_and_metal_nut_test_observed"
+categories = ["metal_nut"]
+split_seed = 42
+calibration_fraction = 0.20
+
+[experiment]
+model = "padim"
+backbone = "resnet18"
+layers = ["layer1", "layer2", "layer3"]
+n_features = 100
+image_size = 256
+model_seeds = [42, 43, 44]
+
+[calibration]
+image_quantile = 0.95
+quantile_method = "higher"
+score_space = "raw"
+decision_rule = "score >= threshold"
+
+[benchmark]
+batch_size = 1
+target_end_to_end_p95_ms = 1500

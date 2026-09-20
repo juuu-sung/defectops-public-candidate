@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from defectops.manifest import verify_manifest
+from defectops.manifest import CATEGORIES, verify_manifest
 
 
 EXPECTED_PROTOCOL = "A-normal-only-v1"
@@ -98,8 +98,14 @@ def load_experiment(config_path: Path, manifest: dict[str, Any], seed: int | Non
         raise ValueError(f"Expected protocol {EXPECTED_PROTOCOL}")
     if config.get("split_seed") != manifest.get("split_seed"):
         raise ValueError("Config and manifest split seeds differ")
-    if config.get("categories") != manifest.get("categories") or config.get("categories") != ["transistor"]:
-        raise ValueError("The first run must use only the transistor category")
+    categories = config.get("categories")
+    if (
+        categories != manifest.get("categories")
+        or not isinstance(categories, list)
+        or len(categories) != 1
+        or categories[0] not in CATEGORIES
+    ):
+        raise ValueError("Each fit must use exactly one configured MVTec category")
     if experiment.get("model") != EXPECTED_MODEL:
         raise ValueError("The first run must use PaDiM")
     model_seeds = experiment.get("model_seeds")
@@ -410,7 +416,7 @@ def build_parser() -> argparse.ArgumentParser:
     """Build the command-line parser."""
     project_root = Path(__file__).resolve().parents[2]
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, required=True, help="Parent directory of the transistor dataset")
+    parser.add_argument("--root", type=Path, required=True, help="Parent directory of the MVTec categories")
     parser.add_argument(
         "--manifest",
         type=Path,
