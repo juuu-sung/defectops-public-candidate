@@ -63,5 +63,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
     -File ".\scripts\prepare_additional_categories.ps1"
 ```
 
-생성된 handoff ZIP을 이 작업으로 전달해 manifest와 데이터 점검 보고서를 먼저 커밋한다.
-그 전에는 추가 품목의 학습이나 test 평가를 시작하지 않는다.
+생성된 handoff ZIP은 검증을 마쳤고 manifest와 데이터 점검 보고서를 저장소에 반영했다.
+Cable은 train 179 / calibration 45 / test 정상 58·이상 92장, Metal Nut은
+train 176 / calibration 44 / test 정상 22·이상 93장으로 고정됐다. 다음 실행은
+[추가 품목 fit/calibration](../docs/additional-category-fits.md)을 따른다.

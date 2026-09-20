@@ -84,9 +84,9 @@ manifest와 점검 요약을 저장소에 커밋하기 전에는 학습을 시�
 
 ## 다음 단계
 
-1. 공식 archive 다운로드·압축 해제
-2. manifest 생성·무결성 audit
-3. 생성된 manifest와 요약을 이 작업으로 전달
-4. 저장소에 manifest·데이터 보고서 커밋
-5. 연구실 Windows에서 cable·metal_nut의 두 모델 × 3 seed 실행
-6. 사전 고정한 규칙으로만 test 평가·3품목 macro 비교
+1. [완료] 공식 archive 다운로드·압축 해제
+2. [완료] manifest 생성·무결성 audit
+3. [완료] handoff ZIP checksum 검증과 manifest·데이터 보고서 반영
+4. 연구실 Windows에서 cable·metal_nut의 두 모델 × 3 seed fit/calibration
+5. 12개 fit 완료를 확인한 뒤 사전 고정한 규칙으로만 test 평가
+6. 품목별 결과와 3품목 macro 비교, 오류 분석, warm 속도 측정

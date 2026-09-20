@@ -73,7 +73,9 @@ recall 0.600, escape rate 40.0%였으며 seed에 따른 판정 변동도 더 컸
 9. 연구실 Windows에서 PaDiM·PatchCore seed 43·44 추가 실행과 3-seed 무결성 검증·집계 완료.
    다음 품목은 초기 allowlist를 보존해 cable·metal_nut으로
    [사전등록](docs/three-category-preregistration.md)했다. 두 품목의 test를 보기 전에 모델·seed·전처리·
-   calibration·평가·선택 규칙을 고정했으며, 다음 체크포인트는 공식 데이터 다운로드와 manifest audit이다.
+   calibration·평가·선택 규칙을 고정했다. 공식 데이터 등록·manifest audit도 완료했으며 오류와
+   디코딩 픽셀 중복은 0건이었다. 다음 체크포인트는 test를 열지 않는
+   [두 품목 12개 fit/calibration](docs/additional-category-fits.md)이다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.
