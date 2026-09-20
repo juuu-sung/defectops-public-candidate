@@ -55,6 +55,9 @@ from defectops.patchcore_experiment import (
 EXPECTED_EVALUATION_PURPOSE = (
     "exploratory frozen-rule evaluation of the seed-42 PatchCore fit"
 )
+EXPECTED_REPEAT_EVALUATION_PURPOSE = (
+    "exploratory frozen-rule evaluation of a post-seed-42 PatchCore repeat"
+)
 
 
 def load_patchcore_evaluation_config(path: Path) -> dict[str, Any]:
@@ -63,7 +66,10 @@ def load_patchcore_evaluation_config(path: Path) -> dict[str, Any]:
     if raw_config.get("comparison_status") != EXPECTED_COMPARISON_STATUS:
         raise ValueError("Unexpected PatchCore evaluation comparison status")
     config = load_evaluation_config(path)
-    if config["purpose"] != EXPECTED_EVALUATION_PURPOSE:
+    if config["purpose"] not in {
+        EXPECTED_EVALUATION_PURPOSE,
+        EXPECTED_REPEAT_EVALUATION_PURPOSE,
+    }:
         raise ValueError("Unexpected PatchCore evaluation purpose")
     config["comparison_status"] = EXPECTED_COMPARISON_STATUS
     return config

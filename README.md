@@ -48,6 +48,8 @@ GT와 겹치는데도 image score 기준에서 탈락했다. FP 1장은 제품 �
 실제 등록 검사 1건의 전체 로컬 시연도 완료했으며, 개인정보를 제외한 결과는
 [완료 보고서](reports/local-review-to-mock-ticket-demo-v1.md), 재현 순서는
 [포트폴리오 시연 체크리스트](docs/demo-runbook.md)에 정리했다.
+[transistor 3-seed 탐색 반복](docs/transistor-multiseed.md)은 실행 도구와 검증 집계를 준비했으며,
+연구실 Windows에서 seed 43·44 GPU 실행을 기다리고 있다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
 
 ## 먼저 할 일
@@ -62,8 +64,8 @@ GT와 겹치는데도 image score 기준에서 탈락했다. FP 1장은 제품 �
 7. PatchCore 단일 이미지 검사 구현·연구실 Windows smoke test 완료.
 8. 로컬 상주 검사 API의 연구실 Windows smoke test와 실제 산출물의 맥북 SQLite 등록 완료.
    맥북 로컬 검토 UI·실제 사람 의견 1건, 모의 SOP 검색, 저장된 근거 revision만 사용하는
-   로컬 승인/모의 티켓 상태 전이까지 구현했다. 다음은 실제 흐름을 사람이 화면에서 단계별로
-   확인하고 데모 결과를 문서화하는 것이다.
+   로컬 승인/모의 티켓 상태 전이와 실제 1회 시연까지 완료했다. 다음은 연구실 Windows에서
+   PaDiM·PatchCore seed 43·44를 실행하고 3-seed 변동성을 탐색적으로 집계하는 것이다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.

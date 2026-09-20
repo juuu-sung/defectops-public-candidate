@@ -23,6 +23,12 @@ class EvaluationMetricTests(unittest.TestCase):
         self.assertEqual(config["pixel_calibration_quantile"], 0.995)
         self.assertEqual(config["aupro_fpr_limit"], 0.3)
         self.assertEqual(config["bootstrap_replicates"], 2000)
+        repeat = load_evaluation_config(root / "configs/padim-evaluation-repeat-v1.toml")
+        self.assertEqual(
+            repeat["purpose"],
+            "exploratory frozen-rule evaluation of a configured PaDiM repeat",
+        )
+        self.assertEqual(repeat["pixel_calibration_quantile"], 0.995)
 
     def test_ranking_metrics_are_perfect_for_separated_scores(self):
         labels = np.asarray([0, 0, 1, 1])

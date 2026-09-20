@@ -5,6 +5,7 @@ from pathlib import Path
 
 from defectops.patchcore_evaluation import (
     EXPECTED_EVALUATION_PURPOSE,
+    EXPECTED_REPEAT_EVALUATION_PURPOSE,
     load_patchcore_evaluation_config,
 )
 from defectops.patchcore_experiment import (
@@ -47,6 +48,28 @@ class PatchCoreExperimentTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "comparison_status"):
                 load_patchcore_experiment(path, self.manifest, seed=None)
 
+    def test_patchcore_repeat_config_discloses_observed_seed42_test(self):
+        repeat = load_patchcore_experiment(
+            self.root / "configs/patchcore-repeat-v1.toml", self.manifest, seed=43
+        )
+        self.assertEqual(repeat["model_seed"], 43)
+        with self.assertRaisesRegex(ValueError, "configured model seeds"):
+            load_patchcore_experiment(
+                self.root / "configs/patchcore-repeat-v1.toml", self.manifest, seed=42
+            )
+        original = (self.root / "configs/patchcore-repeat-v1.toml").read_text(
+            encoding="utf-8"
+        )
+        changed = original.replace(
+            'repeat_status = "exploratory_repeat_after_patchcore_seed42_test_observed"',
+            'repeat_status = "confirmatory"',
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "changed.toml"
+            path.write_text(changed, encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "repeat_status"):
+                load_patchcore_experiment(path, self.manifest, seed=43)
+
     def test_patchcore_evaluation_uses_shared_metric_contract(self):
         config = load_patchcore_evaluation_config(
             self.root / "configs/patchcore-evaluation-v1.toml"
@@ -57,6 +80,11 @@ class PatchCoreExperimentTests(unittest.TestCase):
         self.assertEqual(config["pixel_calibration_quantile"], 0.995)
         self.assertEqual(config["decision_rule"], "score >= threshold")
         self.assertEqual(config["bootstrap_seed"], 20260915)
+
+        repeat = load_patchcore_evaluation_config(
+            self.root / "configs/patchcore-evaluation-repeat-v1.toml"
+        )
+        self.assertEqual(repeat["purpose"], EXPECTED_REPEAT_EVALUATION_PURPOSE)
 
 
 if __name__ == "__main__":

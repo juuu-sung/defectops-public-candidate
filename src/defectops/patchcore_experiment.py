@@ -32,6 +32,7 @@ from defectops.padim_experiment import (
 
 
 EXPECTED_COMPARISON_STATUS = "exploratory_after_padim_test_observed"
+EXPECTED_REPEAT_STATUS = "exploratory_repeat_after_patchcore_seed42_test_observed"
 
 
 def load_patchcore_experiment(
@@ -62,8 +63,10 @@ def load_patchcore_experiment(
     if failed:
         raise ValueError("PatchCore configuration contract mismatch: " + ", ".join(failed))
     model_seeds = experiment.get("model_seeds")
-    if not isinstance(model_seeds, list) or model_seeds != [42]:
-        raise ValueError("PatchCore pilot model_seeds must be [42]")
+    if not isinstance(model_seeds, list) or model_seeds not in ([42], [43, 44]):
+        raise ValueError("PatchCore model_seeds must be [42] or the exploratory repeat [43, 44]")
+    if model_seeds == [43, 44] and config.get("repeat_status") != EXPECTED_REPEAT_STATUS:
+        raise ValueError("PatchCore repeat_status must disclose that seed-42 test was observed")
     selected_seed = model_seeds[0] if seed is None else seed
     if selected_seed not in model_seeds:
         raise ValueError(f"seed must be one of the configured model seeds: {model_seeds}")

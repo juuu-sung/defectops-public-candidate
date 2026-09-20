@@ -639,7 +639,8 @@ def run_evaluation(args: argparse.Namespace) -> dict[str, Any]:
             "fit_run_snapshot": "fit-run.json",
         },
         "limitations": [
-            "This is a seed-42 pipeline pilot, not a final model-selection estimate.",
+            f"This is a seed-{fit_config['model_seed']} exploratory pipeline result, "
+            "not a final model-selection estimate.",
             "MVTec test prevalence does not represent factory prevalence.",
             "Pixel confidence intervals are not computed by treating pixels as independent samples.",
             "Any changes informed by this result must be labeled exploratory and evaluated on new data.",

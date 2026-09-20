@@ -1,0 +1,25 @@
+# Exploratory repeats added only after the seed-42 PatchCore test result was observed.
+protocol = "A-normal-only-v1"
+comparison_status = "exploratory_after_padim_test_observed"
+repeat_status = "exploratory_repeat_after_patchcore_seed42_test_observed"
+categories = ["transistor"]
+split_seed = 42
+
+[experiment]
+model = "patchcore"
+backbone = "wide_resnet50_2"
+layers = ["layer2", "layer3"]
+coreset_sampling_ratio = 0.10
+num_neighbors = 9
+image_size = 256
+model_seeds = [43, 44]
+
+[calibration]
+image_quantile = 0.95
+quantile_method = "higher"
+score_space = "raw"
+decision_rule = "score >= threshold"
+
+[benchmark]
+batch_size = 1
+target_end_to_end_p95_ms = 1500
