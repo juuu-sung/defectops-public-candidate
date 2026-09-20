@@ -13,6 +13,9 @@ PatchCore 속도 측정: `patchcore-transistor-seed42-warm-v1`
 성격: PaDiM 공식 test 결과를 확인한 뒤 고정한 PatchCore와의 탐색적 비교. 새 확증 모델 선택
 결과가 아님.
 
+> 이 문서는 seed 42 단일 비교 기록이다. 이후 완료한 seed 42·43·44 반복 결과와 최종 bundle
+> 유지 결정은 [3-seed 탐색 결과 보고서](transistor-multiseed-exploratory-v1.md)를 우선한다.
+
 ## 결론
 
 동일한 transistor manifest·입력 크기·normal-only calibration·평가 지표에서
@@ -151,7 +154,8 @@ worker에서 모델을 한 번 로드해야 한다.
 ## 한계
 
 - PatchCore 설정은 PaDiM test 관찰 이후 고정했으므로 탐색적 결과다.
-- seed 42 한 번과 공개 MVTec 한 품목의 결과이며 실제 공장 domain shift를 다루지 않는다.
+- 이 보고서의 수치는 seed 42 한 번과 공개 MVTec 한 품목의 결과다. 후속 3-seed 반복에서도
+  실제 공장 domain shift는 다루지 않는다.
 - 각 결함 유형은 10장뿐이라 유형별 비율의 불확실성이 크다.
 - 현재 비교는 알고리즘뿐 아니라 backbone 크기 차이도 포함한다.
 - contact sheet 판독은 시각적 추정이며, 배경 표식의 실제 발생 원인과 복합 판정 규칙의 효과는 새 데이터로 검증해야 한다.

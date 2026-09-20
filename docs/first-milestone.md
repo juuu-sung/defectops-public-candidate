@@ -24,7 +24,7 @@
 - [x] 같은 검토 revision의 근거만 사용하는 로컬 조치 초안·승인/반려·모의 티켓 흐름 구현·테스트
 - [x] 실제 로컬 전체 시연 완료 및 개인정보 제외 완료 보고서·포트폴리오 체크리스트 작성
 - [x] PaDiM·PatchCore seed 43·44 실행·검증·3-seed 집계 도구 준비
-- [ ] 연구실 Windows에서 seed 43·44 GPU 실행 및 3-seed 결과 수집
+- [x] 연구실 Windows에서 seed 43·44 GPU 실행 및 3-seed 결과 수집
 
 ## 다음 순서
 
@@ -75,8 +75,12 @@
 16. 실제 등록 검사 1건의 전체 상태 전이를 완료했다. 사람 입력 원문을 제외한 결과와 해시는
     [완료 보고서](../reports/local-review-to-mock-ticket-demo-v1.md)에, 시연 순서와 실패 시
     기대 동작은 [포트폴리오 체크리스트](demo-runbook.md)에 기록했다.
-17. [3-seed 탐색 반복](transistor-multiseed.md)의 설정, Windows 일괄 실행, 결과 무결성 검증과
-    평균·표본 표준편차 집계 도구를 준비했다. 실제 seed 43·44 GPU 실행은 연구실 장비에서 한다.
+17. [3-seed 탐색 반복](transistor-multiseed.md)을 연구실 Windows에서 완료했다. PatchCore는
+    세 seed 모두 TP 37 / FP 1 / TN 59 / FN 3으로 동일했고 평균 Image AUROC 0.9911,
+    recall 0.925를 기록했다. PaDiM 평균은 Image AUROC 0.9175, recall 0.600이었다. 동일 test를
+    재사용한 탐색 반복이므로 seed 44의 근소한 순위 지표를 보고 교체하지 않고, 현재 연결된
+    PatchCore seed 42를 동결 유지한다. 상세 결과는
+    [3-seed 보고서](../reports/transistor-multiseed-exploratory-v1.md)에 기록했다.
 
 첫 완료 판정: 실제 transistor 입력에 대해 모델 버전·split hash·원시 점수·고정 임곗값·판정·
 원본 좌표계의 히트맵/영역·지연시간을 기록하고 artifact checksum으로 실행 추적을 확인한다.
