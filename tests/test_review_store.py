@@ -68,6 +68,23 @@ class ReviewStoreTests(unittest.TestCase):
         (directory / "inspection.json").write_text(json.dumps(record), encoding="utf-8")
         return directory, record
 
+    def mock_sop_result(self, defect_type="bent_lead", document_id="DEMO-TR-BENT"):
+        return {
+            "status": "found_simulation_only",
+            "product": "transistor",
+            "defect_type": defect_type,
+            "as_of": "2026-09-21",
+            "document_id": document_id,
+            "revision": 2,
+            "catalog_sha256": "c" * 64,
+            "sources": [
+                {
+                    "citation_id": f"{document_id}@r2#OBSERVE",
+                    "text": "Synthetic source snapshot.",
+                }
+            ],
+        }
+
     def test_register_verify_and_append_only_reviews(self):
         bundle, _ = self.make_bundle()
         self.assertEqual(self.store.register(bundle)["status"], "registered")
@@ -187,6 +204,99 @@ class ReviewStoreTests(unittest.TestCase):
         (bundle / "overlay.png").symlink_to(bundle / "input.png")
         with self.assertRaisesRegex(ValueError, "not a regular file"):
             self.store.register(bundle)
+
+    def test_sop_evidence_is_tied_to_review_revision_and_append_only(self):
+        bundle, _ = self.make_bundle()
+        self.store.register(bundle)
+        self.store.add_review(
+            "inspection-1",
+            expected_revision=0,
+            reviewer="operator-1",
+            human_verdict="ANOMALY_VISIBLE",
+            note="Left metal leg is not seated in the hole.",
+        )
+        result = self.mock_sop_result()
+        event = self.store.add_sop_evidence(
+            "inspection-1",
+            expected_review_revision=1,
+            selected_by="operator-1",
+            defect_type="bent_lead",
+            result=result,
+        )
+        self.assertEqual(event["status"], "recorded")
+        self.assertEqual(event["review_revision"], 1)
+        history = self.store.sop_evidence_history("inspection-1")
+        self.assertEqual(len(history), 1)
+        self.assertEqual(history[0]["sources"], result["sources"])
+        repeated = self.store.add_sop_evidence(
+            "inspection-1",
+            expected_review_revision=1,
+            selected_by="operator-1",
+            defect_type="bent_lead",
+            result=result,
+        )
+        self.assertEqual(repeated["status"], "already_recorded")
+        with self.assertRaisesRegex(ValueError, "already exists"):
+            self.store.add_sop_evidence(
+                "inspection-1",
+                expected_review_revision=1,
+                selected_by="operator-1",
+                defect_type="cut_lead",
+                result=self.mock_sop_result("cut_lead", "DEMO-TR-CUT"),
+            )
+        with sqlite3.connect(self.store.database_path) as connection:
+            with self.assertRaisesRegex(sqlite3.IntegrityError, "append-only SOP evidence"):
+                connection.execute("UPDATE sop_evidence_events SET selected_by = 'changed'")
+            with self.assertRaisesRegex(sqlite3.IntegrityError, "append-only SOP evidence"):
+                connection.execute("DELETE FROM sop_evidence_events")
+
+    def test_sop_evidence_requires_current_visible_anomaly_review(self):
+        bundle, _ = self.make_bundle()
+        self.store.register(bundle)
+        with self.assertRaisesRegex(ValueError, "revision conflict"):
+            self.store.add_sop_evidence(
+                "inspection-1",
+                expected_review_revision=1,
+                selected_by="operator",
+                defect_type="bent_lead",
+                result=self.mock_sop_result(),
+            )
+        self.store.add_review(
+            "inspection-1",
+            expected_revision=0,
+            reviewer="operator",
+            human_verdict="UNCERTAIN",
+            note="Image is inconclusive.",
+        )
+        with self.assertRaisesRegex(ValueError, "ANOMALY_VISIBLE"):
+            self.store.add_sop_evidence(
+                "inspection-1",
+                expected_review_revision=1,
+                selected_by="operator",
+                defect_type="bent_lead",
+                result=self.mock_sop_result(),
+            )
+
+    def test_schema_one_database_migrates_without_losing_reviews(self):
+        bundle, _ = self.make_bundle()
+        self.store.register(bundle)
+        self.store.add_review(
+            "inspection-1",
+            expected_revision=0,
+            reviewer="operator",
+            human_verdict="ANOMALY_VISIBLE",
+            note="Visible anomaly.",
+        )
+        with sqlite3.connect(self.store.database_path) as connection:
+            connection.execute("DROP TRIGGER sop_evidence_events_no_update")
+            connection.execute("DROP TRIGGER sop_evidence_events_no_delete")
+            connection.execute("DROP TABLE sop_evidence_events")
+            connection.execute("PRAGMA user_version = 1")
+        self.store.initialize()
+        self.assertEqual(len(self.store.review_history("inspection-1")), 1)
+        self.assertEqual(self.store.sop_evidence_history("inspection-1"), [])
+        with sqlite3.connect(self.store.database_path) as connection:
+            self.assertEqual(connection.execute("PRAGMA user_version").fetchone()[0], 2)
 
 
 if __name__ == "__main__":

@@ -6,8 +6,9 @@ from __future__ import annotations
 import io
 import os
 import sys
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
@@ -31,6 +32,11 @@ MODEL_DECISION_LABELS = {
     "REVIEW_REQUIRED": "검토 필요",
     "PASS": "모델 기준 이하",
 }
+SEOUL = ZoneInfo("Asia/Seoul")
+
+
+def _display_time(value: str) -> str:
+    return datetime.fromisoformat(value).astimezone(SEOUL).strftime("%Y-%m-%d %H:%M:%S KST")
 
 
 def _inspection_label(row: dict) -> str:
@@ -46,6 +52,8 @@ def render() -> None:
 
     store = ReviewStore(DB_PATH)
     try:
+        if DB_PATH.is_file():
+            store.initialize()
         rows = store.list_inspections()
     except (FileNotFoundError, OSError, ValueError) as exc:
         st.error("검토 저장소를 열 수 없습니다. 먼저 로컬 DB를 초기화하고 검사 산출물을 등록하세요.")
@@ -163,14 +171,14 @@ def render() -> None:
     for event in store.review_history(inspection_id):
         st.text(
             f"#{event['revision']} · {VERDICT_LABELS[event['human_verdict']]} "
-            f"· {event['reviewer']} · {event['recorded_at']}\n{event['note']}"
+            f"· {event['reviewer']} · {_display_time(event['recorded_at'])}\n{event['note']}"
         )
 
-    st.subheader("모의 SOP 근거 찾기")
+    st.subheader("모의 SOP 근거 연결")
     st.caption(
         "화면 흐름을 시험하기 위한 가상 문서입니다. 기존 관찰 문장에서 결함 유형이나 원인을 "
-        "자동 추측하지 않으며, 실제 현장 절차로 사용할 수 없습니다. "
-        "유형 선택과 검색 결과는 검토 이력에 저장되지 않습니다."
+        "자동 추측하지 않으며, 실제 현장 절차로 사용할 수 없습니다. 검색 결과를 확인한 뒤 "
+        "별도로 저장해야 검토 revision에 연결됩니다."
     )
     latest = item["latest_review"]
     if latest is None:
@@ -178,6 +186,28 @@ def render() -> None:
         return
     if latest["human_verdict"] != "ANOMALY_VISIBLE":
         st.info("최신 검토 의견이 '이상 징후가 보임'이 아니므로 모의 조치 근거를 제시하지 않습니다.")
+        return
+
+    evidence_history = store.sop_evidence_history(inspection_id)
+    current_evidence = next(
+        (event for event in evidence_history if event["review_revision"] == item["review_revision"]),
+        None,
+    )
+    if current_evidence is not None:
+        st.success(
+            f"연결 기록 완료 · 검토 revision {current_evidence['review_revision']} · "
+            f"{DEFECT_LABELS[current_evidence['defect_type']]} · "
+            f"{current_evidence['document_id']} 개정 {current_evidence['document_revision']}"
+        )
+        st.caption(
+            f"선택 기록자: {current_evidence['selected_by']} · 검색 기준일: "
+            f"{current_evidence['lookup_date']} · 기록 시각: "
+            f"{_display_time(current_evidence['recorded_at'])}"
+        )
+        for source in current_evidence["sources"]:
+            st.info(source["text"])
+            st.caption(f"저장된 원문 근거: {source['citation_id']}")
+        st.warning("이 기록은 실제 제품 판정·설비 조치·티켓 발행 승인이 아닙니다.")
         return
 
     with st.form(f"mock_sop_form_{inspection_id}_{item['review_revision']}"):
@@ -188,19 +218,24 @@ def render() -> None:
             key=f"mock_sop_type_{inspection_id}_{item['review_revision']}",
         )
         requested = st.form_submit_button("모의 SOP 근거 찾기")
-    if not requested:
-        return
-    try:
-        catalog = load_mock_catalog(MOCK_CATALOG)
-        result = find_mock_sop(
-            catalog,
-            product=record["category"],
-            defect_type=defect_type,
-            human_verdict=latest["human_verdict"],
-            as_of=date.today(),
-        )
-    except (OSError, ValueError) as exc:
-        st.error(f"유효한 모의 문서를 확인할 수 없어 검색 결과를 표시하지 않습니다: {exc}")
+    result_key = f"mock_sop_result_{inspection_id}_{item['review_revision']}"
+    if requested:
+        try:
+            catalog = load_mock_catalog(MOCK_CATALOG)
+            result = find_mock_sop(
+                catalog,
+                product=record["category"],
+                defect_type=defect_type,
+                human_verdict=latest["human_verdict"],
+                as_of=date.today(),
+            )
+            st.session_state[result_key] = result
+        except (OSError, ValueError) as exc:
+            st.session_state.pop(result_key, None)
+            st.error(f"유효한 모의 문서를 확인할 수 없어 검색 결과를 표시하지 않습니다: {exc}")
+            return
+    result = st.session_state.get(result_key)
+    if result is None:
         return
     if result["status"] == "defect_type_required":
         st.warning("유형을 모르면 문서를 임의로 연결하지 않습니다. '모름'을 유지하고 확인을 보류하세요.")
@@ -221,6 +256,37 @@ def render() -> None:
     st.warning("이 내용으로 실제 제품 판정·설비 조치·티켓 발행을 하지 않습니다.")
     with st.expander("모의 문서 파일 무결성 표시"):
         st.code(f"SHA-256: {result['catalog_sha256']}")
+    with st.form(f"mock_sop_save_form_{inspection_id}_{item['review_revision']}"):
+        selected_by = st.text_input(
+            "유형 선택 기록자",
+            value=latest["reviewer"],
+            max_chars=80,
+            key=f"mock_sop_selected_by_{inspection_id}_{item['review_revision']}",
+        )
+        evidence_acknowledged = st.checkbox(
+            "이 연결은 모의 근거 기록이며 실제 원인 확정이나 조치 승인이 아님을 확인했습니다.",
+            key=f"mock_sop_ack_{inspection_id}_{item['review_revision']}",
+        )
+        save_evidence = st.form_submit_button("이 모의 근거 연결 기록 저장", type="primary")
+    if save_evidence:
+        if not evidence_acknowledged:
+            st.error("확인 항목에 동의해야 연결 기록을 저장할 수 있습니다.")
+            return
+        try:
+            event = store.add_sop_evidence(
+                inspection_id,
+                expected_review_revision=item["review_revision"],
+                selected_by=selected_by,
+                defect_type=result["defect_type"],
+                result=result,
+            )
+            st.session_state.pop(result_key, None)
+            st.session_state[f"saved_message_{inspection_id}"] = (
+                f"모의 SOP 근거를 검토 revision {event['review_revision']}에 연결했습니다."
+            )
+            st.rerun()
+        except (FileNotFoundError, KeyError, OSError, ValueError) as exc:
+            st.error(f"모의 SOP 근거 연결 저장 실패: {exc}")
 
 
 render()

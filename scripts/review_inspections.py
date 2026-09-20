@@ -6,10 +6,12 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from defectops.mock_sop import DEFECT_LABELS, find_mock_sop, load_mock_catalog
 from defectops.review_store import HUMAN_VERDICTS, ReviewStore
 
 
@@ -39,6 +41,23 @@ def build_parser() -> argparse.ArgumentParser:
     review.add_argument("--note", required=True)
     history = commands.add_parser("history", help="Read immutable review events")
     history.add_argument("--inspection-id", required=True)
+    link_sop = commands.add_parser("link-sop", help="Append one validated mock SOP source snapshot")
+    link_sop.add_argument("--inspection-id", required=True)
+    link_sop.add_argument("--expected-review-revision", type=int, required=True)
+    link_sop.add_argument("--selected-by", required=True)
+    link_sop.add_argument(
+        "--defect-type",
+        choices=sorted(key for key in DEFECT_LABELS if key != "UNKNOWN"),
+        required=True,
+    )
+    link_sop.add_argument(
+        "--catalog",
+        type=Path,
+        default=project_root / "sops" / "mock-catalog-v1.json",
+    )
+    link_sop.add_argument("--as-of", type=date.fromisoformat, default=date.today())
+    sop_history = commands.add_parser("sop-history", help="Read immutable mock SOP source links")
+    sop_history.add_argument("--inspection-id", required=True)
     return parser
 
 
@@ -65,8 +84,27 @@ def main(argv: list[str] | None = None) -> int:
                 human_verdict=args.verdict,
                 note=args.note,
             )
-        else:
+        elif args.command == "history":
             result = {"history": store.review_history(args.inspection_id)}
+        elif args.command == "link-sop":
+            item = store.get_inspection(args.inspection_id)
+            catalog = load_mock_catalog(args.catalog)
+            sop_result = find_mock_sop(
+                catalog,
+                product=item["category"],
+                defect_type=args.defect_type,
+                human_verdict=(item["latest_review"] or {}).get("human_verdict"),
+                as_of=args.as_of,
+            )
+            result = store.add_sop_evidence(
+                args.inspection_id,
+                expected_review_revision=args.expected_review_revision,
+                selected_by=args.selected_by,
+                defect_type=args.defect_type,
+                result=sop_result,
+            )
+        else:
+            result = {"history": store.sop_evidence_history(args.inspection_id)}
     except (FileNotFoundError, KeyError, OSError, ValueError) as exc:
         print(f"ERROR: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 2

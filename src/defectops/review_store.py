@@ -22,8 +22,10 @@ ARTIFACT_NAMES = {
     "anomaly_map": "anomaly-map.npz",
 }
 HUMAN_VERDICTS = frozenset({"ANOMALY_VISIBLE", "NO_ANOMALY_VISIBLE", "UNCERTAIN"})
+SOP_DEFECT_TYPES = frozenset({"bent_lead", "cut_lead", "damaged_case", "misplaced"})
 MAX_ARTIFACT_BYTES = 200 * 1024 * 1024
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
+SOP_ID_PATTERN = re.compile(r"[A-Z0-9][A-Z0-9_-]{1,63}\Z")
 
 
 def _utc_now() -> str:
@@ -142,7 +144,7 @@ class ReviewStore:
         try:
             connection.execute("PRAGMA foreign_keys = ON")
             version = connection.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1):
+            if version not in (0, 1, 2):
                 raise ValueError(f"Unsupported review database schema version: {version}")
             connection.executescript(
                 """
@@ -169,6 +171,24 @@ class ReviewStore:
                     recorded_at TEXT NOT NULL,
                     UNIQUE(inspection_id, revision)
                 );
+                CREATE TABLE IF NOT EXISTS sop_evidence_events (
+                    event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    inspection_id TEXT NOT NULL,
+                    review_revision INTEGER NOT NULL CHECK(review_revision > 0),
+                    selected_by TEXT NOT NULL,
+                    defect_type TEXT NOT NULL CHECK(
+                        defect_type IN ('bent_lead', 'cut_lead', 'damaged_case', 'misplaced')
+                    ),
+                    document_id TEXT NOT NULL,
+                    document_revision INTEGER NOT NULL CHECK(document_revision > 0),
+                    catalog_sha256 TEXT NOT NULL,
+                    lookup_date TEXT NOT NULL,
+                    sources_json TEXT NOT NULL,
+                    recorded_at TEXT NOT NULL,
+                    UNIQUE(inspection_id, review_revision),
+                    FOREIGN KEY(inspection_id, review_revision)
+                        REFERENCES review_events(inspection_id, revision)
+                );
                 CREATE TRIGGER IF NOT EXISTS inspections_no_update
                     BEFORE UPDATE ON inspections BEGIN SELECT RAISE(ABORT, 'immutable inspection'); END;
                 CREATE TRIGGER IF NOT EXISTS inspections_no_delete
@@ -177,7 +197,13 @@ class ReviewStore:
                     BEFORE UPDATE ON review_events BEGIN SELECT RAISE(ABORT, 'append-only review'); END;
                 CREATE TRIGGER IF NOT EXISTS review_events_no_delete
                     BEFORE DELETE ON review_events BEGIN SELECT RAISE(ABORT, 'append-only review'); END;
-                PRAGMA user_version = 1;
+                CREATE TRIGGER IF NOT EXISTS sop_evidence_events_no_update
+                    BEFORE UPDATE ON sop_evidence_events
+                    BEGIN SELECT RAISE(ABORT, 'append-only SOP evidence'); END;
+                CREATE TRIGGER IF NOT EXISTS sop_evidence_events_no_delete
+                    BEFORE DELETE ON sop_evidence_events
+                    BEGIN SELECT RAISE(ABORT, 'append-only SOP evidence'); END;
+                PRAGMA user_version = 2;
                 """
             )
         finally:
@@ -337,5 +363,170 @@ class ReviewStore:
                 (inspection_id,),
             ).fetchall()
             return [dict(row) for row in rows]
+        finally:
+            connection.close()
+
+    def add_sop_evidence(
+        self,
+        inspection_id: str,
+        *,
+        expected_review_revision: int,
+        selected_by: str,
+        defect_type: str,
+        result: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Append one source snapshot to the exact current human-review revision."""
+        if (
+            isinstance(expected_review_revision, bool)
+            or not isinstance(expected_review_revision, int)
+            or expected_review_revision < 1
+        ):
+            raise ValueError("expected_review_revision must be a positive integer")
+        if not isinstance(selected_by, str):
+            raise ValueError("selected_by must be text")
+        selected_by = selected_by.strip()
+        if not 1 <= len(selected_by) <= 80 or any(char in selected_by for char in "\r\n"):
+            raise ValueError("selected_by must be 1–80 characters on one line")
+        if defect_type not in SOP_DEFECT_TYPES:
+            raise ValueError("Unsupported SOP defect type")
+        if not isinstance(result, dict) or result.get("status") != "found_simulation_only":
+            raise ValueError("A validated simulation-only SOP result is required")
+        if result.get("defect_type") != defect_type:
+            raise ValueError("SOP result defect type differs")
+        document_id = result.get("document_id")
+        document_revision = result.get("revision")
+        catalog_sha256 = result.get("catalog_sha256")
+        lookup_date = result.get("as_of")
+        sources = result.get("sources")
+        if not isinstance(document_id, str) or not SOP_ID_PATTERN.fullmatch(document_id):
+            raise ValueError("Invalid SOP document ID")
+        if (
+            isinstance(document_revision, bool)
+            or not isinstance(document_revision, int)
+            or document_revision < 1
+        ):
+            raise ValueError("Invalid SOP document revision")
+        if not isinstance(catalog_sha256, str) or not SHA256_PATTERN.fullmatch(catalog_sha256):
+            raise ValueError("Invalid SOP catalog checksum")
+        try:
+            parsed_date = datetime.strptime(lookup_date, "%Y-%m-%d").date()
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Invalid SOP lookup date") from exc
+        if parsed_date.isoformat() != lookup_date:
+            raise ValueError("Invalid SOP lookup date")
+        if not isinstance(sources, list) or not sources:
+            raise ValueError("SOP source snapshot is missing")
+        expected_prefix = f"{document_id}@r{document_revision}#"
+        for source in sources:
+            if (
+                not isinstance(source, dict)
+                or not isinstance(source.get("citation_id"), str)
+                or not source["citation_id"].startswith(expected_prefix)
+                or not isinstance(source.get("text"), str)
+                or not source["text"].strip()
+            ):
+                raise ValueError("Invalid SOP source snapshot")
+        sources_json = json.dumps(sources, sort_keys=True, ensure_ascii=False)
+
+        with self._write() as connection:
+            inspection = connection.execute(
+                "SELECT bundle_path, inspection_json_sha256, status, category "
+                "FROM inspections WHERE inspection_id = ?",
+                (inspection_id,),
+            ).fetchone()
+            if inspection is None:
+                raise KeyError(f"Unknown inspection ID: {inspection_id}")
+            if inspection["status"] != "completed":
+                raise ValueError("Failed inspections cannot receive SOP evidence")
+            _, current_sha256 = validate_bundle(Path(inspection["bundle_path"]))
+            if current_sha256 != inspection["inspection_json_sha256"]:
+                raise ValueError("Registered inspection JSON was changed after import")
+            if result.get("product") != inspection["category"]:
+                raise ValueError("SOP result product differs from the inspection")
+            current_revision = connection.execute(
+                "SELECT COALESCE(MAX(revision), 0) FROM review_events WHERE inspection_id = ?",
+                (inspection_id,),
+            ).fetchone()[0]
+            if current_revision != expected_review_revision:
+                raise ValueError(f"Review revision conflict: current revision is {current_revision}")
+            review = connection.execute(
+                "SELECT human_verdict FROM review_events "
+                "WHERE inspection_id = ? AND revision = ?",
+                (inspection_id, expected_review_revision),
+            ).fetchone()
+            if review is None or review["human_verdict"] != "ANOMALY_VISIBLE":
+                raise ValueError("SOP evidence requires an ANOMALY_VISIBLE human review")
+            existing = connection.execute(
+                "SELECT * FROM sop_evidence_events "
+                "WHERE inspection_id = ? AND review_revision = ?",
+                (inspection_id, expected_review_revision),
+            ).fetchone()
+            material = {
+                "defect_type": defect_type,
+                "document_id": document_id,
+                "document_revision": document_revision,
+                "catalog_sha256": catalog_sha256,
+                "lookup_date": lookup_date,
+                "sources_json": sources_json,
+            }
+            if existing is not None:
+                if all(existing[key] == value for key, value in material.items()):
+                    event = dict(existing)
+                    event["status"] = "already_recorded"
+                    event["sources"] = json.loads(event.pop("sources_json"))
+                    return event
+                raise ValueError("SOP evidence already exists for this review revision")
+            recorded_at = _utc_now()
+            connection.execute(
+                """INSERT INTO sop_evidence_events
+                   (inspection_id, review_revision, selected_by, defect_type,
+                    document_id, document_revision, catalog_sha256, lookup_date,
+                    sources_json, recorded_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    inspection_id,
+                    expected_review_revision,
+                    selected_by,
+                    defect_type,
+                    document_id,
+                    document_revision,
+                    catalog_sha256,
+                    lookup_date,
+                    sources_json,
+                    recorded_at,
+                ),
+            )
+            return {
+                "status": "recorded",
+                "inspection_id": inspection_id,
+                "review_revision": expected_review_revision,
+                "selected_by": selected_by,
+                "defect_type": defect_type,
+                "document_id": document_id,
+                "document_revision": document_revision,
+                "catalog_sha256": catalog_sha256,
+                "lookup_date": lookup_date,
+                "sources": sources,
+                "recorded_at": recorded_at,
+            }
+
+    def sop_evidence_history(self, inspection_id: str) -> list[dict[str, Any]]:
+        self.get_inspection(inspection_id)
+        connection = self._connect()
+        try:
+            rows = connection.execute(
+                """SELECT event_id, review_revision, selected_by, defect_type,
+                          document_id, document_revision, catalog_sha256, lookup_date,
+                          sources_json, recorded_at
+                   FROM sop_evidence_events WHERE inspection_id = ?
+                   ORDER BY review_revision""",
+                (inspection_id,),
+            ).fetchall()
+            result = []
+            for row in rows:
+                item = dict(row)
+                item["sources"] = json.loads(item.pop("sources_json"))
+                result.append(item)
+            return result
         finally:
             connection.close()

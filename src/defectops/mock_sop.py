@@ -13,8 +13,8 @@ from typing import Any
 
 DEFECT_LABELS = {
     "UNKNOWN": "모름 / 아직 선택하지 않음",
-    "bent_lead": "리드 굽힘",
-    "cut_lead": "리드 절단",
+    "bent_lead": "금속 다리(리드) 굽힘·삽입 위치 이상",
+    "cut_lead": "금속 다리(리드) 절단",
     "damaged_case": "케이스 손상",
     "misplaced": "부품 위치 이상",
 }

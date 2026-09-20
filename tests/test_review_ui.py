@@ -185,6 +185,22 @@ class ReviewUITests(unittest.TestCase):
         self.assertTrue(any("DEMO-TR-BENT@r2#OBSERVE" in x.value for x in app.caption))
         self.assertTrue(any("가상 문서" in x.value for x in app.caption))
         self.assertEqual(len(self.store.review_history("case-1")), 1)
+        self.assertEqual(self.store.sop_evidence_history("case-1"), [])
+
+        with patch.dict(os.environ, {"DEFECTOPS_REVIEW_DB": str(self.store.database_path)}):
+            app.button[-1].click().run()
+        self.assertTrue(any("동의" in message.value for message in app.error))
+        self.assertEqual(self.store.sop_evidence_history("case-1"), [])
+
+        app.checkbox[-1].set_value(True)
+        with patch.dict(os.environ, {"DEFECTOPS_REVIEW_DB": str(self.store.database_path)}):
+            app.button[-1].click().run()
+        evidence = self.store.sop_evidence_history("case-1")
+        self.assertEqual(len(evidence), 1)
+        self.assertEqual(evidence[0]["review_revision"], 1)
+        self.assertEqual(evidence[0]["defect_type"], "bent_lead")
+        self.assertEqual(evidence[0]["document_id"], "DEMO-TR-BENT")
+        self.assertTrue(any("연결 기록 완료" in message.value for message in app.success))
 
     def test_no_sop_form_when_latest_human_review_is_uncertain(self):
         self.store.add_review(
