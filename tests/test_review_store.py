@@ -350,6 +350,16 @@ class ReviewStoreTests(unittest.TestCase):
         self.assertEqual(len(self.store.action_draft_history("inspection-1")), 1)
         self.assertEqual(len(self.store.action_approval_history("inspection-1")), 1)
         self.assertEqual(len(self.store.mock_ticket_history("inspection-1")), 1)
+        summary = self.store.sanitized_mock_ticket_summary("inspection-1")
+        encoded_summary = json.dumps(summary, ensure_ascii=False)
+        self.assertEqual(summary["status"], "completed_local_simulation")
+        self.assertEqual(summary["approval_decision"], "APPROVED_FOR_MOCK_TICKET")
+        self.assertFalse(summary["external_delivery"])
+        self.assertEqual(summary["model"]["automatic_pass_allowed"], False)
+        self.assertNotIn("inspection-1", encoded_summary)
+        self.assertNotIn("operator-1", encoded_summary)
+        self.assertNotIn("Left metal leg", encoded_summary)
+        self.assertNotIn("Synthetic source snapshot", encoded_summary)
         with sqlite3.connect(self.store.database_path) as connection:
             with self.assertRaisesRegex(sqlite3.IntegrityError, "append-only action draft"):
                 connection.execute("UPDATE action_draft_events SET created_by = 'changed'")
@@ -393,6 +403,8 @@ class ReviewStoreTests(unittest.TestCase):
                 approval_event_id=rejection["event_id"],
                 issued_by="operator",
             )
+        with self.assertRaisesRegex(ValueError, "No mock ticket"):
+            self.store.sanitized_mock_ticket_summary("inspection-1")
 
     def test_schema_one_database_migrates_without_losing_reviews(self):
         bundle, _ = self.make_bundle()

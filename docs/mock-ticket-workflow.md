@@ -62,5 +62,11 @@ python scripts/review_inspections.py issue-mock-ticket \
 python scripts/review_inspections.py ticket-history --inspection-id <inspection-id>
 ```
 
+개인정보·자유 입력 note·원본 경로·인용 원문을 제외한 Git-safe 결과는 다음 명령으로 확인한다.
+
+```sh
+python scripts/review_inspections.py ticket-summary --inspection-id <inspection-id>
+```
+
 이 단계가 완료되어도 실제 현장 적용 준비가 된 것은 아니다. 다음 확장 전에 인증·권한 분리,
 실제 승인 SOP, 감사 로그 보관 정책, 외부 티켓 연동에 대한 별도 설계와 승인이 필요하다.

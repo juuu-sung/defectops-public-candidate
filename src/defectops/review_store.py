@@ -939,3 +939,46 @@ class ReviewStore:
             return result
         finally:
             connection.close()
+
+    def sanitized_mock_ticket_summary(self, inspection_id: str) -> dict[str, Any]:
+        """Return a Git-safe run summary without names, notes, paths or source text."""
+        tickets = self.mock_ticket_history(inspection_id)
+        if not tickets:
+            raise ValueError("No mock ticket exists for this inspection")
+        ticket = tickets[-1]
+        payload = ticket["payload"]
+        model_record = payload["model_record"]
+        trace = model_record["trace"]
+        evidence = payload["sop_evidence"]
+        return {
+            "schema_version": 1,
+            "status": "completed_local_simulation",
+            "simulation_only": payload["simulation_only"],
+            "external_delivery": payload["external_delivery"],
+            "ticket_id": ticket["ticket_id"],
+            "inspection_fingerprint_sha256": hashlib.sha256(
+                inspection_id.encode("utf-8")
+            ).hexdigest(),
+            "review_revision": ticket["review_revision"],
+            "human_verdict": payload["review"]["human_verdict"],
+            "model": {
+                "name": model_record["model"],
+                "decision": model_record["decision"],
+                "raw_score": model_record["raw_score"],
+                "image_threshold": model_record["image_threshold"],
+                "automatic_pass_allowed": model_record["automatic_pass_allowed"],
+                "fit_run_id": trace["fit_run_id"],
+                "checkpoint_sha256": trace["checkpoint_sha256"],
+                "manifest_sha256": trace["manifest_sha256"],
+            },
+            "sop_evidence": {
+                "defect_type": evidence["defect_type"],
+                "document_id": evidence["document_id"],
+                "document_revision": evidence["document_revision"],
+                "catalog_sha256": evidence["catalog_sha256"],
+            },
+            "action_title": payload["action_draft"]["title"],
+            "approval_decision": payload["approval"]["decision"],
+            "ticket_payload_sha256": ticket["payload_sha256"],
+            "ticket_recorded_at": ticket["recorded_at"],
+        }

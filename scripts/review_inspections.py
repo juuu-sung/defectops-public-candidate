@@ -80,6 +80,10 @@ def build_parser() -> argparse.ArgumentParser:
     issue_ticket.add_argument("--issued-by", required=True)
     ticket_history = commands.add_parser("ticket-history", help="Read immutable local mock tickets")
     ticket_history.add_argument("--inspection-id", required=True)
+    ticket_summary = commands.add_parser(
+        "ticket-summary", help="Emit a Git-safe mock-ticket summary without human-entered text"
+    )
+    ticket_summary.add_argument("--inspection-id", required=True)
     return parser
 
 
@@ -153,8 +157,10 @@ def main(argv: list[str] | None = None) -> int:
                 approval_event_id=args.approval_event_id,
                 issued_by=args.issued_by,
             )
-        else:
+        elif args.command == "ticket-history":
             result = {"history": store.mock_ticket_history(args.inspection_id)}
+        else:
+            result = store.sanitized_mock_ticket_summary(args.inspection_id)
     except (FileNotFoundError, KeyError, OSError, ValueError) as exc:
         print(f"ERROR: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 2
