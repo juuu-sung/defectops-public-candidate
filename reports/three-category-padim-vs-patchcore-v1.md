@@ -86,5 +86,6 @@ Metal Nut에서 PatchCore는 불량을 거의 모두 잡았지만 정상 22장 �
 - Cable과 Metal Nut은 사전등록된 고정 규칙으로 평가했지만 공개 MVTec test를 사용한다.
 - 공개 데이터 불량 비율과 review rate를 실제 생산 운영 비율로 해석하지 않는다.
 - 결과를 근거로 모델·임곗값·ROI·후처리를 변경하지 않는다.
-- 다음은 사전 선택한 seed 42 PatchCore의 Cable·Metal Nut FN/FP 유형 분석과 warm 측정이다.
-- 이후 모델 변경 또는 자동 PASS 검증에는 새로운 미관찰 데이터가 필요하다.
+- 사전 선택한 seed 42 PatchCore의 Cable·Metal Nut FN/FP 유형 분석과 warm 측정을 완료했다.
+  결과는 [추가 품목 사후 진단 보고서](patchcore-additional-diagnostics-v1.md)에 기록했다.
+- 이후 모델 변경 또는 자동 PASS 검증에는 [새 미관찰 데이터](../docs/unseen-holdout-plan.md)가 필요하다.

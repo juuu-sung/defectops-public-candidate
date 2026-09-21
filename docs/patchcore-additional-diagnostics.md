@@ -29,3 +29,14 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 ```text
 artifacts\handoff\patchcore-additional-diagnostics-v1.zip
 ```
+
+## 완료 결과
+
+2026-09-21 연구실 Windows에서 완료했다. handoff ZIP과 내부 산출물 checksum, 기존 공식 평가와의
+혼동행렬·manifest·checkpoint 연결을 재검증했다. Cable은 TP 87 / FP 4 / TN 54 / FN 5,
+Metal Nut은 TP 92 / FP 3 / TN 19 / FN 1이었다. warm sample p95는 Cable 42.04 ms,
+Metal Nut 25.97 ms였다.
+
+오류 유형·contact sheet 판독·속도·무결성 검증은
+[결과 보고서](../reports/patchcore-additional-diagnostics-v1.md)에 기록했다. 다음 단계는 현재 test를
+재사용한 튜닝이 아니라 [새 미관찰 holdout 계획](unseen-holdout-plan.md)에 따른 독립 데이터 확보다.

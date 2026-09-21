@@ -29,7 +29,8 @@
 - [x] cable·metal_nut 공식 데이터 manifest 생성·무결성 audit·커밋
 - [x] cable·metal_nut 두 모델 × 3 seed fit/calibration 완료
 - [x] cable·metal_nut 고정 test 평가와 3품목 macro 비교 완료
-- [ ] PatchCore seed 42 추가 품목 FN/FP 분석과 warm 속도 측정 완료
+- [x] PatchCore seed 42 추가 품목 FN/FP 분석과 warm 속도 측정 완료
+- [x] 새 미관찰 development/final holdout 수집·검증 계획 작성
 
 ## 다음 순서
 
@@ -99,8 +100,12 @@
     PatchCore macro escape rate는 4.31%, PaDiM은 35.85%로 고정 선택 규칙에 따라 PatchCore가
     포트폴리오 후보가 됐다. [3품목 결과 보고서](../reports/three-category-padim-vs-patchcore-v1.md)를
     참고한다.
-21. 다음은 [PatchCore 추가 품목 진단](patchcore-additional-diagnostics.md)이다. 사전 기준 seed 42의
-    FN/FP 유형과 warm 속도를 측정하며 모델·임곗값·ROI·후처리를 변경하지 않는다.
+21. [PatchCore 추가 품목 진단](patchcore-additional-diagnostics.md)을 완료했다. Cable은
+    TP 87 / FP 4 / TN 54 / FN 5, Metal Nut은 TP 92 / FP 3 / TN 19 / FN 1이었다.
+    Cable 미탐은 `cable_swap` 4장과 `poke_insulation` 1장, Metal Nut 미탐은 `color` 1장이었다.
+    warm sample p95는 각각 42.04 ms와 25.97 ms였으며 모델·임곗값을 변경하지 않았다.
+22. 다음은 [새 미관찰 holdout 계획](unseen-holdout-plan.md)에 따라 development와 final holdout을
+    물리 부품·촬영 세션 단위로 분리해 확보하는 단계다. 새 독립 데이터가 없으면 추가 튜닝을 하지 않는다.
 
 첫 완료 판정: 실제 transistor 입력에 대해 모델 버전·split hash·원시 점수·고정 임곗값·판정·
 원본 좌표계의 히트맵/영역·지연시간을 기록하고 artifact checksum으로 실행 추적을 확인한다.

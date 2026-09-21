@@ -55,6 +55,13 @@ recall 0.600, escape rate 40.0%였으며 seed에 따른 판정 변동도 더 컸
 주력 후보는 PatchCore로 유지한다. 다만 같은 test를 반복 사용한 탐색 결과이므로 seed 44의
 근소한 순위 지표를 근거로 모델을 교체하지 않고, 이미 서비스에 연결한 seed 42 bundle을
 동결해 유지한다. [3-seed 결과 보고서](reports/transistor-multiseed-exploratory-v1.md)를 참고한다.
+Cable·Metal Nut을 포함한 3품목 고정 비교도 완료했다. 사전 고정한 품목 동일 가중 macro
+escape rate는 PatchCore 4.31%, PaDiM 35.85%로 PatchCore가 정확도 우선 포트폴리오 후보가 됐다.
+[3품목 결과 보고서](reports/three-category-padim-vs-patchcore-v1.md)를 참고한다. 이어서 seed 42
+PatchCore의 [추가 품목 오류 분석과 warm 측정](reports/patchcore-additional-diagnostics-v1.md)을 완료했다.
+Cable 미탐은 `cable_swap` 4장과 `poke_insulation` 1장, Metal Nut 미탐은 `color` 1장이었다.
+warm sample p95는 Cable 42.04 ms, Metal Nut 25.97 ms였고 설정을 변경하지 않았다. 다음 변경은
+[새 미관찰 holdout 계획](docs/unseen-holdout-plan.md)에 따라 독립 데이터에서만 수행한다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
 
 ## 먼저 할 일
@@ -79,8 +86,9 @@ recall 0.600, escape rate 40.0%였으며 seed에 따른 판정 변동도 더 컸
    사전 고정한 [공식 test 평가와 3품목 macro 집계](docs/additional-category-evaluation.md)다.
    이 평가도 완료했고 PatchCore는 macro escape rate 4.31%로 PaDiM의 35.85%보다 낮아 정확도
    우선 포트폴리오 후보가 됐다. 상세 결과는
-   [3품목 비교 보고서](reports/three-category-padim-vs-patchcore-v1.md)에 기록했다. 다음은
-   [PatchCore 추가 품목 오류 분석과 warm 측정](docs/patchcore-additional-diagnostics.md)이다.
+   [3품목 비교 보고서](reports/three-category-padim-vs-patchcore-v1.md)에 기록했다.
+   [PatchCore 추가 품목 오류 분석과 warm 측정](docs/patchcore-additional-diagnostics.md)도 완료했고,
+   다음은 [새 미관찰 holdout 계획](docs/unseen-holdout-plan.md)에 따른 독립 데이터 확보다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.
