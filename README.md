@@ -67,6 +67,8 @@ warm sample p95는 Cable 42.04 ms, Metal Nut 25.97 ms였고 설정을 변경하�
 별도 `realiad_transistor1`·`realiad_plastic_nut` 카테고리로 등록한다. 공식 단일 시점 C1 분할,
 3개 seed, test 이전 전체 fit 완료 조건은
 [Real-IAD PatchCore 프로토콜](docs/realiad-patchcore-protocol.md)에 고정했다.
+[Real-IAD 고정 평가](reports/realiad-patchcore-evaluation-v1.md)는 순위화·위치 검출은 유망하지만
+현재 고정 image 임곗값의 평균 미탐률이 두 품목 모두 약 40%임을 보여 자동 합격 판정을 보류했다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
 
 ## 먼저 할 일

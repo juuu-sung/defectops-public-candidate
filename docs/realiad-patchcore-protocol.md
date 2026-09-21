@@ -44,3 +44,5 @@ All six fits and calibration thresholds must finish before the evaluation script
 2. Run `scripts\run_realiad_patchcore_fits.ps1` to complete all six fits without loading test images.
 3. Review the console output.
 4. Run `scripts\run_realiad_patchcore_evaluations.ps1` once to evaluate the frozen test splits and build the handoff ZIP.
+5. After recording the frozen evaluation, run `scripts\run_realiad_patchcore_diagnostics.ps1` to compare
+   persistent misses and seed-instability without changing any model or threshold.
