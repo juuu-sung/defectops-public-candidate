@@ -27,7 +27,8 @@
 - [x] 연구실 Windows에서 seed 43·44 GPU 실행 및 3-seed 결과 수집
 - [x] cable·metal_nut 추가 품목과 3품목 비교 규칙을 test 열람 전에 사전등록
 - [x] cable·metal_nut 공식 데이터 manifest 생성·무결성 audit·커밋
-- [ ] cable·metal_nut 두 모델 × 3 seed fit/calibration 완료
+- [x] cable·metal_nut 두 모델 × 3 seed fit/calibration 완료
+- [ ] cable·metal_nut 고정 test 평가와 3품목 macro 비교 완료
 
 ## 다음 순서
 
@@ -90,8 +91,10 @@
     archive를 연구실 Windows에 받아 manifest·무결성 audit 결과를 이 저장소로 돌려받았다.
     두 품목 모두 오류·디코딩 픽셀 중복 0건이며, 고정 manifest와 보고서를 커밋한다.
 19. 다음은 [추가 품목 fit/calibration](additional-category-fits.md)이다. 먼저 12개 fit을 모두
-    완료하며 이 단계의 스크립트는 cable·metal_nut 공식 test를 평가하지 않는다. 완료 확인 후
-    별도 고정 평가와 3품목 macro 비교를 진행한다.
+    완료했다. 이 단계의 스크립트는 cable·metal_nut 공식 test를 평가하지 않았으며, manifest와
+    모델 상태를 모두 재검증했다.
+20. 다음은 [추가 품목 고정 평가와 3품목 집계](additional-category-evaluation.md)다. 결과를 열기
+    전에 18개 평가의 무결성 검사, 품목 동일 가중 macro, 후보 선택 순서를 코드와 테스트로 고정한다.
 
 첫 완료 판정: 실제 transistor 입력에 대해 모델 버전·split hash·원시 점수·고정 임곗값·판정·
 원본 좌표계의 히트맵/영역·지연시간을 기록하고 artifact checksum으로 실행 추적을 확인한다.

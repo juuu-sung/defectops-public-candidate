@@ -33,5 +33,5 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 중간에 중단돼도 완료된 결과는 재사용한다. 단, 일부 파일만 남은 불완전한 출력은 자동 삭제하거나
 덮어쓰지 않는다. 그 경우 해당 경로를 보존해 원인을 확인하고 이름을 바꾼 뒤 다시 실행한다.
 
-완료 문구는 `Completed 12 fits: 2 categories x 2 models x 3 seeds.`다. 이 문구가 나온 뒤 콘솔
-마지막 부분을 이 작업에 전달한다. 다음 단계는 고정 평가 스크립트 실행과 3품목 macro 비교다.
+완료 문구는 `Completed 12 fits: 2 categories x 2 models x 3 seeds.`다. 완료를 확인한 뒤
+[고정 평가와 3품목 집계](additional-category-evaluation.md)를 실행한다.
