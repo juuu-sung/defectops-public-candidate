@@ -62,6 +62,11 @@ PatchCore의 [추가 품목 오류 분석과 warm 측정](reports/patchcore-addi
 Cable 미탐은 `cable_swap` 4장과 `poke_insulation` 1장, Metal Nut 미탐은 `color` 1장이었다.
 warm sample p95는 Cable 42.04 ms, Metal Nut 25.97 ms였고 설정을 변경하지 않았다. 다음 변경은
 [새 미관찰 holdout 계획](docs/unseen-holdout-plan.md)에 따라 독립 데이터에서만 수행한다.
+직접 촬영을 대체할 외부 데이터로 Real-IAD 256의 `transistor1`과 `plastic_nut`을 확보했다.
+실제 이미지를 확인한 결과 기존 MVTec 품목과 다른 물체이므로 동일제품 holdout으로 재표현하지 않고,
+별도 `realiad_transistor1`·`realiad_plastic_nut` 카테고리로 등록한다. 공식 단일 시점 C1 분할,
+3개 seed, test 이전 전체 fit 완료 조건은
+[Real-IAD PatchCore 프로토콜](docs/realiad-patchcore-protocol.md)에 고정했다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
 
 ## 먼저 할 일
@@ -88,7 +93,8 @@ warm sample p95는 Cable 42.04 ms, Metal Nut 25.97 ms였고 설정을 변경하�
    우선 포트폴리오 후보가 됐다. 상세 결과는
    [3품목 비교 보고서](reports/three-category-padim-vs-patchcore-v1.md)에 기록했다.
    [PatchCore 추가 품목 오류 분석과 warm 측정](docs/patchcore-additional-diagnostics.md)도 완료했고,
-   다음은 [새 미관찰 holdout 계획](docs/unseen-holdout-plan.md)에 따른 독립 데이터 확보다.
+   다음은 [Real-IAD PatchCore 프로토콜](docs/realiad-patchcore-protocol.md)의 외부 카테고리 등록과
+   test를 열지 않는 6개 fit/calibration이다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.
@@ -121,6 +127,7 @@ EfficientAD, AD 2, 모델 변환, embedding drift는 확장 단계로 둔다.
 
 - [MVTec AD 공식 페이지](https://www.mvtec.com/research-teaching/datasets/mvtec-ad)
 - [MVTec AD 2 공식 페이지](https://www.mvtec.com/research-teaching/datasets/mvtec-ad-2)
+- [Real-IAD 공식 페이지](https://realiad4ad.github.io/Real-IAD/)
 - 데이터 라이선스: CC BY-NC-SA 4.0. 원본 이미지·마스크·파생 시각화는 코드 라이선스와 별도로 취급한다.
 - 이미지·모델·DB·비밀정보는 Git에 넣지 않는다. 파생물 공개 시에도 데이터 이용 조건을 확인한다.
 - 향후 SOP는 워크플로우 구현용 모의 문서이며 실제 산업 안전 지침이 아니다.

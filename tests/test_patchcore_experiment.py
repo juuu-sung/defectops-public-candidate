@@ -6,12 +6,14 @@ from pathlib import Path
 from defectops.patchcore_evaluation import (
     EXPECTED_EVALUATION_PURPOSE,
     EXPECTED_PREREGISTERED_EVALUATION_PURPOSE,
+    EXPECTED_REALIAD_EVALUATION_PURPOSE,
     EXPECTED_REPEAT_EVALUATION_PURPOSE,
     load_patchcore_evaluation_config,
 )
 from defectops.patchcore_experiment import (
     EXPECTED_COMPARISON_STATUS,
     EXPECTED_PREREGISTERED_STATUS,
+    EXPECTED_REALIAD_STATUS,
     load_patchcore_experiment,
 )
 
@@ -98,6 +100,13 @@ class PatchCoreExperimentTests(unittest.TestCase):
             preregistered["comparison_status"], EXPECTED_PREREGISTERED_STATUS
         )
 
+        realiad = load_patchcore_evaluation_config(
+            self.root / "configs/realiad-patchcore-evaluation-v1.toml"
+        )
+        self.assertEqual(realiad["purpose"], EXPECTED_REALIAD_EVALUATION_PURPOSE)
+        self.assertEqual(realiad["comparison_status"], EXPECTED_REALIAD_STATUS)
+        self.assertEqual(realiad["ground_truth_threshold"], 128)
+
     def test_additional_category_configs_are_preregistered_before_test(self):
         for category, config_name in (
             ("cable", "cable-patchcore-v1.toml"),
@@ -134,6 +143,23 @@ class PatchCoreExperimentTests(unittest.TestCase):
             path.write_text(changed, encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "comparison_status"):
                 load_patchcore_experiment(path, manifest, seed=42)
+
+    def test_realiad_configs_are_locked_to_registered_scope(self):
+        for category, config_name in (
+            ("realiad_transistor1", "realiad-transistor1-patchcore-v1.toml"),
+            ("realiad_plastic_nut", "realiad-plastic-nut-patchcore-v1.toml"),
+        ):
+            manifest = {
+                "dataset": "real_iad",
+                "protocol": "A-normal-only-v1",
+                "split_seed": 42,
+                "categories": [category],
+            }
+            experiment = load_patchcore_experiment(
+                self.root / "configs" / config_name, manifest, seed=44
+            )
+            self.assertEqual(experiment["comparison_status"], EXPECTED_REALIAD_STATUS)
+            self.assertEqual(experiment["model_seed"], 44)
 
 
 if __name__ == "__main__":

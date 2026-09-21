@@ -25,7 +25,8 @@ def main() -> int:
         (args.output / "audit.json").write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         (args.output / "summary.md").write_text(markdown_report(report), encoding="utf-8")
         print(json.dumps({key: report[key] for key in ("status", "images_decoded", "masks_decoded",
-                                                       "image_specs", "mask_specs", "counts", "errors")}, indent=2))
+                                                       "image_specs", "mask_specs", "counts", "errors",
+                                                       "warnings")}, indent=2))
         return 0 if report["status"] == "passed" else 1
     except (OSError, ValueError, KeyError, TypeError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)

@@ -37,6 +37,8 @@ EXPECTED_REPEAT_STATUS = "exploratory_repeat_after_patchcore_seed42_test_observe
 EXPECTED_PREREGISTERED_STATUS = (
     "preregistered_before_cable_and_metal_nut_test_observed"
 )
+EXPECTED_REALIAD_STATUS = "preregistered_before_realiad_single_view_test_observed"
+PREREGISTERED_STATUSES = {EXPECTED_PREREGISTERED_STATUS, EXPECTED_REALIAD_STATUS}
 
 
 def load_patchcore_experiment(
@@ -55,7 +57,7 @@ def load_patchcore_experiment(
         "protocol": config.get("protocol") == EXPECTED_PROTOCOL,
         "manifest_protocol": manifest.get("protocol") == EXPECTED_PROTOCOL,
         "comparison_status": comparison_status
-        in {EXPECTED_COMPARISON_STATUS, EXPECTED_PREREGISTERED_STATUS},
+        in {EXPECTED_COMPARISON_STATUS, *PREREGISTERED_STATUSES},
         "split_seed": config.get("split_seed") == manifest.get("split_seed"),
         "categories": categories == manifest.get("categories")
         and isinstance(categories, list)
@@ -80,11 +82,18 @@ def load_patchcore_experiment(
             )
         if model_seeds == [43, 44] and config.get("repeat_status") != EXPECTED_REPEAT_STATUS:
             raise ValueError("PatchCore repeat_status must disclose that seed-42 test was observed")
-    else:
+    elif comparison_status == EXPECTED_PREREGISTERED_STATUS:
         if categories not in (["cable"], ["metal_nut"]):
             raise ValueError("The preregistered status is only for cable and metal_nut")
         if model_seeds != [42, 43, 44]:
             raise ValueError("Preregistered PatchCore model_seeds must be [42, 43, 44]")
+    else:
+        if categories not in (["realiad_transistor1"], ["realiad_plastic_nut"]):
+            raise ValueError("The Real-IAD status is only for the two registered categories")
+        if manifest.get("dataset") != "real_iad":
+            raise ValueError("The Real-IAD status requires a Real-IAD manifest")
+        if model_seeds != [42, 43, 44]:
+            raise ValueError("Real-IAD PatchCore model_seeds must be [42, 43, 44]")
     selected_seed = model_seeds[0] if seed is None else seed
     if selected_seed not in model_seeds:
         raise ValueError(f"seed must be one of the configured model seeds: {model_seeds}")
@@ -196,7 +205,7 @@ def run_patchcore_fit(args: argparse.Namespace) -> dict[str, Any]:
     def load_image(record: dict[str, Any]) -> Any:
         image_path = _safe_data_path(data_root, record["image_path"])
         with Image.open(image_path) as image:
-            if image.format != "PNG" or image.mode != "RGB":
+            if image.format not in {"PNG", "JPEG"} or image.mode != "RGB":
                 raise ValueError(f"Unexpected PatchCore input contract: {record['image_path']}")
             array = np.array(image, dtype=np.uint8, copy=True)
         tensor = torch.from_numpy(array).permute(2, 0, 1).to(torch.float32).div_(255.0)
@@ -284,16 +293,21 @@ def run_patchcore_fit(args: argparse.Namespace) -> dict[str, Any]:
 
     elapsed_seconds = time.perf_counter() - start_time
     finished_at = datetime.now(timezone.utc)
-    preregistered = experiment["comparison_status"] == EXPECTED_PREREGISTERED_STATUS
+    preregistered = experiment["comparison_status"] in PREREGISTERED_STATUSES
+    realiad = experiment["comparison_status"] == EXPECTED_REALIAD_STATUS
     run = {
         "schema_version": 1,
         "status": "fit_calibrated_preregistered" if preregistered else "fit_calibrated_exploratory",
         "comparison_status": experiment["comparison_status"],
         "test_evaluated": False,
         "purpose": (
-            "preregistered PatchCore fit and normal-only calibration before category test observation"
-            if preregistered
-            else "exploratory PatchCore fit and normal-only calibration after PaDiM test observation"
+            "preregistered Real-IAD single-view PatchCore fit and normal-only calibration"
+            if realiad
+            else (
+                "preregistered PatchCore fit and normal-only calibration before category test observation"
+                if preregistered
+                else "exploratory PatchCore fit and normal-only calibration after PaDiM test observation"
+            )
         ),
         "run_id": output_path.name,
         "started_at": started_at.isoformat(),
@@ -349,6 +363,13 @@ def run_patchcore_fit(args: argparse.Namespace) -> dict[str, Any]:
         },
         "limitations": (
             [
+                "Real-IAD transistor1 and plastic_nut are new categories, not same-product holdouts for MVTec transistor or metal_nut.",
+                "Only the official single-view C1 annotation protocol is used.",
+                "All configured fits must finish before the Real-IAD test split is evaluated.",
+            ]
+            if realiad
+            else (
+            [
                 "The transistor results were observed before the additional-category protocol was registered.",
                 "The cable or metal_nut official test images were not loaded by this fit command.",
                 "Cross-category conclusions remain mixed evidence rather than a new untouched three-category benchmark.",
@@ -359,6 +380,7 @@ def run_patchcore_fit(args: argparse.Namespace) -> dict[str, Any]:
                 "This fit is eligible only for exploratory comparison, not confirmatory model selection.",
                 "The official test images were not loaded by this fit command.",
             ]
+            )
         ),
     }
     write_json(output_path / "run.json", run)

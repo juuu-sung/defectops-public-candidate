@@ -49,6 +49,8 @@ from defectops.padim_experiment import (
 from defectops.patchcore_experiment import (
     EXPECTED_COMPARISON_STATUS,
     EXPECTED_PREREGISTERED_STATUS,
+    EXPECTED_REALIAD_STATUS,
+    PREREGISTERED_STATUSES,
     load_patchcore_experiment,
 )
 
@@ -62,6 +64,9 @@ EXPECTED_REPEAT_EVALUATION_PURPOSE = (
 EXPECTED_PREREGISTERED_EVALUATION_PURPOSE = (
     "preregistered frozen-rule evaluation of an untouched additional category"
 )
+EXPECTED_REALIAD_EVALUATION_PURPOSE = (
+    "preregistered frozen-rule evaluation of an untouched Real-IAD single-view category"
+)
 
 
 def load_patchcore_evaluation_config(path: Path) -> dict[str, Any]:
@@ -71,17 +76,26 @@ def load_patchcore_evaluation_config(path: Path) -> dict[str, Any]:
     if comparison_status not in {
         EXPECTED_COMPARISON_STATUS,
         EXPECTED_PREREGISTERED_STATUS,
+        EXPECTED_REALIAD_STATUS,
     }:
         raise ValueError("Unexpected PatchCore evaluation comparison status")
     config = load_evaluation_config(path)
-    expected_purposes = (
-        {EXPECTED_PREREGISTERED_EVALUATION_PURPOSE}
-        if comparison_status == EXPECTED_PREREGISTERED_STATUS
-        else {EXPECTED_EVALUATION_PURPOSE, EXPECTED_REPEAT_EVALUATION_PURPOSE}
-    )
+    if comparison_status == EXPECTED_REALIAD_STATUS:
+        expected_purposes = {EXPECTED_REALIAD_EVALUATION_PURPOSE}
+    elif comparison_status == EXPECTED_PREREGISTERED_STATUS:
+        expected_purposes = {EXPECTED_PREREGISTERED_EVALUATION_PURPOSE}
+    else:
+        expected_purposes = {EXPECTED_EVALUATION_PURPOSE, EXPECTED_REPEAT_EVALUATION_PURPOSE}
     if config["purpose"] not in expected_purposes:
         raise ValueError("Unexpected PatchCore evaluation purpose")
+    ground_truth_threshold = raw_config.get("pixel", {}).get("ground_truth_threshold", 1)
+    expected_ground_truth_threshold = 128 if comparison_status == EXPECTED_REALIAD_STATUS else 1
+    if ground_truth_threshold != expected_ground_truth_threshold:
+        raise ValueError(
+            f"ground_truth_threshold must be {expected_ground_truth_threshold} for this protocol"
+        )
     config["comparison_status"] = comparison_status
+    config["ground_truth_threshold"] = ground_truth_threshold
     return config
 
 
@@ -105,7 +119,7 @@ def validate_patchcore_fit_artifact(
     fit_config = load_patchcore_experiment(
         _safe_child(fit_path, "patchcore-pilot.toml"), manifest, fit_seed
     )
-    preregistered = fit_config["comparison_status"] == EXPECTED_PREREGISTERED_STATUS
+    preregistered = fit_config["comparison_status"] in PREREGISTERED_STATUSES
     expected_status = (
         "fit_calibrated_preregistered" if preregistered else "fit_calibrated_exploratory"
     )
@@ -285,7 +299,7 @@ def run_patchcore_evaluation(args: argparse.Namespace) -> dict[str, Any]:
     def load_image(record: dict[str, Any]) -> tuple[Any, tuple[int, int]]:
         image_path = _safe_data_path(data_root, record["image_path"])
         with Image.open(image_path) as image:
-            if image.format != "PNG" or image.mode != "RGB":
+            if image.format not in {"PNG", "JPEG"} or image.mode != "RGB":
                 raise ValueError(f"Unexpected PatchCore input contract: {record['image_path']}")
             original_size = image.size
             array = np.array(image, dtype=np.uint8, copy=True)
@@ -336,7 +350,7 @@ def run_patchcore_evaluation(args: argparse.Namespace) -> dict[str, Any]:
         )
     )
     image_threshold = float(fit_run["calibration"]["threshold"])
-    preregistered = fit_config["comparison_status"] == EXPECTED_PREREGISTERED_STATUS
+    preregistered = fit_config["comparison_status"] in PREREGISTERED_STATUSES
     calibration_contract = {
         "status": (
             "preregistered_rules_frozen_before_test_images_loaded"
@@ -364,6 +378,7 @@ def run_patchcore_evaluation(args: argparse.Namespace) -> dict[str, Any]:
             "morphology": "none",
             "connectivity": 4,
             "minimum_region_area_pixels": 1,
+            "ground_truth_threshold": evaluation_config["ground_truth_threshold"],
         },
         "model_reload_maximum_absolute_score_difference": maximum_rescore_difference,
     }
@@ -391,7 +406,10 @@ def run_patchcore_evaluation(args: argparse.Namespace) -> dict[str, Any]:
                 resized_mask = mask_image.convert("L").resize(
                     (image_size, image_size), resample=Image.Resampling.NEAREST
                 )
-                ground_truth = np.asarray(resized_mask, dtype=np.uint8) > 0
+                ground_truth = (
+                    np.asarray(resized_mask, dtype=np.uint8)
+                    >= evaluation_config["ground_truth_threshold"]
+                )
         else:
             ground_truth = np.zeros((image_size, image_size), dtype=np.bool_)
         predicted_mask = anomaly_map >= pixel_threshold
@@ -421,6 +439,7 @@ def run_patchcore_evaluation(args: argparse.Namespace) -> dict[str, Any]:
                 "original_size_wh": list(original_size),
                 "map_size_hw": list(anomaly_map.shape),
                 "pixel_threshold": pixel_threshold,
+                "ground_truth_positive_pixels": int(np.count_nonzero(ground_truth)),
                 "anomalous_map_pixels": int(np.count_nonzero(predicted_mask)),
                 "anomalous_map_fraction": float(np.mean(predicted_mask)),
                 "regions": regions,
@@ -601,6 +620,15 @@ def run_patchcore_evaluation(args: argparse.Namespace) -> dict[str, Any]:
         },
         "limitations": (
             [
+                "Real-IAD transistor1 and plastic_nut are new categories, not same-product holdouts for the MVTec models.",
+                "The official single-view C1 test split was opened only after all six configured fits completed.",
+                "Real-IAD test prevalence does not represent factory prevalence.",
+                "Pixel confidence intervals do not treat pixels as independent samples.",
+                "Any further tuning requires new untouched data for an unbiased comparison.",
+            ]
+            if fit_config["comparison_status"] == EXPECTED_REALIAD_STATUS
+            else (
+            [
                 "The transistor results were observed before this additional-category protocol was registered.",
                 "This category was preregistered before its test images were inspected, but the combined three-category evidence is mixed.",
                 "MVTec test prevalence does not represent factory prevalence.",
@@ -615,6 +643,7 @@ def run_patchcore_evaluation(args: argparse.Namespace) -> dict[str, Any]:
                 "Pixel confidence intervals do not treat pixels as independent samples.",
                 "Any further tuning requires new untouched data for an unbiased comparison.",
             ]
+            )
         ),
     }
     evaluation_path = output_path / "evaluation.json"

@@ -6,7 +6,8 @@ import math
 from collections import Counter
 from pathlib import Path
 
-CATEGORIES = {"transistor", "cable", "metal_nut"}
+MVTEC_CATEGORIES = {"transistor", "cable", "metal_nut"}
+CATEGORIES = MVTEC_CATEGORIES | {"realiad_transistor1", "realiad_plastic_nut"}
 
 
 def canonical(value: object) -> bytes:
@@ -21,7 +22,7 @@ def checksum(path: Path) -> str:
 def build_manifest(root: Path, categories: list[str], seed: int = 42,
                    calibration_fraction: float = 0.2) -> dict:
     root = root.resolve(strict=True)
-    if not categories or len(set(categories)) != len(categories) or set(categories) - CATEGORIES:
+    if not categories or len(set(categories)) != len(categories) or set(categories) - MVTEC_CATEGORIES:
         raise ValueError("Choose unique categories from cable, metal_nut, transistor")
     if type(seed) is not int or not math.isfinite(calibration_fraction) or not 0 < calibration_fraction < 1:
         raise ValueError("seed must be an integer; calibration_fraction must be between 0 and 1")
@@ -90,8 +91,21 @@ def build_manifest(root: Path, categories: list[str], seed: int = 42,
 
 def verify_manifest(root: Path, manifest: dict) -> None:
     try:
-        expected = build_manifest(root, manifest["categories"], manifest["split_seed"],
-                                  manifest["calibration_fraction"])
+        if manifest.get("dataset") == "real_iad":
+            from defectops.realiad_protocol import build_realiad_manifest
+
+            categories = manifest["categories"]
+            if not isinstance(categories, list) or len(categories) != 1:
+                raise ValueError("Real-IAD manifests contain exactly one category")
+            expected = build_realiad_manifest(
+                root,
+                categories[0],
+                manifest["split_seed"],
+                manifest["calibration_fraction"],
+            )
+        else:
+            expected = build_manifest(root, manifest["categories"], manifest["split_seed"],
+                                      manifest["calibration_fraction"])
     except (KeyError, TypeError) as exc:
         raise ValueError("Malformed manifest") from exc
     if canonical(manifest) != canonical(expected):

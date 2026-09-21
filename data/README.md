@@ -67,3 +67,20 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 Cable은 train 179 / calibration 45 / test 정상 58·이상 92장, Metal Nut은
 train 176 / calibration 44 / test 정상 22·이상 93장으로 고정됐다. 다음 실행은
 [추가 품목 fit/calibration](../docs/additional-category-fits.md)을 따른다.
+
+## Real-IAD 외부 카테고리 등록
+
+Real-IAD `transistor1`과 `plastic_nut`은 기존 MVTec 품목의 동일제품 holdout이 아니라 새 외부
+카테고리다. `realiad_256`의 두 이미지 ZIP과 최상위 `realiad_jsons.zip`을 Windows Downloads에
+둔 뒤 다음 명령을 실행한다.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+    -File ".\scripts\prepare_realiad.ps1"
+```
+
+등록기는 세 원본 ZIP의 SHA-256을 고정값과 비교하고, 공식 `realiad_jsons_sv`에서 C1 단일 시점에
+참조된 이미지와 마스크만 `data/real_iad/`로 추출한다. 무작위로 새 train/test를 만들지 않는다.
+생성되는 두 manifest는 이미지·마스크·annotation 체크섬과 정상 calibration 분할을 고정한다.
+상세 규칙과 후속 fit/evaluation 순서는
+[Real-IAD PatchCore 프로토콜](../docs/realiad-patchcore-protocol.md)을 따른다.

@@ -11,14 +11,19 @@ from PIL import Image
 from defectops.manifest import summary, verify_manifest
 
 
-def read_png(path: Path) -> Image.Image:
+def read_image(path: Path, expected_formats: set[str]) -> Image.Image:
     with Image.open(path) as image:
-        if image.format != "PNG":
-            raise ValueError("Expected PNG encoding")
+        if image.format not in expected_formats:
+            raise ValueError(f"Expected {'/'.join(sorted(expected_formats))} encoding")
         image.verify()
     with Image.open(path) as image:
         image.load()
         return image.copy()
+
+
+def read_png(path: Path) -> Image.Image:
+    """Backward-compatible strict PNG decoder used for masks and MVTec images."""
+    return read_image(path, {"PNG"})
 
 
 def normal_quality(image: Image.Image) -> dict:
@@ -41,6 +46,7 @@ def audit_dataset(root: Path, manifest: dict) -> dict:
     verify_manifest(root, manifest)
     root = root.resolve()
     errors = []
+    warnings = []
     image_specs = Counter()
     mask_specs = Counter()
     types = Counter()
@@ -50,8 +56,14 @@ def audit_dataset(root: Path, manifest: dict) -> dict:
     pixel_duplicates = []
     expected_paths = {r["image_path"] for r in manifest["records"]}
     expected_paths.update(r["mask_path"] for r in manifest["records"] if r["mask_path"])
-    for category in manifest["categories"]:
-        for path in (root / category).rglob("*"):
+    if manifest.get("dataset") == "real_iad":
+        inventory_roots = [root / "real_iad" / "images" / manifest["source_object"]]
+        expected_image_formats = {"JPEG"}
+    else:
+        inventory_roots = [root / category for category in manifest["categories"]]
+        expected_image_formats = {"PNG"}
+    for inventory_root in inventory_roots:
+        for path in inventory_root.rglob("*"):
             if path.is_file() and path.suffix.lower() in {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"}:
                 if path.relative_to(root).as_posix() not in expected_paths:
                     errors.append({"path": path.relative_to(root).as_posix(), "error": "Image not in manifest"})
@@ -60,7 +72,7 @@ def audit_dataset(root: Path, manifest: dict) -> dict:
         types[f"{record['category']}/{record['split']}/{record['defect_type']}"] += 1
         image = None
         try:
-            image = read_png(root / rel)
+            image = read_image(root / rel, expected_image_formats)
             images_decoded += 1
             image_specs[f"{image.width}x{image.height}/{image.mode}"] += 1
             if image.mode not in {"RGB", "L"}:
@@ -86,10 +98,21 @@ def audit_dataset(root: Path, manifest: dict) -> dict:
                 if mask.mode not in {"1", "L"}:
                     raise ValueError(f"Expected single-channel mask, got {mask.mode}")
                 pixels = np.asarray(mask.convert("L"))
-                if not set(np.unique(pixels).tolist()) <= {0, 255}:
-                    raise ValueError("Mask values must be binary 0/255")
-                if not pixels.any():
-                    raise ValueError("Anomalous image has an empty mask")
+                if manifest.get("dataset") == "real_iad":
+                    binary_pixels = pixels >= 128
+                    if not binary_pixels.any():
+                        warnings.append({
+                            "path": mask_rel,
+                            "warning": (
+                                "Official 256-pixel Real-IAD anomaly mask is empty after the "
+                                "frozen >=128 threshold; image label is retained"
+                            ),
+                        })
+                else:
+                    if not set(np.unique(pixels).tolist()) <= {0, 255}:
+                        raise ValueError("Mask values must be binary 0/255")
+                    if not pixels.any():
+                        raise ValueError("Anomalous image has an empty mask")
                 if image is not None and mask.size != image.size:
                     raise ValueError(f"Mask/image size mismatch: {mask.size} vs {image.size}")
             except (OSError, ValueError, SyntaxError, Image.DecompressionBombError) as exc:
@@ -100,10 +123,12 @@ def audit_dataset(root: Path, manifest: dict) -> dict:
             field: distribution([row[field] for row in rows])
             for field in ("brightness_mean", "brightness_std", "laplacian_variance")}}
     return {"schema_version": 1, "status": "passed" if not errors else "failed",
+            "dataset": manifest.get("dataset"), "categories": manifest.get("categories"),
             **summary(manifest), "defect_counts": dict(sorted(types.items())),
             "images_decoded": images_decoded, "masks_decoded": masks_decoded,
             "image_specs": dict(image_specs), "mask_specs": dict(mask_specs),
             "decoded_pixel_duplicates": pixel_duplicates, "errors": errors,
+            "warnings": warnings,
             "quality_summary": quality_summary, "normal_quality_rows": dict(qualities),
             "quality_method": "Pillow L, native resolution, float64 4-neighbor Laplacian variance, interior only",
             "limitations": ["Test data decoded for integrity only; no test quality statistics or previews.",
@@ -119,6 +144,7 @@ def markdown_report(report: dict) -> str:
              f"- 이미지 디코딩: {report['images_decoded']}장",
              f"- 결함 마스크 디코딩: {report['masks_decoded']}장",
              f"- 오류: {len(report['errors'])}건",
+             f"- 경고: {len(report.get('warnings', []))}건",
              f"- 디코딩 픽셀 중복: {len(report['decoded_pixel_duplicates'])}쌍", "",
              "## 고정된 데이터 목록", "", "| 구분 | 장수 |", "|---|---:|"]
     for key, count in report["counts"].items():
@@ -141,15 +167,23 @@ def markdown_report(report: dict) -> str:
             values = stats[field]
             lines.append(f"| {split} | {field} | " + " | ".join(f"{values[k]:.3f}" for k in
                          ("min", "p05", "median", "p95", "max")) + " |")
-    lines += ["", "## 재현 정보", "", f"- Manifest SHA-256: `{report['manifest_sha256']}`",
+    lines += ["", "## 재현 정보", "", f"- Dataset: `{report.get('dataset', 'unknown')}`",
+              f"- Manifest SHA-256: `{report['manifest_sha256']}`",
               f"- Pillow: {report['versions']['Pillow']}, NumPy: {report['versions']['numpy']}",
               "- 분할 seed 42, 정상 80/20, calibration 수 올림", "",
               "## 한계와 다음 단계", "",
               "파일 디코딩·마스크 이진값·크기·대응 관계를 점검했으나, 마스크가 실제 결함 경계를",
               "정확하게 표시하는지는 판단하지 않았다. 체크섬은 로컬 데이터 버전을 고정하며 공식 원본 인증은 아니다.",
               "정상 calibration 표본 수는 위 분할 표에 기록했다. 95% 분위수는 초기 경험적 운영점이며 오탐률 5%를 보장하지 않는다.",
-              "다음은 데이터 loader·전처리 규칙·PaDiM 학습 연결과 장비별 ML 환경 고정이다."]
+              (
+                  "다음은 고정된 Real-IAD loader·전처리 규칙으로 PatchCore fit/calibration을 실행하는 단계다."
+                  if report.get("dataset") == "real_iad"
+                  else "다음은 데이터 loader·전처리 규칙·PaDiM 학습 연결과 장비별 ML 환경 고정이다."
+              )]
     if report["errors"]:
         lines += ["", "## 발견한 오류", ""]
         lines += [f"- {e['path']}: {e['error']}" for e in report["errors"]]
+    if report.get("warnings"):
+        lines += ["", "## 데이터 경고", ""]
+        lines += [f"- {e['path']}: {e['warning']}" for e in report["warnings"]]
     return "\n".join(lines) + "\n"

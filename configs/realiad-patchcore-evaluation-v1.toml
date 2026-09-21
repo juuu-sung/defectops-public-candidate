@@ -1,0 +1,31 @@
+schema_version = 1
+protocol = "A-normal-only-v1"
+comparison_status = "preregistered_before_realiad_single_view_test_observed"
+purpose = "preregistered frozen-rule evaluation of an untouched Real-IAD single-view category"
+
+[image]
+score_space = "raw"
+threshold_source = "fit_run_normal_calibration"
+decision_rule = "score >= threshold"
+
+[pixel]
+score_space = "raw"
+calibration_quantile = 0.995
+quantile_method = "higher"
+decision_rule = "score >= threshold"
+ground_truth_resize = "nearest_to_model_map"
+ground_truth_threshold = 128
+morphology = "none"
+connectivity = 4
+minimum_region_area_pixels = 1
+bbox_coordinates = "xyxy_exclusive"
+
+[metrics]
+image = ["auroc", "average_precision", "fixed_threshold_confusion"]
+pixel = ["auroc", "aupro", "fixed_threshold_confusion"]
+aupro_fpr_limit = 0.30
+aupro_fpr_points = 301
+bootstrap_unit = "image_stratified"
+bootstrap_seed = 20260922
+bootstrap_replicates = 2000
+confidence_level = 0.95
