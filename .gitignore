@@ -13,6 +13,7 @@ dist/
 /data/*
 !/data/README.md
 !/data/manifests/
+/data/manifests/realiad-*.json
 /artifacts/*
 !/artifacts/README.md
 *.db

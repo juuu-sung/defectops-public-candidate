@@ -10,6 +10,8 @@ class RealIADScriptTests(unittest.TestCase):
         evaluations = (root / "scripts/run_realiad_patchcore_evaluations.ps1").read_text(
             encoding="utf-8"
         )
+        gitignore = (root / ".gitignore").read_text(encoding="utf-8")
+        self.assertIn("/data/manifests/realiad-*.json", gitignore)
         for value in (
             '"scripts\\register_realiad.py", "register"',
             '"scripts\\register_realiad.py", "verify"',
