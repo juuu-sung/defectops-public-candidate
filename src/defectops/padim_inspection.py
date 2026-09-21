@@ -36,6 +36,7 @@ from defectops.padim_experiment import (
 from defectops.patchcore_evaluation import load_patchcore_evaluation_config
 from defectops.patchcore_experiment import (
     EXPECTED_COMPARISON_STATUS,
+    EXPECTED_PREREGISTERED_STATUS,
     load_patchcore_experiment,
 )
 
@@ -121,10 +122,35 @@ def _verify_manifest_hash(manifest: dict[str, Any]) -> None:
         raise ValueError("Fit manifest snapshot hash is invalid")
 
 
+def _patchcore_bundle_statuses(
+    comparison_status: Any,
+    allow_preregistered_additional: bool,
+) -> tuple[str, str, str]:
+    """Return the immutable status contract allowed for this consumer."""
+    if comparison_status == EXPECTED_COMPARISON_STATUS:
+        return (
+            "fit_calibrated_exploratory",
+            "evaluated_exploratory",
+            "exploratory_rules_frozen_before_test_images_loaded",
+        )
+    if (
+        allow_preregistered_additional
+        and comparison_status == EXPECTED_PREREGISTERED_STATUS
+    ):
+        return (
+            "fit_calibrated_preregistered",
+            "evaluated_preregistered",
+            "preregistered_rules_frozen_before_test_images_loaded",
+        )
+    raise ValueError("PatchCore bundle comparison status is not allowed here")
+
+
 def validate_inference_bundles(
     fit_path: Path,
     evaluation_path: Path,
     project_root: Path,
+    *,
+    allow_preregistered_additional: bool = False,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], Path]:
     """Validate immutable PaDiM or PatchCore bundles without reopening test data."""
     fit_run = read_json(_safe_named_file(fit_path, "run.json"))
@@ -137,18 +163,18 @@ def validate_inference_bundles(
         fit_config_name = "pilot.toml"
         evaluation_config_name = "evaluation-v1.toml"
     elif model_name == "patchcore":
-        expected_fit_status = "fit_calibrated_exploratory"
-        expected_evaluation_status = "evaluated_exploratory"
-        expected_calibration_status = (
-            "exploratory_rules_frozen_before_test_images_loaded"
-        )
         fit_config_name = "patchcore-pilot.toml"
         evaluation_config_name = "patchcore-evaluation-v1.toml"
-        if (
-            fit_run.get("comparison_status") != EXPECTED_COMPARISON_STATUS
-            or evaluation.get("comparison_status") != EXPECTED_COMPARISON_STATUS
-        ):
-            raise ValueError("PatchCore bundles lost their exploratory comparison status")
+        comparison_status = fit_run.get("comparison_status")
+        (
+            expected_fit_status,
+            expected_evaluation_status,
+            expected_calibration_status,
+        ) = _patchcore_bundle_statuses(
+            comparison_status, allow_preregistered_additional
+        )
+        if evaluation.get("comparison_status") != comparison_status:
+            raise ValueError("PatchCore fit and evaluation comparison statuses differ")
     else:
         raise ValueError(f"Unsupported inference bundle model: {model_name!r}")
     if (
@@ -166,6 +192,11 @@ def validate_inference_bundles(
 
     manifest = read_json(_safe_named_file(fit_path, "manifest.json"))
     _verify_manifest_hash(manifest)
+    if (
+        not allow_preregistered_additional
+        and manifest.get("categories") != ["transistor"]
+    ):
+        raise ValueError("The inspection service accepts transistor bundles only")
     if fit_run.get("manifest_sha256") != manifest["manifest_sha256"]:
         raise ValueError("Fit run and manifest hashes differ")
     evaluation_manifest = read_json(_safe_named_file(evaluation_path, "manifest.json"))
@@ -222,9 +253,9 @@ def validate_inference_bundles(
     if calibration_contract.get("status") != expected_calibration_status:
         raise ValueError("Calibration contract was not frozen before test evaluation")
     if model_name == "patchcore" and (
-        calibration_contract.get("comparison_status") != EXPECTED_COMPARISON_STATUS
+        calibration_contract.get("comparison_status") != fit_run.get("comparison_status")
     ):
-        raise ValueError("PatchCore calibration contract lost its exploratory status")
+        raise ValueError("PatchCore calibration contract lost its comparison status")
     if calibration_contract.get("fit_run_id") != fit_run.get("run_id"):
         raise ValueError("Calibration contract references a different fit")
     if float(calibration_contract.get("image", {}).get("threshold", math.nan)) != float(
@@ -249,7 +280,10 @@ def validate_inference_bundles(
     return fit_run, fit_config, calibration_contract, checkpoint_path
 
 
-def _load_validated_png(path: Path) -> tuple[np.ndarray, tuple[int, int]]:
+def _load_validated_png(
+    path: Path,
+    expected_size: tuple[int, int] | None = (1024, 1024),
+) -> tuple[np.ndarray, tuple[int, int]]:
     if not path.is_file() or path.stat().st_size == 0:
         raise InputValidationError("Input must be a non-empty file")
     if path.suffix.lower() != ".png":
@@ -262,8 +296,10 @@ def _load_validated_png(path: Path) -> tuple[np.ndarray, tuple[int, int]]:
                 raise InputValidationError("Input content is not PNG")
             if image.mode != "RGB":
                 raise InputValidationError(f"Expected RGB input, found {image.mode}")
-            if image.size != (1024, 1024):
-                raise InputValidationError(f"Expected 1024x1024 input, found {image.size}")
+            if expected_size is not None and image.size != expected_size:
+                raise InputValidationError(
+                    f"Expected {expected_size[0]}x{expected_size[1]} input, found {image.size}"
+                )
             image.load()
             return np.array(image, dtype=np.uint8, copy=True), image.size
     except InputValidationError:
@@ -276,12 +312,17 @@ def load_inference_runtime(
     project_root: Path,
     fit_path: Path,
     evaluation_path: Path,
+    *,
+    allow_preregistered_additional: bool = False,
 ) -> PadimRuntime:
     """Validate the immutable bundles and load one reusable CUDA model."""
     setup_started = time.perf_counter()
     current_git = git_state(project_root)
     fit_run, fit_config, calibration_contract, checkpoint_path = validate_inference_bundles(
-        fit_path, evaluation_path, project_root
+        fit_path,
+        evaluation_path,
+        project_root,
+        allow_preregistered_additional=allow_preregistered_additional,
     )
     if sys.version_info[:2] != (3, 12):
         raise RuntimeError(
@@ -383,11 +424,16 @@ def load_inference_runtime(
     )
 
 
-def predict_validated_png(runtime: PadimRuntime, input_path: Path) -> dict[str, Any]:
+def predict_validated_png(
+    runtime: PadimRuntime,
+    input_path: Path,
+    *,
+    expected_size: tuple[int, int] | None = (1024, 1024),
+) -> dict[str, Any]:
     """Decode, preprocess and score one image without reloading the model."""
     sample_started = time.perf_counter()
     decode_started = time.perf_counter()
-    original, original_size = _load_validated_png(input_path)
+    original, original_size = _load_validated_png(input_path, expected_size)
     input_sha256 = checksum(input_path)
     decode_ms = (time.perf_counter() - decode_started) * 1000.0
 

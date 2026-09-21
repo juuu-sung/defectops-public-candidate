@@ -45,6 +45,12 @@ class PadimInspectionTests(unittest.TestCase):
             with self.assertRaises(InputValidationError):
                 _load_validated_png(invalid)
 
+            other_size = root / "other-size.png"
+            Image.new("RGB", (700, 700), (4, 5, 6)).save(other_size)
+            array, size = _load_validated_png(other_size, expected_size=None)
+            self.assertEqual(array.shape, (700, 700, 3))
+            self.assertEqual(size, (700, 700))
+
 
 if __name__ == "__main__":
     unittest.main()

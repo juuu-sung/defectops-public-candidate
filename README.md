@@ -77,6 +77,10 @@ recall 0.600, escape rate 40.0%였으며 seed에 따른 판정 변동도 더 컸
    디코딩 픽셀 중복은 0건이었다. test를 열지 않는
    [두 품목 12개 fit/calibration](docs/additional-category-fits.md)도 완료했다. 다음 체크포인트는
    사전 고정한 [공식 test 평가와 3품목 macro 집계](docs/additional-category-evaluation.md)다.
+   이 평가도 완료했고 PatchCore는 macro escape rate 4.31%로 PaDiM의 35.85%보다 낮아 정확도
+   우선 포트폴리오 후보가 됐다. 상세 결과는
+   [3품목 비교 보고서](reports/three-category-padim-vs-patchcore-v1.md)에 기록했다. 다음은
+   [PatchCore 추가 품목 오류 분석과 warm 측정](docs/patchcore-additional-diagnostics.md)이다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.

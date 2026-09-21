@@ -28,7 +28,8 @@
 - [x] cable·metal_nut 추가 품목과 3품목 비교 규칙을 test 열람 전에 사전등록
 - [x] cable·metal_nut 공식 데이터 manifest 생성·무결성 audit·커밋
 - [x] cable·metal_nut 두 모델 × 3 seed fit/calibration 완료
-- [ ] cable·metal_nut 고정 test 평가와 3품목 macro 비교 완료
+- [x] cable·metal_nut 고정 test 평가와 3품목 macro 비교 완료
+- [ ] PatchCore seed 42 추가 품목 FN/FP 분석과 warm 속도 측정 완료
 
 ## 다음 순서
 
@@ -94,7 +95,12 @@
     완료했다. 이 단계의 스크립트는 cable·metal_nut 공식 test를 평가하지 않았으며, manifest와
     모델 상태를 모두 재검증했다.
 20. 다음은 [추가 품목 고정 평가와 3품목 집계](additional-category-evaluation.md)다. 결과를 열기
-    전에 18개 평가의 무결성 검사, 품목 동일 가중 macro, 후보 선택 순서를 코드와 테스트로 고정한다.
+    전에 18개 평가의 무결성 검사, 품목 동일 가중 macro, 후보 선택 순서를 코드와 테스트로 고정했다.
+    PatchCore macro escape rate는 4.31%, PaDiM은 35.85%로 고정 선택 규칙에 따라 PatchCore가
+    포트폴리오 후보가 됐다. [3품목 결과 보고서](../reports/three-category-padim-vs-patchcore-v1.md)를
+    참고한다.
+21. 다음은 [PatchCore 추가 품목 진단](patchcore-additional-diagnostics.md)이다. 사전 기준 seed 42의
+    FN/FP 유형과 warm 속도를 측정하며 모델·임곗값·ROI·후처리를 변경하지 않는다.
 
 첫 완료 판정: 실제 transistor 입력에 대해 모델 버전·split hash·원시 점수·고정 임곗값·판정·
 원본 좌표계의 히트맵/영역·지연시간을 기록하고 artifact checksum으로 실행 추적을 확인한다.

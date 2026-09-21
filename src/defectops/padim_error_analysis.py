@@ -231,7 +231,7 @@ def _markdown_summary(analysis: dict[str, Any]) -> str:
             "",
             "## 산출물",
             "",
-            "- `cases.jsonl`: 100장별 고정 판정·점수 margin·탐색적 픽셀 겹침",
+            "- `cases.jsonl`: test 전체의 고정 판정·점수 margin·탐색적 픽셀 겹침",
             "- `false-negatives.png`: FN contact sheet",
             "- `false-positives.png`: FP contact sheet",
             "- `analysis.json`: 구조화 요약과 추적 정보",
@@ -260,7 +260,10 @@ def run_error_analysis(args: argparse.Namespace) -> dict[str, Any]:
 
     analyzer_git = git_state(project_root)
     fit_run, _, calibration_contract, _ = validate_inference_bundles(
-        fit_path, evaluation_path, project_root
+        fit_path,
+        evaluation_path,
+        project_root,
+        allow_preregistered_additional=True,
     )
     evaluation = read_json(_safe_existing_child(evaluation_path, "evaluation.json"))
     manifest = read_json(_safe_existing_child(evaluation_path, "manifest.json"))

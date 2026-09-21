@@ -86,8 +86,12 @@ def run_warm_benchmark(args: argparse.Namespace) -> dict[str, Any]:
         if isinstance(record, dict) and isinstance(record.get("image_path"), str)
     }
     sample_ids = evaluation.get("test_sample_ids")
-    if not isinstance(sample_ids, list) or len(sample_ids) != 100:
-        raise ValueError("Warm benchmark requires the frozen 100-image test list")
+    if (
+        not isinstance(sample_ids, list)
+        or len(sample_ids) < args.count
+        or len(sample_ids) != len(set(sample_ids))
+    ):
+        raise ValueError("Warm benchmark requires enough unique frozen test inputs")
     selected_ids = sample_ids[: args.count]
     prediction_name = evaluation.get("artifacts", {}).get("predictions")
     predictions_path = _safe_existing_child(evaluation_path, prediction_name)
@@ -99,11 +103,18 @@ def run_warm_benchmark(args: argparse.Namespace) -> dict[str, Any]:
     if [row.get("image_path") for row in expected_rows] != sample_ids:
         raise ValueError("Evaluation predictions differ from frozen test sample IDs")
 
-    runtime = load_inference_runtime(project_root, fit_path, evaluation_path)
+    runtime = load_inference_runtime(
+        project_root,
+        fit_path,
+        evaluation_path,
+        allow_preregistered_additional=True,
+    )
     first_path = _safe_existing_child(data_root, selected_ids[0])
     first_expected_sha256 = manifest_records[selected_ids[0]].get("image_sha256")
     for _ in range(args.warmup):
-        warmup_prediction = predict_validated_png(runtime, first_path)
+        warmup_prediction = predict_validated_png(
+            runtime, first_path, expected_size=None
+        )
         if warmup_prediction["input_sha256"] != first_expected_sha256:
             raise ValueError("Warmup input checksum differs from manifest")
     runtime.torch.cuda.reset_peak_memory_stats()
@@ -115,7 +126,9 @@ def run_warm_benchmark(args: argparse.Namespace) -> dict[str, Any]:
     for repeat in range(1, args.repeats + 1):
         for image_index, image_path in enumerate(selected_ids, start=1):
             source_path = _safe_existing_child(data_root, image_path)
-            prediction = predict_validated_png(runtime, source_path)
+            prediction = predict_validated_png(
+                runtime, source_path, expected_size=None
+            )
             expected_sha256 = manifest_records[image_path].get("image_sha256")
             if prediction["input_sha256"] != expected_sha256:
                 raise ValueError(f"Benchmark input checksum differs from manifest: {image_path}")
