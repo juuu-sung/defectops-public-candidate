@@ -109,7 +109,10 @@ warm sample p95는 Cable 42.04 ms, Metal Nut 25.97 ms였고 설정을 변경하�
    미관찰 Real-IAD `pcb`·`terminalblock`의 그룹 단위 development/final 경로 계획과 후보 네 개를
    고정했다. 두 원본 ZIP의 development 등록·감사도 완료했고 final 이미지는 추출하지 않았다.
    [PatchCore 후보 네 개의 development 비교 실행 흐름](docs/realiad-followup-development.md)을 구현했다.
-   다음은 연구실 Windows에서 이를 실행해 한 후보를 고정하는 것이다.
+   연구실 Windows 실행 결과를 [검증·비교](reports/realiad-followup-development-selection-v1.md)해
+   `fine_features_top_1pct`를 선택하고 final gate를 고정했다. 선택 후보는 warm p95가 약 10초/장으로
+   느리고 PCB development 불량 224장 중 62장을 놓쳤다. 다음은 final 실행기와 재개 절차를 준비한 뒤
+   봉인된 holdout에서 seed 42·43·44를 한 번씩 평가하는 것이다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.

@@ -1,6 +1,6 @@
 # Real-IAD 후속 development 후보 비교 실행
 
-상태: 실행 코드 준비 완료, 연구실 Windows GPU 실행 대기
+상태: 연구실 Windows GPU 실행·결과 검증 완료, final holdout 미개봉
 
 기준일: 2026-09-22
 
@@ -69,6 +69,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 
 Handoff에는 후보 결과·calibration/prediction·선택 보고서·계약·manifest만 포함한다. 대용량 모델
 checkpoint와 원본 이미지는 포함하지 않는다.
+
+실행 결과와 선택 근거는
+[`reports/realiad-followup-development-selection-v1.md`](../reports/realiad-followup-development-selection-v1.md)에
+기록했다. 선택 후보는 `fine_features_top_1pct`다. 이 후보의 warm p95는 약 10초/장으로 매우 느리므로,
+final 실행 전에 소요 시간과 재개 방법을 확인한다. 잠금값은
+[`configs/realiad-followup-final-lock-v1.toml`](../configs/realiad-followup-final-lock-v1.toml)에 고정했다.
 
 ## 안전장치
 

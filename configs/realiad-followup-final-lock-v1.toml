@@ -1,0 +1,15 @@
+schema_version = 1
+protocol = "A-normal-only-v2"
+status = "candidate_selected_final_holdout_unopened"
+selected_candidate_id = "fine_features_top_1pct"
+selection_report_sha256 = "1dd08ad5ea0aa3156240a9400f6fa8f7cbb5777eeea077cc448ffe94b3ea13d3"
+selection_git_commit = "795e70eaa04d6a783909a7f44b44e431eadc3abd"
+handoff_zip_sha256 = "373177ef8eaa0c63c632f58e2a32154542a6b121ccf2a1230f193bc30338b936"
+split_plan_sha256 = "c68562288b378d44d969c3eda68a69a00c6c31e8dad0f4ff21e5c05073ac8f20"
+development_execution_config_sha256 = "c85bc18754ff9aea878c003d8d38e2ad20efeb4b1bd9ec56cc85a36ce469dc78"
+final_seeds = [42, 43, 44]
+automatic_pass_allowed = false
+
+[final_manifest_sha256]
+realiad_pcb = "9b5a319600967c8e73bf3e4b53d0b31c9e7df9ff7261222c31db489b435478d2"
+realiad_terminalblock = "b2ff0bc8f52aeed8db97ce853869ecc9ec6a46d0bc939b1c4442a7d31507891b"
