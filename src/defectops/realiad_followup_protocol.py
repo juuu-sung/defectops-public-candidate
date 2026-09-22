@@ -325,7 +325,9 @@ def build_realiad_followup_plan(
         ),
         "annotation_zip_sha256": REAL_IAD_SOURCE_SHA256["realiad_jsons.zip"],
         "annotation_sha256": dict(sorted(annotation_sha256.items())),
-        "config_sha256": checksum(config_path),
+        # Hash the parsed contract rather than raw TOML bytes so Git's LF/CRLF
+        # checkout policy cannot change the sealed plan across operating systems.
+        "config_sha256": hashlib.sha256(canonical(config)).hexdigest(),
         "records": records,
     }
     payload["plan_sha256"] = hashlib.sha256(canonical(payload)).hexdigest()

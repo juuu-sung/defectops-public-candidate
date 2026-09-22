@@ -24,7 +24,9 @@ C2–C5로 바꿔 새 holdout처럼 사용하지 않는다. 같은 물리 표본
 - 경로 계획은 이미지 ZIP을 열기 전에 Git에 고정한다. 이미지와 마스크 SHA-256은 원본 등록 때 추가한다.
 
 고정 경로 계획 SHA-256은
-`fefa8c3da53366180fd8d55890effb1d7f27894dae11c21f5352f6df7b761a79`이다.
+`c68562288b378d44d969c3eda68a69a00c6c31e8dad0f4ff21e5c05073ac8f20`이다.
+TOML 설정 체크섬은 원시 파일 바이트가 아니라 파싱한 내용을 canonical JSON으로 직렬화해 계산한다.
+따라서 Git이 Windows에서 CRLF, macOS에서 LF로 체크아웃해도 같은 계획을 재생성한다.
 
 | 카테고리 | Train 정상 | Calibration 정상 | Development 정상/불량 | Final 정상/불량 |
 |---|---:|---:|---:|---:|

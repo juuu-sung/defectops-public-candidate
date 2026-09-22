@@ -77,6 +77,30 @@ class RealIADFollowupProtocolTests(unittest.TestCase):
                     else:
                         self.assertEqual(splits, {"development", "final_holdout"})
 
+    def test_config_digest_is_independent_of_lf_or_crlf_checkout(self):
+        original = self.config.read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            lf = directory / "lf.toml"
+            crlf = directory / "crlf.toml"
+            lf.write_bytes(original.replace("\r\n", "\n").encode())
+            crlf.write_bytes(original.replace("\r\n", "\n").replace("\n", "\r\n").encode())
+            archive_path = directory / "realiad_jsons.zip"
+            with zipfile.ZipFile(archive_path, "w") as archive:
+                for source in ("pcb", "terminalblock"):
+                    archive.writestr(
+                        f"realiad_jsons_sv/{source}.json",
+                        json.dumps(self.annotation(source)),
+                    )
+            archive_sha = hashlib.sha256(archive_path.read_bytes()).hexdigest()
+            with patch.dict(
+                "defectops.realiad_followup_protocol.REAL_IAD_SOURCE_SHA256",
+                {"realiad_jsons.zip": archive_sha},
+            ):
+                lf_plan = build_realiad_followup_plan(archive_path, lf)
+                crlf_plan = build_realiad_followup_plan(archive_path, crlf)
+            self.assertEqual(lf_plan, crlf_plan)
+
     @staticmethod
     def annotation(source):
         train = []
@@ -112,4 +136,3 @@ class RealIADFollowupProtocolTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
