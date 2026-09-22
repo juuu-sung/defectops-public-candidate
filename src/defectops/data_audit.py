@@ -56,8 +56,17 @@ def audit_dataset(root: Path, manifest: dict) -> dict:
     pixel_duplicates = []
     expected_paths = {r["image_path"] for r in manifest["records"]}
     expected_paths.update(r["mask_path"] for r in manifest["records"] if r["mask_path"])
+    is_real_iad = manifest.get("dataset") in {"real_iad", "real_iad_followup"}
     if manifest.get("dataset") == "real_iad":
         inventory_roots = [root / "real_iad" / "images" / manifest["source_object"]]
+        expected_image_formats = {"JPEG"}
+    elif manifest.get("dataset") == "real_iad_followup":
+        source_objects = {record.get("source_object") for record in manifest["records"]}
+        if len(source_objects) != 1 or None in source_objects:
+            raise ValueError("Real-IAD follow-up manifest must contain one source object")
+        inventory_roots = [
+            root / "real_iad_followup" / "images" / next(iter(source_objects))
+        ]
         expected_image_formats = {"JPEG"}
     else:
         inventory_roots = [root / category for category in manifest["categories"]]
@@ -98,7 +107,7 @@ def audit_dataset(root: Path, manifest: dict) -> dict:
                 if mask.mode not in {"1", "L"}:
                     raise ValueError(f"Expected single-channel mask, got {mask.mode}")
                 pixels = np.asarray(mask.convert("L"))
-                if manifest.get("dataset") == "real_iad":
+                if is_real_iad:
                     binary_pixels = pixels >= 128
                     if not binary_pixels.any():
                         warnings.append({
@@ -177,7 +186,7 @@ def markdown_report(report: dict) -> str:
               "정상 calibration 표본 수는 위 분할 표에 기록했다. 95% 분위수는 초기 경험적 운영점이며 오탐률 5%를 보장하지 않는다.",
               (
                   "다음은 고정된 Real-IAD loader·전처리 규칙으로 PatchCore fit/calibration을 실행하는 단계다."
-                  if report.get("dataset") == "real_iad"
+                  if report.get("dataset") in {"real_iad", "real_iad_followup"}
                   else "다음은 데이터 loader·전처리 규칙·PaDiM 학습 연결과 장비별 ML 환경 고정이다."
               )]
     if report["errors"]:

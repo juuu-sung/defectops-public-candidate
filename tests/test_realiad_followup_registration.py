@@ -1,10 +1,14 @@
 import hashlib
+import io
 import json
 import tempfile
 import unittest
 import zipfile
 from pathlib import Path
 
+from PIL import Image
+
+from defectops.data_audit import audit_dataset
 from defectops.manifest import canonical, verify_manifest
 from defectops.realiad_followup_registration import (
     DEVELOPMENT_MANIFEST_NAMES,
@@ -30,14 +34,17 @@ class RealIADFollowupRegistrationTests(unittest.TestCase):
         ):
             path = Path(self.temp.name) / f"{source}.zip"
             with zipfile.ZipFile(path, "w") as archive:
-                for row in self.plan["records"]:
+                for member_index, row in enumerate(self.plan["records"]):
                     if row["category"] != category:
                         continue
                     image_member = f"{source}/{row['source_image_path']}"
-                    archive.writestr(image_member, image_member.encode())
+                    archive.writestr(
+                        image_member,
+                        self.encoded_image(image_member, member_index),
+                    )
                     if row["source_mask_path"] is not None:
                         mask_member = f"{source}/{row['source_mask_path']}"
-                        archive.writestr(mask_member, mask_member.encode())
+                        archive.writestr(mask_member, self.encoded_mask())
             self.archives[category] = path
 
     def test_development_is_extracted_and_final_stays_sealed(self):
@@ -83,6 +90,31 @@ class RealIADFollowupRegistrationTests(unittest.TestCase):
         manifest["manifest_sha256"] = hashlib.sha256(canonical(unsigned)).hexdigest()
         with self.assertRaisesRegex(ValueError, "manifest mismatch"):
             verify_followup_final_manifest(self.root, manifest)
+
+    def test_followup_development_audit_accepts_jpeg_and_does_not_require_final(self):
+        register_followup_data(self.root, self.plan_path, self.archives)
+        for category in ("realiad_pcb", "realiad_terminalblock"):
+            path = self.root / "manifests" / DEVELOPMENT_MANIFEST_NAMES[category]
+            manifest = json.loads(path.read_text())
+            report = audit_dataset(self.root, manifest)
+            self.assertEqual(report["status"], "passed")
+            self.assertEqual(report["errors"], [])
+            self.assertEqual(set(report["image_specs"]), {"8x8/RGB"})
+
+    @staticmethod
+    def encoded_image(member, index):
+        digest = hashlib.sha256(f"{index}:{member}".encode()).digest()
+        image = Image.new("RGB", (8, 8), tuple(digest[:3]))
+        output = io.BytesIO()
+        image.save(output, format="JPEG", quality=100, subsampling=0)
+        return output.getvalue()
+
+    @staticmethod
+    def encoded_mask():
+        image = Image.new("L", (8, 8), 255)
+        output = io.BytesIO()
+        image.save(output, format="PNG")
+        return output.getvalue()
 
     @staticmethod
     def make_plan():

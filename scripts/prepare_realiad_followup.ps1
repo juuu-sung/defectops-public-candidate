@@ -55,8 +55,8 @@ Invoke-CheckedPython -Arguments @(
 )
 
 $auditJobs = @(
-    @{ Name = "realiad-pcb-development-v1"; Manifest = "data\manifests\realiad-pcb-development-v1.json" },
-    @{ Name = "realiad-terminalblock-development-v1"; Manifest = "data\manifests\realiad-terminalblock-development-v1.json" }
+    @{ Name = "realiad-pcb-development-v1-jpeg-v2"; Manifest = "data\manifests\realiad-pcb-development-v1.json" },
+    @{ Name = "realiad-terminalblock-development-v1-jpeg-v2"; Manifest = "data\manifests\realiad-terminalblock-development-v1.json" }
 )
 foreach ($job in $auditJobs) {
     $auditPath = Join-Path $projectPath "artifacts\data-audit\$($job.Name)"
@@ -117,4 +117,3 @@ Write-Host "Real-IAD follow-up development registration completed and verified."
 Write-Host "Final holdout members were checksummed but were not extracted, decoded, previewed, or scored."
 Write-Host "Attach this file to the Codex task: $handoffPath"
 Get-FileHash -LiteralPath $handoffPath -Algorithm SHA256
-
