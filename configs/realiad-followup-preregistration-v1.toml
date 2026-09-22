@@ -1,0 +1,77 @@
+schema_version = 1
+protocol = "A-normal-only-v2"
+registration_status = "annotation_metadata_observed_images_and_scores_unobserved"
+evidence_status = "realiad_transistor1_and_plastic_nut_c1_test_observed_new_categories_unobserved"
+source_dataset = "Real-IAD-256"
+annotation_variant = "realiad_jsons_sv"
+categories = ["realiad_pcb", "realiad_terminalblock"]
+views = ["C1"]
+split_seed = 20260922
+calibration_group_fraction = 0.20
+development_group_fraction = 0.50
+group_key = "source_object/relative_parent_directory"
+holdout_stratification = "defect_type"
+
+[leakage_control]
+group_disjoint = true
+exclude_previously_observed_categories = ["realiad_transistor1", "realiad_plastic_nut"]
+exclude_other_views_of_observed_samples = true
+final_images_may_be_opened_after_candidate_lock = true
+final_reuse_after_change_is_exploratory = true
+
+[base_model]
+model = "patchcore"
+backbone = "wide_resnet50_2"
+coreset_sampling_ratio = 0.10
+num_neighbors = 9
+image_size = 256
+development_seed = 42
+final_seeds = [42, 43, 44]
+
+[calibration]
+image_quantile = 0.95
+pixel_quantile = 0.995
+quantile_method = "higher"
+decision_rule = "score >= threshold"
+normal_only = true
+
+[[candidates]]
+id = "baseline_raw"
+layers = ["layer2", "layer3"]
+image_score = "anomalib_patchcore_raw"
+top_fraction = 0.0
+
+[[candidates]]
+id = "map_top_1pct"
+layers = ["layer2", "layer3"]
+image_score = "mean_of_top_map_fraction"
+top_fraction = 0.01
+
+[[candidates]]
+id = "map_top_5pct"
+layers = ["layer2", "layer3"]
+image_score = "mean_of_top_map_fraction"
+top_fraction = 0.05
+
+[[candidates]]
+id = "fine_features_top_1pct"
+layers = ["layer1", "layer2"]
+image_score = "mean_of_top_map_fraction"
+top_fraction = 0.01
+
+[selection]
+candidate_count = 4
+development_only = true
+primary_metric = "macro_escape_rate"
+maximum_category_overkill_rate = 0.10
+tie_breakers = ["macro_image_auroc", "macro_overkill_rate", "warm_p95_latency_ms"]
+choose_exactly_one_candidate = true
+automatic_pass_allowed = false
+
+[final_gate]
+required_before_open = ["selected_candidate_id", "selection_report_sha256", "git_commit", "final_manifest_sha256"]
+run_once = true
+post_final_tuning_allowed = false
+report_category_seed_values_and_macro = true
+report_image_level_95pct_confidence_intervals = true
+

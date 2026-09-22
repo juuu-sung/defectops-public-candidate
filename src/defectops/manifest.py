@@ -7,7 +7,12 @@ from collections import Counter
 from pathlib import Path
 
 MVTEC_CATEGORIES = {"transistor", "cable", "metal_nut"}
-CATEGORIES = MVTEC_CATEGORIES | {"realiad_transistor1", "realiad_plastic_nut"}
+CATEGORIES = MVTEC_CATEGORIES | {
+    "realiad_transistor1",
+    "realiad_plastic_nut",
+    "realiad_pcb",
+    "realiad_terminalblock",
+}
 
 
 def canonical(value: object) -> bytes:
@@ -91,6 +96,13 @@ def build_manifest(root: Path, categories: list[str], seed: int = 42,
 
 def verify_manifest(root: Path, manifest: dict) -> None:
     try:
+        if manifest.get("dataset") == "real_iad_followup":
+            from defectops.realiad_followup_registration import (
+                verify_followup_development_manifest,
+            )
+
+            verify_followup_development_manifest(root, manifest)
+            return
         if manifest.get("dataset") == "real_iad":
             from defectops.realiad_protocol import build_realiad_manifest
 

@@ -73,6 +73,9 @@ warm sample p95는 Cable 42.04 ms, Metal Nut 25.97 ms였고 설정을 변경하�
 `transistor1` 166/469장(35.39%), `plastic_nut` 48/118장(40.68%)으로, seed 불안정
 49/469장(10.45%)·4/118장(3.39%)보다 많았다. seed 선택 문제가 아닌 구조적 개선 대상으로 보고,
 새 development split과 미관찰 holdout을 고정하기 전에는 crop·특징·image score를 변경하지 않는다.
+기존 두 품목의 다른 시점은 동일 표본 누수가 있어 제외하고, 아직 미관찰인 Real-IAD `pcb`와
+`terminalblock`을 [후속 development/final 사전등록](docs/realiad-followup-preregistration.md) 대상으로
+고정했다. 이미지 ZIP을 열기 전 annotation 경로만 그룹 단위로 봉인한다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
 
 ## 먼저 할 일
@@ -101,8 +104,8 @@ warm sample p95는 Cable 42.04 ms, Metal Nut 25.97 ms였고 설정을 변경하�
    [PatchCore 추가 품목 오류 분석과 warm 측정](docs/patchcore-additional-diagnostics.md)도 완료했고,
    Real-IAD 외부 카테고리 등록, test를 열지 않는 6개 fit/calibration, 고정 평가와
    [3-seed 오류 진단](reports/realiad-patchcore-multiseed-diagnostics-v1.md)까지 완료했다.
-   다음은 새 development split과 최종 미관찰 holdout을 고정하고, foreground crop·작은 결함용
-   score/특징 후보를 사전등록하는 것이다.
+   미관찰 Real-IAD `pcb`·`terminalblock`의 그룹 단위 development/final 경로 계획과 후보 네 개를
+   고정했다. 다음은 두 원본 ZIP을 등록하되 final 이미지는 후보 선택 전까지 열지 않는 것이다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.

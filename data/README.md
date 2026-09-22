@@ -84,3 +84,27 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 생성되는 두 manifest는 이미지·마스크·annotation 체크섬과 정상 calibration 분할을 고정한다.
 상세 규칙과 후속 fit/evaluation 순서는
 [Real-IAD PatchCore 프로토콜](../docs/realiad-patchcore-protocol.md)을 따른다.
+
+## Real-IAD 후속 미관찰 카테고리
+
+이미 관찰한 `transistor1`·`plastic_nut`의 다른 카메라 시점은 같은 표본 누수가 있어 새 holdout으로
+사용하지 않는다. 후속 대상은 이미지와 점수를 아직 보지 않은 `pcb`·`terminalblock` C1이다.
+annotation ZIP만 읽어 그룹 단위 development/final 경로를 이미 Git에 고정했다. 연구실에서는 아래
+명령으로 다운로드한 annotation ZIP이 같은 계획을 재생성하는지만 검증한다. 기존 파일은 덮어쓰지
+않고 정확히 같을 때만 `realiad_followup_split_verified`를 반환한다.
+
+```powershell
+& .\.venv\Scripts\python.exe scripts\plan_realiad_followup.py `
+    --jsons-zip "$env:USERPROFILE\Downloads\realiad_jsons.zip" `
+    --output ".\data\manifests\realiad-followup-split-plan-v1.json"
+```
+
+원본 이미지 ZIP을 받거나 이미지를 열기 전에
+[후속 사전등록](../docs/realiad-followup-preregistration.md)의 후보·선택·final gate를 검토한다.
+검토 후 `pcb.zip`과 `terminalblock.zip`을 Windows Downloads에 두고 아래 스크립트를 실행한다.
+Development 파일만 추출·디코딩 점검하며 final holdout은 ZIP 안에서 해시만 계산하고 추출하지 않는다.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+    -File ".\scripts\prepare_realiad_followup.ps1"
+```
