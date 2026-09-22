@@ -1,6 +1,6 @@
 # Real-IAD 후속 development/final 사전등록 v1
 
-상태: 이미지 미관찰 사전등록
+상태: 사전등록·development 등록/감사 완료, final holdout 봉인 유지
 
 기준일: 2026-09-22
 
@@ -60,8 +60,9 @@ TOML 설정 체크섬은 원시 파일 바이트가 아니라 파싱한 내용�
 
 ## 현재 단계
 
-`realiad_jsons.zip`의 annotation metadata만 사용해 경로 분할을 고정한다. 이미지 ZIP 다운로드·추출·
-디코딩·학습은 아직 하지 않는다. 고정 설정은
+`realiad_jsons.zip`의 annotation metadata만 사용해 경로 분할을 먼저 고정한 뒤, 연구실 Windows에서
+`pcb.zip`과 `terminalblock.zip`을 등록했다. Train·calibration·development만 추출하고 final은 원본
+ZIP 안에 유지했다. 고정 설정은
 [`configs/realiad-followup-preregistration-v1.toml`](../configs/realiad-followup-preregistration-v1.toml)에,
 생성기는 [`scripts/plan_realiad_followup.py`](../scripts/plan_realiad_followup.py)에 있다.
 생성된 경로 목록은
@@ -71,3 +72,8 @@ TOML 설정 체크섬은 원시 파일 바이트가 아니라 파싱한 내용�
 Windows 등록은 `scripts\\prepare_realiad_followup.ps1` 한 번으로 수행한다. 이 단계는 train,
 calibration, development만 추출·디코딩 점검하고 final ZIP member는 SHA-256만 계산한다. Final 이미지는
 선택 후보와 gate 근거가 고정되기 전까지 로컬 데이터 폴더에 추출하지 않는다.
+
+등록·감사 결과는 [`reports/realiad-followup-registration-v1.md`](../reports/realiad-followup-registration-v1.md)에
+고정했다. PCB 642장과 terminalblock 660장의 development 감사가 통과했고 오류·경고·디코딩 픽셀
+중복은 0건이다. Final 360장과 350장은 각각 `sealed=true`, `images_extracted=false` 상태다.
+다음 단계는 final을 열지 않고 사전등록한 PatchCore 후보 네 개를 development에서 비교하는 것이다.
