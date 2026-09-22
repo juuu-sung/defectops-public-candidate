@@ -69,6 +69,10 @@ warm sample p95는 Cable 42.04 ms, Metal Nut 25.97 ms였고 설정을 변경하�
 [Real-IAD PatchCore 프로토콜](docs/realiad-patchcore-protocol.md)에 고정했다.
 [Real-IAD 고정 평가](reports/realiad-patchcore-evaluation-v1.md)는 순위화·위치 검출은 유망하지만
 현재 고정 image 임곗값의 평균 미탐률이 두 품목 모두 약 40%임을 보여 자동 합격 판정을 보류했다.
+[3-seed 오류 진단](reports/realiad-patchcore-multiseed-diagnostics-v1.md)에서 공통 미탐은
+`transistor1` 166/469장(35.39%), `plastic_nut` 48/118장(40.68%)으로, seed 불안정
+49/469장(10.45%)·4/118장(3.39%)보다 많았다. seed 선택 문제가 아닌 구조적 개선 대상으로 보고,
+새 development split과 미관찰 holdout을 고정하기 전에는 crop·특징·image score를 변경하지 않는다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
 
 ## 먼저 할 일
@@ -95,8 +99,10 @@ warm sample p95는 Cable 42.04 ms, Metal Nut 25.97 ms였고 설정을 변경하�
    우선 포트폴리오 후보가 됐다. 상세 결과는
    [3품목 비교 보고서](reports/three-category-padim-vs-patchcore-v1.md)에 기록했다.
    [PatchCore 추가 품목 오류 분석과 warm 측정](docs/patchcore-additional-diagnostics.md)도 완료했고,
-   다음은 [Real-IAD PatchCore 프로토콜](docs/realiad-patchcore-protocol.md)의 외부 카테고리 등록과
-   test를 열지 않는 6개 fit/calibration이다.
+   Real-IAD 외부 카테고리 등록, test를 열지 않는 6개 fit/calibration, 고정 평가와
+   [3-seed 오류 진단](reports/realiad-patchcore-multiseed-diagnostics-v1.md)까지 완료했다.
+   다음은 새 development split과 최종 미관찰 holdout을 고정하고, foreground crop·작은 결함용
+   score/특징 후보를 사전등록하는 것이다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.
