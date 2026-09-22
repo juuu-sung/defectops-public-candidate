@@ -76,4 +76,6 @@ calibration, development만 추출·디코딩 점검하고 final ZIP member는 S
 등록·감사 결과는 [`reports/realiad-followup-registration-v1.md`](../reports/realiad-followup-registration-v1.md)에
 고정했다. PCB 642장과 terminalblock 660장의 development 감사가 통과했고 오류·경고·디코딩 픽셀
 중복은 0건이다. Final 360장과 350장은 각각 `sealed=true`, `images_extracted=false` 상태다.
-다음 단계는 final을 열지 않고 사전등록한 PatchCore 후보 네 개를 development에서 비교하는 것이다.
+사전등록한 PatchCore 후보 네 개의
+[`development 실행 흐름`](realiad-followup-development.md)도 구현했다. 다음 단계는 연구실 Windows에서
+이 흐름을 실행하고, final을 열지 않은 채 정확히 한 후보와 선택 보고서를 고정하는 것이다.

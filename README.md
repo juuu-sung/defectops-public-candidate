@@ -108,7 +108,8 @@ warm sample p95는 Cable 42.04 ms, Metal Nut 25.97 ms였고 설정을 변경하�
    [3-seed 오류 진단](reports/realiad-patchcore-multiseed-diagnostics-v1.md)까지 완료했다.
    미관찰 Real-IAD `pcb`·`terminalblock`의 그룹 단위 development/final 경로 계획과 후보 네 개를
    고정했다. 두 원본 ZIP의 development 등록·감사도 완료했고 final 이미지는 추출하지 않았다.
-   다음은 사전등록한 PatchCore 후보 네 개를 development에서 비교해 한 개를 선택하는 것이다.
+   [PatchCore 후보 네 개의 development 비교 실행 흐름](docs/realiad-followup-development.md)을 구현했다.
+   다음은 연구실 Windows에서 이를 실행해 한 후보를 고정하는 것이다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.
