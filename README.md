@@ -151,3 +151,7 @@ EfficientAD, AD 2, 모델 변환, embedding drift는 확장 단계로 둔다.
 - 향후 SOP는 워크플로우 구현용 모의 문서이며 실제 산업 안전 지침이 아니다.
 
 구체적인 검토 근거와 후속 작업은 [계획 검토](docs/plan-review.md), [착수 체크리스트](docs/first-milestone.md)에 있다.
+## Real-IAD 후속 final 검증
+
+선택 후보 잠금과 연구실 Windows의 준비/명시적 final 평가·재개 절차는
+[`docs/realiad-followup-final.md`](docs/realiad-followup-final.md)에 정리되어 있다.
