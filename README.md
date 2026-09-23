@@ -18,7 +18,7 @@ Real-IAD PCB 최종 평가에서 세 seed가 모두 놓친 불량 67장을 저�
 비교하고, 짧은 한국어 결과표를 생성한다. 연구실 GPU 결과를 확인했으며 상위 0.25%는
 기존보다 개발 데이터 불량 4장을 덜 놓쳤지만 기존에 잡던 2장을 새로 놓쳤다.
 이 실험은 이미 관찰한 데이터의 탐색 비교이며, 새 미관측 시험 없이 모델을 교체하거나
-자동 PASS에 사용할 수 없다. 다음은 [VisA PCB1–4 외부 평가의 이미지 열람 전 고정 계획](docs/visa-pcb-external-preregistration.md)에 따라 공식 데이터 묶음의 metadata만 등록한다.
+자동 PASS에 사용할 수 없다. [VisA PCB1–4 외부 평가의 이미지 열람 전 고정 계획](docs/visa-pcb-external-preregistration.md)에 따라 공식 데이터 묶음의 metadata를 등록하고 handoff를 검증했다. 다음은 정상 calibration만 디코딩하는 사전 점검이며 공식 시험 802장의 점수는 아직 없다.
 
 ## 현재 상태
 

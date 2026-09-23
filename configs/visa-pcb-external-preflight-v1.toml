@@ -1,0 +1,15 @@
+schema_version = 1
+status = "registration_verified_calibration_audit_final_unopened"
+protocol = "A-normal-only-v2"
+registration_handoff_sha256 = "52e2f24e853e60738791d02e75f937521906da51a488eb37f66e7a6b0b9ec040"
+source_archive_sha256 = "2eb8690c803ab37de0324772964100169ec8ba1fa3f7e94291c9ca673f40f362"
+model_category = "realiad_pcb"
+model_seed = 42
+calibration_image_count = 224
+external_final_image_count = 802
+calibration_image_format = "JPEG"
+calibration_image_mode = "RGB"
+reject_exact_calibration_pixel_duplicates = true
+external_final_payload_decode_allowed = false
+external_final_model_score_allowed = false
+automatic_pass_allowed = false

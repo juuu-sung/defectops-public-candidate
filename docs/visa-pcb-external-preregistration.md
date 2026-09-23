@@ -82,7 +82,33 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 
 ## 다음 게이트
 
-등록 근거를 독립 확인한 뒤, 이미지 디코딩·중복 감사와 잠긴 평가 실행기를 준비한다.
-공식 시험 802장은 **그때까지 열지 않는다**. 그 후 후보 두 개를 동일 이미지에서 한 번
-비교하고, 새 결과를 보고 후보나 임곗값을 바꾸면 그 시험은 탐색 결과로 강등한다.
-자동 PASS는 계속 금지한다.
+등록 ZIP의 CRC, 고정 계획·설정 SHA와 수량은 Mac에서 독립 대조해 일치했다. ZIP SHA-256은
+`52e2f24e853e60738791d02e75f937521906da51a488eb37f66e7a6b0b9ec040`이다.
+ZIP에는 원본 tar가 없으므로 Windows 보고서가 적은 tar SHA-256
+`2eb8690c803ab37de0324772964100169ec8ba1fa3f7e94291c9ca673f40f362`은 Mac에서
+다시 계산하지 못했다. 다음 사전 점검은 Windows 원본 tar의 SHA를 직접 다시 계산하고,
+기존 Real-IAD PCB seed 42 checkpoint의 잠금 계약을 확인한다.
+
+### 사전 점검: 정상 calibration만 디코딩
+
+[사전 점검 설정](../configs/visa-pcb-external-preflight-v1.toml)에 등록 ZIP·tar SHA를 고정했다.
+이 코드는 정상 calibration JPEG 224장만 열어 RGB 디코딩, 크기, 압축 바이트 및 픽셀
+SHA-256, 정확한 픽셀 중복 여부를 검사한다. 시험 802장의 JPEG와 불량 마스크 400장의
+payload는 **디코딩·점수 계산하지 않는다**. 원본 tar 전체를 해시하기 위해 파일 바이트를
+순차적으로 읽는 것은 시험 사진을 추출·디코딩하는 것과 구분한다.
+
+연구실 Windows에서 이전 등록에 사용한 원본 tar와 기존 `.venv`를 그대로 사용한다.
+
+```powershell
+Set-Location "C:\개인 프로젝트\defectops"
+git pull --ff-only
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File ".\scripts\run_visa_pcb_external_preflight.ps1"
+```
+
+완료하면 `artifacts\handoff\visa-pcb-external-preflight-v1.zip`과 출력 SHA-256을 첨부한다.
+오류가 나면 원본·기존 결과를 삭제하거나 덮어쓰지 말고 메시지만 공유한다. 성공해도
+**모델 성능 결과가 아니며**, 시험 이미지·마스크의 디코딩 가능 여부나 train/test 간
+중복은 아직 확인되지 않았다. 이 파일을 검토한 뒤에야 후보 두 개와 지표를 고정한 GPU
+평가 실행기를 열고, 시험 802장을 한 번 평가한다. 새 결과를 보고 후보나 임곗값을 바꾸면
+그 시험은 탐색 결과로 강등한다. 자동 PASS는 계속 금지한다.
