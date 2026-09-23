@@ -1,0 +1,40 @@
+schema_version = 1
+protocol = "A-normal-only-v2"
+status = "prospective_external_transfer_metadata_lock_before_visa_images_observed"
+purpose = "test_whether_postfinal_top025_development_signal_transfers_to_unseen_visa_pcb_boards"
+source_dataset = "VisA_20220922"
+source_url = "https://amazon-visual-anomaly.s3.us-west-2.amazonaws.com/VisA_20220922.tar"
+source_archive_bytes = 1929840640
+source_repo = "https://github.com/amazon-science/spot-diff"
+source_repo_commit = "2a692ab575001cbde74d402d897a7286086c6199"
+source_split_csv_sha256 = "a48557e6033318cb90556f706196bc9d247a776a23ea51aecee5a80dd0332995"
+source_license = "CC-BY-4.0 per Amazon Science repository and AWS Open Data registry; verify archive notice before redistribution"
+categories = ["pcb1", "pcb2", "pcb3", "pcb4"]
+calibration_normal_count_per_category = 56
+calibration_selection_key = "sha256(visa-pcb-external-v1:category:image_path)"
+test_split = "official_1cls_test_all"
+model_source = "frozen_realiad_pcb_seed42_fine_features_top_1pct_checkpoint"
+model_training_on_visa_allowed = false
+image_size = 256
+image_normalization = "ImageNet"
+image_quantile = 0.95
+quantile_method = "higher"
+image_decision_rule = "score >= threshold"
+automatic_pass_allowed = false
+
+[candidates]
+baseline = "mean_of_top_1pct_map"
+challenger = "mean_of_top_0_25pct_map"
+other_candidates_allowed = false
+
+[external_test]
+primary = "category_equal_weight_macro_escape_rate_difference_baseline_minus_challenger"
+paired_bootstrap_replicates = 5000
+paired_bootstrap_seed = 20260924
+confidence_level = 0.95
+maximum_challenger_overkill_per_category = 0.10
+maximum_category_escape_worsening = 0.05
+improvement_evidence_requires_positive_paired_ci_lower_bound = true
+failed_images_count_in_denominator = true
+test_open_once_after_archive_registration = true
+post_test_tuning_allowed = false
