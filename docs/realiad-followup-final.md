@@ -1,6 +1,9 @@
 # Real-IAD 후속 final 평가 — 실행 전 안내
 
-상태: 실행기 구현·테스트 완료, final holdout 미개봉. 연구실 Windows GPU 실행은 아직 하지 않았다.
+상태: 아래는 final 실행 **전**에 작성한 잠금·실행 안내다. 2026-09-23에 연구실 Windows
+GPU 평가가 완료됐으며, 결과 검증과 사후 PCB 오류 분석은
+[`reports/realiad-followup-final-posthoc-errors-v1.md`](../reports/realiad-followup-final-posthoc-errors-v1.md)에
+이어 기록한다. 아래의 `final holdout 미개봉` 문장은 당시의 실행 전 상태를 설명한다.
 
 ## 무엇을 검증하나
 
