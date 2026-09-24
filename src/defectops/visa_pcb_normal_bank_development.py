@@ -53,12 +53,50 @@ EXPECTED = {
     "automatic_pass_allowed": False, "confirmatory_claim_allowed": False,
 }
 
+# V1 is retained for provenance. V2 bounds the candidate pool before Anomalib's
+# k-center-greedy selection; changing only the final coreset ratio would not do so.
+EXPECTED_V2 = {
+    **EXPECTED,
+    "schema_version": 2,
+    "status": "post_test_exploratory_normal_bank_development_memory_bounded",
+    "patch_grid_side": 64,
+    "spatial_patch_stride": 2,
+    "maximum_candidate_embeddings": 900000,
+}
 
-def load_execution(path: Path) -> dict[str, Any]:
+
+def load_execution(path: Path, version: int = 1) -> dict[str, Any]:
     config = tomllib.loads(path.read_text(encoding="utf-8"))
-    if config != EXPECTED:
+    expected = {1: EXPECTED, 2: EXPECTED_V2}.get(version)
+    if expected is None or config != expected:
         raise ValueError("Post-test VisA normal-bank execution contract differs")
     return {**config, "config_sha256": hashlib.sha256(canonical(config)).hexdigest()}
+
+
+def spatial_patch_indices(grid_side: int, stride: int) -> list[int]:
+    """Select the same evenly spaced 2-D patch locations in every normal image."""
+    if grid_side <= 0 or stride <= 0 or grid_side % stride:
+        raise ValueError("Patch grid and stride must be positive and divisible")
+    return [row * grid_side + column
+            for row in range(0, grid_side, stride)
+            for column in range(0, grid_side, stride)]
+
+
+def bounded_patch_plan(train_count: int, execution: dict[str, Any]) -> dict[str, int] | None:
+    """Reject an unexpectedly large V2 candidate pool before GPU feature extraction."""
+    if "spatial_patch_stride" not in execution:
+        return None
+    side = execution["patch_grid_side"]
+    indices = spatial_patch_indices(side, execution["spatial_patch_stride"])
+    candidate_count = train_count * len(indices)
+    if candidate_count > execution["maximum_candidate_embeddings"]:
+        raise ValueError("Planned normal-patch pool exceeds the locked memory bound")
+    return {
+        "raw_patches_per_image": side * side,
+        "retained_patches_per_image": len(indices),
+        "candidate_embeddings": candidate_count,
+        "expected_coreset_size": int(candidate_count * execution["coreset_sampling_ratio"]),
+    }
 
 
 def training_members(csv_bytes: bytes, plan: dict[str, Any], category: str) -> list[str]:
@@ -215,6 +253,7 @@ def _fit_one(
     git: dict[str, str],
 ) -> dict[str, Any]:
     overall_started = time.perf_counter()
+    patch_plan = bounded_patch_plan(len(train_paths), execution)
     training_audit = audit_training_normals(archive_path, train_paths, calibration, audit_by_name, category)
     audit_seconds = time.perf_counter() - overall_started
     gpu = _gpu_modules()
@@ -235,6 +274,12 @@ def _fit_one(
         "num_neighbors": execution["num_neighbors"],
     }}
     started = time.perf_counter()
+    patch_indices = (
+        torch.tensor(
+            spatial_patch_indices(execution["patch_grid_side"], execution["spatial_patch_stride"]),
+            dtype=torch.long, device=device,
+        ) if patch_plan is not None else None
+    )
     with tarfile.open(archive_path, "r:") as archive:
         with torch.no_grad():
             for index, name in enumerate(train_paths, start=1):
@@ -243,9 +288,16 @@ def _fit_one(
                     raise ValueError(f"Normal train JPEG changed after audit: {name}")
                 image = _jpeg(raw, name)
                 model.model(_preprocess(image, execution["image_size"], gpu))
+                if patch_plan is not None:
+                    store = model.model.embedding_store
+                    if len(store) != index or store[-1].ndim != 2 or store[-1].shape[0] != patch_plan["raw_patches_per_image"]:
+                        raise RuntimeError("Anomalib patch layout differs from the locked V2 spatial sampling plan")
+                    store[-1] = store[-1].index_select(0, patch_indices)
                 if index % 25 == 0 or index == len(train_paths):
                     print(f"{category} normal fit {index}/{len(train_paths)}", flush=True)
         embedding_count = sum(int(value.shape[0]) for value in model.model.embedding_store)
+        if patch_plan is not None and embedding_count != patch_plan["candidate_embeddings"]:
+            raise RuntimeError("Retained normal-patch count differs from locked V2 plan")
         print(f"{category} selecting 10% normal-patch coreset from {embedding_count} embeddings...", flush=True)
         model.fit()
         model._is_fitted.fill_(True)
@@ -330,6 +382,7 @@ def _fit_one(
         "top_fraction": execution["top_fraction"], "image_quantile": execution["image_quantile"],
         "pixel_quantile": execution["pixel_quantile"],
         "embedding_count_before_coreset": embedding_count, "memory_bank_shape": memory_shape,
+        "spatial_patch_sampling": patch_plan,
         "normal_data_audit_seconds": audit_seconds,
         "fit_seconds": fit_seconds, "total_seconds": time.perf_counter() - overall_started,
         "image_threshold": threshold, "pixel_threshold": pixel_threshold,
@@ -340,6 +393,7 @@ def _fit_one(
         "limitations": [
             "Official VisA test was already observed before this development fit; no confirmatory claim is allowed.",
             "Only official train normals excluding the 56 fixed calibration normals were used for the memory bank.",
+            *(["V2 retains an evenly spaced quarter of patch embeddings from every normal fit image before coreset selection; this changes bank density as well as training-data source."] if patch_plan is not None else []),
             "No official test image or mask payload was read or scored in this fit.",
             "No automatic PASS or production decision is authorized.",
         ],
@@ -351,19 +405,27 @@ def _fit_one(
 def run(args: argparse.Namespace) -> dict[str, Any]:
     project = args.project.resolve(strict=True)
     archive_path = args.archive.resolve(strict=True)
-    execution = load_execution(project / "configs" / "visa-pcb-normal-bank-development-v1.toml")
+    version = getattr(args, "version", 1)
+    execution = load_execution(project / "configs" / f"visa-pcb-normal-bank-development-v{version}.toml", version)
     if args.category not in execution["categories"]:
         raise ValueError(f"Category must be one of {execution['categories']}")
     git = git_state(project)
     print("Checking locked source, official split CSV and existing normal calibration audit...", flush=True)
     plan, train_paths, calibration, audited = checked_sources(project, archive_path, args.category, execution)
+    patch_plan = bounded_patch_plan(len(train_paths), execution)
     print(
         f"{args.category}: fitting {len(train_paths)} train normals, then calibrating "
         f"{len(calibration)} disjoint normals; no official test decode/scoring.", flush=True,
     )
-    root = project / "artifacts" / "visa-pcb-normal-bank-development-v1"
+    if patch_plan is not None:
+        print(
+            f"Memory-bounded V2: {patch_plan['retained_patches_per_image']} evenly spaced patches per image, "
+            f"{patch_plan['candidate_embeddings']} total candidates, "
+            f"{patch_plan['expected_coreset_size']} planned coreset patches.", flush=True,
+        )
+    root = project / "artifacts" / f"visa-pcb-normal-bank-development-v{version}"
     output = root / args.category
-    handoff = project / "artifacts" / "handoff" / f"visa-pcb-normal-bank-{args.category}-v1.zip"
+    handoff = project / "artifacts" / "handoff" / f"visa-pcb-normal-bank-{args.category}-v{version}.zip"
     root.mkdir(parents=True, exist_ok=True)
     if output.exists():
         report = _validated_existing(output, args.category, plan, execution)
@@ -401,6 +463,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "normal_calibration_count": report["normal_calibration_count"],
         "image_threshold": report["image_threshold"],
         "memory_bank_shape": report["memory_bank_shape"],
+        "embedding_count_before_coreset": report["embedding_count_before_coreset"],
+        "spatial_patch_sampling": report["spatial_patch_sampling"],
         "fit_seconds": report["fit_seconds"],
         "official_test_images_decoded": 0,
         "handoff_zip": str(handoff), "handoff_sha256": file_sha256(handoff),
@@ -412,6 +476,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--project", type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument("--archive", type=Path, required=True)
     parser.add_argument("--category", choices=list(EXPECTED_COUNTS), required=True)
+    parser.add_argument("--version", type=int, choices=(1, 2), default=1)
     args = parser.parse_args(argv)
     print(json.dumps(run(args), indent=2, ensure_ascii=False))
     return 0

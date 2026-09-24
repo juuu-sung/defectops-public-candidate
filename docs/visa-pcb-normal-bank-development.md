@@ -45,8 +45,11 @@ SHA-256도 실행 전에 다시 확인한다. 학습 중 정확한 픽셀 중복
 
 PCB3는 상위 0.25% 방식으로 바꾸며 기존에 잡던 불량 17장을 놓친 기판이다. 우선
 PCB3 하나만 실행해 학습 시간과 저장 모델의 재로딩 일치성을 확인한다. 같은 특징
-구성의 앞선 Real-IAD PCB 학습은 약 **1.82시간** 걸렸다. 이번 시간은 장비 상태와
-이미지 수에 따라 달라진다. PowerShell과 연구실 컴퓨터를 켠 채 충분한 시간을 둔다.
+구성의 앞선 Real-IAD PCB 학습은 약 **1.82시간** 걸렸지만, 이 시간은 PCB3 전체
+849장의 4096개 패치/장에 적용할 수 있는 예상치가 아니었다. 아래 v1 시도는 실제로
+정상 영상 특징 추출 849/849 직후 3,477,504개 후보에서 10% coreset 선택을 시작하다
+연구실 RTX 5060 8GB의 CUDA 메모리 부족으로 멈췄다. 사진·기존 평가·기존 완료
+모델은 삭제하지 않았다. v1을 그대로 재실행하지 않는다.
 
 ```powershell
 Set-Location "C:\개인 프로젝트\defectops"
@@ -54,12 +57,39 @@ git pull --ff-only
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\run_visa_pcb_normal_bank_pilot.ps1"
 ```
 
-완료 시 `artifacts\handoff\visa-pcb-normal-bank-pcb3-v1.zip`과 SHA-256을 Codex 작업에
+v1 명령은 이력 보존용이며 연구실 8GB 환경에서는 사용하지 않는다. 성공 시
+`artifacts\handoff\visa-pcb-normal-bank-pcb3-v1.zip`과 SHA-256을 Codex 작업에
 첨부한다. 출력 ZIP에는 fit 보고서, 학습 사진 감사 기록, 정상 calibration 점수만 있고
 모델 checkpoint·원본 사진·시험 결과는 없다. checkpoint는 연구실 컴퓨터의
 `artifacts\visa-pcb-normal-bank-development-v1\pcb3\model.pt`에 남는다. 삭제하거나
 Git에 올리지 않는다. 같은 명령을 다시 실행하면 완료된 학습을 검증해 재사용하며,
 유효하지 않은 기존 결과는 덮어쓰지 않고 오류를 낸다.
+
+## 8GB 메모리 대응 v2: 모든 정상 사진에서 공간 균등 패치 표본 추출
+
+v2는 학습 사진 849장을 모두 사용하되 각 이미지의 64×64 특징 격자에서 행·열을
+하나씩 건너뛰어 32×32=1,024개 패치만 **coreset 후보로** 남긴다. 후보는
+3,477,504개에서 869,376개, 10% coreset 목표는 347,750개에서 86,937개로
+줄어든다. 현재 Anomalib 2.2.0은 전체 후보에 대한 특징 투영과 반복 거리 계산을
+GPU에서 하므로 최종 10%만 낮추는 것보다 후보 자체를 제한하는 것이 중요하다.
+향후 메모리 사용과 시간은 연구실 실측으로 확인해야 하며 성공을 보장하지 않는다.
+
+이 변경은 정상 사진 수를 줄이지 않지만 공간 패치 밀도를 낮춘다. 작은 결함의
+정상 참조가 누락될 수 있고, 기존 Real-IAD bank와의 비교에서도 데이터 출처와
+후보 밀도가 함께 달라진다. 따라서 결과는 별도의 **사후 탐색 v2**로 기록하며
+원본 v1 설정·출력은 덮어쓰지 않는다. 정상 calibration 56장은 계속 분리하고 공식
+test 사진·마스크는 학습 중 열지 않는다.
+
+```powershell
+Set-Location "C:\개인 프로젝트\defectops"
+git pull --ff-only
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\run_visa_pcb_normal_bank_pilot_v2.ps1"
+```
+
+완료 시 `artifacts\handoff\visa-pcb-normal-bank-pcb3-v2.zip`을 첨부한다. ZIP은
+모델·원본 사진 없이 fit 보고서·학습 감사 기록·정상 calibration 점수만 담는다.
+checkpoint는 `artifacts\visa-pcb-normal-bank-development-v2\pcb3\model.pt`에만
+남겨 둔다. v1의 실패 산출물이나 이전 실험 폴더를 지우지 않는다.
 
 ## 이 다음
 

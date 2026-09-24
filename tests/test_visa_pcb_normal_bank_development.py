@@ -13,7 +13,8 @@ from PIL import Image
 
 from defectops.visa_pcb_external_evaluation import _pixel_sha
 from defectops.visa_pcb_normal_bank_development import (
-    audit_training_normals, load_execution, training_members,
+    audit_training_normals, bounded_patch_plan, load_execution, spatial_patch_indices,
+    training_members,
 )
 
 
@@ -66,6 +67,31 @@ def test_config_is_explicit_post_test_and_keeps_prior_architecture() -> None:
     assert config["top_fraction"] == 0.01
     assert config["official_test_payloads_allowed"] is False
     assert config["confirmatory_claim_allowed"] is False
+
+
+def test_v2_uses_every_normal_image_with_bounded_spatial_patch_pool() -> None:
+    path = Path(__file__).resolve().parents[1] / "configs" / "visa-pcb-normal-bank-development-v2.toml"
+    config = load_execution(path, version=2)
+    selected = spatial_patch_indices(config["patch_grid_side"], config["spatial_patch_stride"])
+    assert len(selected) == len(set(selected)) == 1024
+    assert selected[0] == 0
+    assert selected[-1] == 62 * 64 + 62
+    assert all(0 <= index < 4096 for index in selected)
+    plan = bounded_patch_plan(849, config)
+    assert plan == {
+        "raw_patches_per_image": 4096,
+        "retained_patches_per_image": 1024,
+        "candidate_embeddings": 869376,
+        "expected_coreset_size": 86937,
+    }
+    assert config["official_test_payloads_allowed"] is False
+    assert config["confirmatory_claim_allowed"] is False
+    try:
+        bounded_patch_plan(900, config)
+    except ValueError as error:
+        assert "memory bound" in str(error)
+    else:
+        raise AssertionError("An unexpectedly large patch pool must fail before GPU work")
 
 
 def test_normal_audit_rejects_exact_calibration_duplicate() -> None:
