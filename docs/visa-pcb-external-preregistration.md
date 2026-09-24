@@ -215,3 +215,39 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 완료하면 `artifacts\handoff\visa-pcb-external-evaluation-v2.zip`과 출력 SHA-256을
 이 작업에 첨부한다. 오류가 다시 나면 출력만 공유하고 v1·v2 폴더, 원본 tar,
 체크포인트를 삭제하지 않는다.
+
+### v2 결과 이후: 미탐을 눈으로 확인하는 읽기 전용 단계
+
+v2 평가에서는 같은 Real-IAD PCB 모델을 VisA PCB1–4에 그대로 적용했고, 정상
+calibration 224장으로 기판별 임곗값만 정했다. 공식 test의 불량 400장 중 기존 점수는
+30장, 대안 점수는 17장을 검토 대상으로 잡았다. 특히 PCB3에서 기존 점수는 잡았지만
+대안 점수는 놓친 불량이 **17장**이었다. 이 단계는 원인을 바로 확정하거나 임곗값을
+다시 맞추는 실험이 아니다. 저장된 결과를 원본 사진과 나란히 보고, 어떤 결함에서
+반응이 약한지 관찰하기 위한 **사후 탐색적 시각 검토**다.
+
+`run_visa_pcb_external_visual_diagnostics.ps1`은 다음을 수행한다.
+
+1. 검증된 v2 평가 ZIP, 잠긴 실험 설정, 원본 tar와 각 사진·마스크·저장 맵의
+   SHA-256 및 내부 내용을 서로 대조한다. 모델을 다시 불러오거나 추론하지 않는다.
+2. PCB3의 바뀐 판정 17장은 전부 고른다. 각 기판에서 두 방식 모두 놓친 불량 최대
+   8장과 정상인데 하나라도 오검출한 사진 최대 4장을 **파일 경로 해시**로 고른다.
+   점수나 결함 크기로 고르지 않으며, 이 표본이 전체 불량을 통계적으로 대표하지는 않는다.
+3. 65장의 카드에 `모델 입력 크기로 축소한 원본+초록색 정답 윤곽`, `고정 색 척도의
+   저장된 이상 맵`, `정답 부위 또는 맵 최고점 주변의 원본 해상도 256×256 확대`를
+   나란히 담는다. 정상 사진에는 정답 윤곽이 없다. 색이 붉다고 실제 결함이 확인된
+   것은 아니다. 상단에는 두 방식의 점수·임곗값·판정을 같이 적는다.
+
+연구실 Windows에서 다음 명령을 실행한다. 출력이 이미 있으면 덮어쓰지 않고 중단한다.
+
+```powershell
+Set-Location "C:\개인 프로젝트\defectops"
+git pull --ff-only
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\run_visa_pcb_external_visual_diagnostics.ps1"
+```
+
+완료 후 `artifacts\handoff\visa-pcb-external-visual-diagnostics-v1.zip`과 출력된
+SHA-256을 이 작업에 첨부한다. ZIP에는 파생 카드와 요약·선택 목록만 포함하고 원본
+tar·체크포인트·전체 NPZ 캐시는 포함하지 않는다. VisA 원본 및 파생 이미지 사용 시
+CC BY 4.0 출처 표시를 유지한다. 사진을 검토한 뒤에도 같은 test에서 모델·임곗값을
+수정해 다시 시험하면 확증이라고 주장할 수 없다. 개선 실험은 개발 데이터에서 설계하고
+새로운 미개봉 데이터로 별도 평가한다. 자동 PASS 및 생산 조치는 계속 금지한다.
