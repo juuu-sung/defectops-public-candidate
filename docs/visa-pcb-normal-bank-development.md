@@ -91,9 +91,14 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\run_visa_pcb_
 checkpoint는 `artifacts\visa-pcb-normal-bank-development-v2\pcb3\model.pt`에만
 남겨 둔다. v1의 실패 산출물이나 이전 실험 폴더를 지우지 않는다.
 
+PCB3 v2는 연구실 Windows RTX 5060 8GB에서 정상 학습 849장·보정 56장으로
+완료됐다. 기준표 `86,937×768`, 전체 실행 `8,123.5초`, 이미지 임곗값 `26.111570`이다.
+이는 정상 기준 생성 완료이지 불량 검출 성능 결과가 아니다. 다음 단계는
+[같은 PCB3 시험 201장 사후 탐색 비교](visa-pcb-normal-bank-pcb3-evaluation.md)다.
+
 ## 이 다음
 
-PCB3의 학습/재로딩 근거와 자원 비용을 먼저 검토한다. 그다음 나머지 기판의 같은
-정상 학습을 순서대로 진행할지 결정하고, 별도의 명시적 평가 단계에서 이미 본 VisA
-test와 비교한다. 그 시험을 이용한 변경·선택은 탐색적이다. 진짜 확인적 결론에는
+PCB3의 학습/재로딩 근거와 자원 비용은 검토했다. 이제 별도의 명시적 평가 단계에서
+이미 본 VisA PCB3 test와 비교한다. 결과를 검증하기 전에는 나머지 기판의 같은
+정상 학습으로 확대하지 않는다. 그 시험을 이용한 변경·선택은 탐색적이다. 진짜 확인적 결론에는
 새 미관측, 중복 통제된 holdout과 사전에 잠근 실패 허용 기준이 필요하다.

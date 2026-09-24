@@ -1,0 +1,26 @@
+schema_version = 1
+status = "post_test_exploratory_pcb3_normal_bank_comparison"
+protocol = "A-normal-only-v2"
+category = "pcb3"
+model_seed = 42
+fit_handoff_sha256 = "93d998fd88a3983c35688aaee850de794eedabbcf2b1d79471eaa50e3c195b07"
+fit_config_sha256 = "343e2d910e582146aa44e19fc663fe13f01f493f5321e69595d999dc8da79e8e"
+fit_checkpoint_sha256 = "be8062541e2a14cb563284d34cfc9f60e3ca5e8cc1d75e0ccbd28d1287785e85"
+baseline_evaluation_handoff_sha256 = "ba2f5200757e212f97f0a431679a429aa068ee9140b0a28a760641e9427a0d2a"
+source_archive_sha256 = "2eb8690c803ab37de0324772964100169ec8ba1fa3f7e94291c9ca673f40f362"
+source_plan_sha256 = "e134445218bfb71c3cbcfcad9da45548024ef6166a2acd8b0ab64ff23e5ba34a"
+normal_test_count = 101
+anomaly_test_count = 100
+image_score = "mean_of_top_map_fraction"
+top_fraction = 0.01
+decision_rule = "score >= normal_calibration_threshold"
+mask_binarization = "nonzero_before_nearest"
+mask_threshold = 128
+confidence_level = 0.95
+paired_bootstrap_replicates = 5000
+paired_bootstrap_seed = 20260925
+pixel_aupro_fpr_limit = 0.30
+pixel_aupro_fpr_points = 301
+post_test_exploratory = true
+automatic_pass_allowed = false
+confirmatory_claim_allowed = false
