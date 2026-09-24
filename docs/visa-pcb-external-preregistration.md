@@ -112,3 +112,50 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 중복은 아직 확인되지 않았다. 이 파일을 검토한 뒤에야 후보 두 개와 지표를 고정한 GPU
 평가 실행기를 열고, 시험 802장을 한 번 평가한다. 새 결과를 보고 후보나 임곗값을 바꾸면
 그 시험은 탐색 결과로 강등한다. 자동 PASS는 계속 금지한다.
+
+### 사전 점검 확인 결과와 시험 개봉 전 최종 잠금
+
+연구실 사전 점검 ZIP SHA-256은
+`c6568b6691d03c1a244da29a7505b0d6f56dc2970f618e8f7dacd9d35d4ce69d`다.
+ZIP 내부 두 JSON의 CRC, 감사 기록의 정규화 SHA, 정상 이미지 224개 경로의 고정 계획
+일치, 설정·등록·원본 tar SHA의 잠긴 값 일치와 checkpoint SHA 기록을 확인했다.
+PCB1–4 정상 각 56장의 JPEG 디코딩이 성공한 것으로 보고됐고 정확한 픽셀 중복은 0이다.
+시험 이미지 디코딩·점수 계산은 모두 0으로 기록됐다. Mac에는 원본 tar와 checkpoint가
+없으므로 이 결과는 **전달 기록 검증**이지 원본 바이트의 독립 재검사가 아니다.
+
+[최종 평가 설정](../configs/visa-pcb-external-evaluation-v1.toml)은 사전 점검 ZIP과 기존
+Real-IAD PCB seed 42 checkpoint SHA를 고정한다. 모델을 VisA로 다시 학습하지 않는다.
+평가기는 시작 전에 등록 ZIP·원본 tar·사전 점검 ZIP·checkpoint 잠금과 정상 JPEG 224장의
+감사 기록을 재확인한다. 그 후 GPU 모델로 각 기판의 정상 56장을 점수화하고 **기존 상위
+1%와 도전자 상위 0.25%의 95% higher 임곗값을 각각 고정**한다.
+
+그 다음 같은 명령 실행 안에서 공식 test 802장의 JPEG와 불량 마스크 400장을 열어
+전부 디코딩하고, 형식·크기·빈 마스크·정확한 이미지 중복을 검사한다. 하나라도 실패하면
+그 이미지를 분모에서 빼지 않고 **성능 결과 생성 자체를 중단**한다. dHash 근접 중복은
+참고 신호로 기록하되 동일 물리 기판의 증거로 단정하지 않는다. 데이터 감사가 모두 끝나면
+두 고정 점수를 같은 802장에서 계산한다. 중단되면 검증된 샘플 캐시만 재사용하며 원본과
+기존 결과를 덮어쓰지 않는다.
+
+품목별 미탐·정상 오검출·AUROC/AP, 위치 지표(Pixel AUROC/AUPRO)를 기록한다. 불량에
+대해서는 같은 이미지의 두 판정 차이를 기판별로 짝지어 5,000회 bootstrap한다. 95%
+구간 하한이 0을 넘고, 모든 기판의 도전자 정상 오검출률이 10% 이하이며, 어느 기판도
+미탐률이 기존보다 5%p 넘게 나빠지지 않을 때만 **다른 기판으로의 전이 개선 근거**라고
+표현한다. 이는 같은 제품의 개선 확증·현장 배포 승인·자동 PASS 근거가 아니다.
+
+연구실 Windows에서, 현재 Git 상태가 깨끗한지 확인한 뒤 아래 명령은 **공식 시험을
+실제로 여는 명령**이다. 준비된 코드를 검토하지 않았다면 실행하지 않는다. 모델 추론에
+시간이 걸릴 수 있으며, 중단 시 같은 명령으로 이어서 실행할 수 있다.
+
+```powershell
+Set-Location "C:\개인 프로젝트\defectops"
+git pull --ff-only
+git status --short
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File ".\scripts\run_visa_pcb_external_evaluation.ps1" `
+  -OpenFinal
+```
+
+완료 후 `artifacts\handoff\visa-pcb-external-evaluation-v1.zip`과 출력 SHA-256을 이 작업에
+첨부한다. 원본 tar, 원본 사진, 모델 checkpoint, NPZ 샘플 캐시는 첨부하지 않는다.
+오류가 나면 삭제·수정 없이 메시지를 공유한다. 같은 test를 본 뒤 설정을 수정해 재평가하면
+그 결과는 사전 고정 시험으로 다시 주장할 수 없다.
