@@ -19,11 +19,14 @@ def main() -> None:
     parser.add_argument("--project-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--archive", type=Path, required=True)
     parser.add_argument("--open-final", action="store_true", help="Explicitly open the official VisA test")
+    parser.add_argument("--mask-correction-v2", action="store_true",
+                        help="Separate exploratory run after the first VisA class-ID mask audit failed")
     args = parser.parse_args()
     if not args.open_final:
         parser.error("Official VisA test remains sealed; pass --open-final explicitly after the plan is frozen")
     try:
-        result = run_evaluation(args.project_root, args.archive)
+        result = run_evaluation(args.project_root, args.archive,
+                                mask_correction_v2=args.mask_correction_v2)
     except (OSError, ValueError, RuntimeError, KeyError,
             tarfile.TarError, zipfile.BadZipFile) as exc:
         print(f"ERROR: {type(exc).__name__}: {exc}", file=sys.stderr)

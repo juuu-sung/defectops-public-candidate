@@ -15,7 +15,7 @@ from unittest.mock import patch
 from PIL import Image
 
 from defectops.visa_pcb_external_evaluation import (
-    _pixel_sha, audit_final_payloads, checked_preflight,
+    _binary_mask, _pixel_sha, _read_mask, audit_final_payloads, checked_preflight,
     load_evaluation_config, paired_macro_escape_difference,
 )
 from defectops.visa_pcb_external_protocol import canonical
@@ -44,6 +44,57 @@ class VisaPcbExternalEvaluationTests(unittest.TestCase):
         self.assertEqual(config["preflight_git_commit"], "1489ccd8e78bcda3fc10bcccda721417d711e482")
         self.assertFalse(config["automatic_pass_allowed"])
         self.assertEqual(config["paired_bootstrap_replicates"], 5000)
+        corrected = load_evaluation_config(root / "configs" / "visa-pcb-external-evaluation-v2.toml",
+                                           mask_correction_v2=True)
+        self.assertEqual(corrected["mask_binarization"], "nonzero_before_nearest")
+        self.assertEqual(corrected["baseline_map_top_fraction"], config["baseline_map_top_fraction"])
+        self.assertEqual(corrected["challenger_map_top_fraction"], config["challenger_map_top_fraction"])
+        self.assertFalse(corrected["automatic_pass_allowed"])
+        with self.assertRaisesRegex(ValueError, "selected locked values"):
+            load_evaluation_config(root / "configs" / "visa-pcb-external-evaluation-v2.toml")
+
+    def test_original_class_id_one_is_preserved_by_corrected_audit_and_scoring(self) -> None:
+        image = Image.new("L", (256, 256), 0)
+        image.putpixel((20, 30), 1)
+        self.assertEqual(int(_binary_mask(image, 256, 128).sum()), 0)
+        self.assertEqual(int(_binary_mask(image, 256, 128, "nonzero_before_nearest").sum()), 1)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "sample.tar"
+            mask_name = "pcb1/Data/Masks/Anomaly/000.png"
+            image_name = "pcb1/Data/Images/Anomaly/000.JPG"
+            cal_name = "pcb1/Data/Images/Normal/001.JPG"
+            mask_stream = io.BytesIO()
+            image.save(mask_stream, format="PNG")
+            mask_data = mask_stream.getvalue()
+
+            def jpeg(color: tuple[int, int, int]) -> bytes:
+                stream = io.BytesIO()
+                Image.new("RGB", (256, 256), color).save(stream, format="JPEG")
+                return stream.getvalue()
+
+            cal_data, bad_data = jpeg((20, 30, 40)), jpeg((90, 110, 140))
+            with tarfile.open(path, "w") as archive:
+                for name, data in ((cal_name, cal_data), (image_name, bad_data), (mask_name, mask_data)):
+                    member = tarfile.TarInfo(name)
+                    member.size = len(data)
+                    archive.addfile(member, io.BytesIO(data))
+            with Image.open(io.BytesIO(cal_data)) as cal:
+                cal_sha = _pixel_sha(cal)
+            calibration = {"records": [{"image": cal_name, "image_sha256": hashlib.sha256(cal_data).hexdigest(),
+                                         "decoded_pixel_sha256": cal_sha}]}
+            row = {"category": "pcb1", "label": 1, "source_image_member": image_name,
+                   "source_mask_member": mask_name}
+            config = {"external_final_normal_total": 0, "external_final_anomaly_total": 1,
+                      "pixel_ground_truth_threshold": 128, "near_duplicate_dhash_max_distance": 4}
+            with self.assertRaisesRegex(ValueError, "Empty anomaly mask"):
+                audit_final_payloads(path, [row], calibration, config)
+            audit = audit_final_payloads(path, [row], calibration,
+                                         {**config, "mask_binarization": "nonzero_before_nearest"})
+            self.assertEqual(audit["records"][0]["mask_nonzero_256"], 1)
+            with tarfile.open(path, "r:") as archive:
+                read = _read_mask(archive, row, (256, 256), 256, 128,
+                                  hashlib.sha256(mask_data).hexdigest(), "nonzero_before_nearest")
+            self.assertEqual(int(read.sum()), 1)
 
     def test_preflight_zip_requires_original_calibration_selection(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

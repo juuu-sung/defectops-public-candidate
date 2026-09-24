@@ -181,3 +181,37 @@ git pull --ff-only
 출력을 확인하기 전에는 기존 평가 명령을 다시 실행하지 않는다. 마스크 파서를 수정해야
 한다면 변경 이력과 별도 실행 ID를 기록하고, 수정 후 결과를 원래 사전 고정 평가와
 구별해 보고한다.
+
+### 확인된 원인과 별도 수정 실행 v2
+
+연구실 진단 출력에서 `pcb1/Data/Masks/Anomaly/000.png`는 L PNG 1404×1070이며,
+원본 값은 0(1,500,756픽셀)과 **1(1,524픽셀)**뿐이다. 기존 파서로 줄이면 결함
+픽셀 0개, VisA 공식 방식처럼 `원본값 != 0`으로 이진화한 다음 동일한 nearest-neighbor
+축소를 하면 **65개**다. 따라서 첫 중단은 모델이나 빈 정답 마스크가 아닌 **클래스 번호
+1을 128 미만이라는 이유로 배경 처리한 파서 오류**다. 다른 399개 마스크의 무결성은
+아직 확인되지 않았다.
+
+원본 v1 설정·중단된 `artifacts/visa-pcb-external-evaluation-v1`은 그대로 둔다.
+[v2 설정](../configs/visa-pcb-external-evaluation-v2.toml)은 마스크 해석만 공식 방식으로
+수정한다. 이미지 점수 방식(맵 상위 1%·0.25%), 정상 calibration 수량, 95% higher
+임곗값, 불량/정상 test 분모, 실패 즉시 중단, 자동 PASS 금지는 유지한다. v2는 **새
+출력·샘플 캐시·handoff**를 사용하며 정상 calibration 224장을 다시 계산한다.
+
+첫 시험 마스크를 본 뒤 파서를 수정했으므로 v2의 성능 수치와 원래 잠근 판정 기준의
+충족 여부는 **탐색적 외부 전이 결과**로만 보고한다. 원래 사전 고정 평가 성공이나
+같은 제품의 성능 확증으로 표현하지 않는다. 나머지 test 마스크 중 하나라도 빈 값이나
+데이터 오류가 있으면 그대로 중단하고 표본을 제외하지 않는다.
+
+연구실 Windows에서 v2를 명시적으로 실행한다. 완료 전에는 성능 수치를 보고하지 않는다.
+
+```powershell
+Set-Location "C:\개인 프로젝트\defectops"
+git pull --ff-only
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File ".\scripts\run_visa_pcb_external_evaluation_v2.ps1" `
+  -RunCorrected
+```
+
+완료하면 `artifacts\handoff\visa-pcb-external-evaluation-v2.zip`과 출력 SHA-256을
+이 작업에 첨부한다. 오류가 다시 나면 출력만 공유하고 v1·v2 폴더, 원본 tar,
+체크포인트를 삭제하지 않는다.

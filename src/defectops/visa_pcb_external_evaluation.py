@@ -66,11 +66,20 @@ EXPECTED_EVALUATION = {
     "automatic_pass_allowed": False,
 }
 
+EXPECTED_MASK_CORRECTION_V2 = {
+    **EXPECTED_EVALUATION,
+    "schema_version": 2,
+    "status": "post_test_mask_parser_correction_exploratory",
+    "mask_binarization": "nonzero_before_nearest",
+    "protocol_deviation": "Original VisA class-ID mask value 1 was misread as background in the first test audit",
+}
 
-def load_evaluation_config(path: Path) -> dict[str, Any]:
+
+def load_evaluation_config(path: Path, *, mask_correction_v2: bool = False) -> dict[str, Any]:
     config = tomllib.loads(path.read_text(encoding="utf-8"))
-    if config != EXPECTED_EVALUATION:
-        raise ValueError("VisA evaluation contract differs from the preregistered values")
+    expected = EXPECTED_MASK_CORRECTION_V2 if mask_correction_v2 else EXPECTED_EVALUATION
+    if config != expected:
+        raise ValueError("VisA evaluation contract differs from the selected locked values")
     return {**config, "config_sha256": hashlib.sha256(canonical(config)).hexdigest()}
 
 
@@ -147,6 +156,21 @@ def _dhash(image: Image.Image) -> int:
     return int.from_bytes(np.packbits(bits.reshape(-1)).tobytes(), "big")
 
 
+def _binary_mask(mask: Image.Image, output_size: int, threshold: int,
+                 binarization: str | None = None) -> np.ndarray:
+    if binarization == "nonzero_before_nearest":
+        raw = np.asarray(mask)
+        if raw.ndim != 2:
+            raise ValueError(f"Expected a single-channel VisA class-ID mask, got {mask.mode}")
+        source = Image.fromarray(np.where(raw != 0, 255, 0).astype(np.uint8))
+    elif binarization is None:
+        source = mask.convert("L")
+    else:
+        raise ValueError(f"Unknown VisA mask binarization: {binarization}")
+    resized = source.resize((output_size, output_size), Image.Resampling.NEAREST)
+    return np.asarray(resized, dtype=np.uint8) >= threshold
+
+
 def audit_final_payloads(archive_path: Path, final_records: list[dict[str, Any]],
                          calibration_audit: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
     """Open every sealed test image/mask once in the same run that will score them."""
@@ -187,10 +211,9 @@ def audit_final_payloads(archive_path: Path, final_records: list[dict[str, Any]]
                     if mask.format != "PNG" or mask.size != (width, height):
                         raise ValueError(f"VisA mask is not PNG or dimensions differ: {mask_name}")
                     mask.load()
-                    resized = mask.convert("L").resize((256, 256), Image.Resampling.NEAREST)
-                    mask_nonzero = int(np.count_nonzero(
-                        np.asarray(resized, dtype=np.uint8) >= config["pixel_ground_truth_threshold"]
-                    ))
+                    mask_nonzero = int(np.count_nonzero(_binary_mask(
+                        mask, 256, config["pixel_ground_truth_threshold"], config.get("mask_binarization")
+                    )))
                 if mask_nonzero == 0:
                     raise ValueError(f"Empty anomaly mask after fixed resizing: {mask_name}")
             elif row["source_mask_member"]:
@@ -257,7 +280,8 @@ def paired_macro_escape_difference(cases: list[dict[str, Any]], config: dict[str
 
 
 def _read_mask(archive: tarfile.TarFile, row: dict[str, Any], image_size: tuple[int, int],
-               output_size: int, threshold: int, expected_sha: str | None) -> np.ndarray:
+               output_size: int, threshold: int, expected_sha: str | None,
+               binarization: str | None = None) -> np.ndarray:
     if row["label"] == 0:
         return np.zeros((output_size, output_size), dtype=np.bool_)
     data = _member_bytes(archive, row["source_mask_member"])
@@ -266,8 +290,8 @@ def _read_mask(archive: tarfile.TarFile, row: dict[str, Any], image_size: tuple[
     with Image.open(io.BytesIO(data)) as image:
         if image.format != "PNG" or image.size != image_size:
             raise ValueError("VisA anomaly mask format or dimensions changed")
-        resized = image.convert("L").resize((output_size, output_size), Image.Resampling.NEAREST)
-        return np.asarray(resized, dtype=np.uint8) >= threshold
+        image.load()
+        return _binary_mask(image, output_size, threshold, binarization)
 
 
 def _write_text_once(path: Path, content: str) -> None:
@@ -279,8 +303,10 @@ def _write_text_once(path: Path, content: str) -> None:
 
 
 def human_summary(result: dict[str, Any]) -> str:
+    corrected = result["comparison_status"] == "post_test_mask_parser_correction_exploratory"
     lines = [
-        "# VisA PCB1–4 외부 전이 시험 결과", "",
+        "# VisA PCB1–4 외부 전이 탐색 결과 (마스크 해석 수정 후)" if corrected
+        else "# VisA PCB1–4 외부 전이 시험 결과", "",
         "다른 기판 사진에서 기존 점수 방식과 도전자 점수 방식을 한 번 비교했습니다.",
         "이 결과는 같은 제품의 현장 성능 또는 자동 합격 근거가 아닙니다.", "",
         "| 기판 | 기존 미탐 | 도전자 미탐 | 기존 정상 오검출 | 도전자 정상 오검출 |",
@@ -301,19 +327,26 @@ def human_summary(result: dict[str, Any]) -> str:
         f"네 기판 동일 가중 미탐률 개선(기존−도전자): {paired['value'] * 100:.2f}%p; "
         f"짝지은 95% 구간 {paired['confidence_interval'][0] * 100:.2f}~"
         f"{paired['confidence_interval'][1] * 100:.2f}%p.",
+        (f"기존 수치 기준 충족: {'예' if result['candidate_criteria_met'] else '아니요'}"
+         " (시험 마스크를 본 뒤 파서를 수정한 탐색 결과; 원래 사전 고정 평가로 주장하지 않음).")
+        if corrected else
         f"사전 기준 충족: {'예' if result['external_transfer_improvement_evidence'] else '아니요'}.",
         "근접 중복 유사도 표시는 동일 물리 기판의 증명이 아닙니다. 자동 PASS는 금지합니다.", "",
     ]
     return "\n".join(lines)
 
 
-def run_evaluation(project_root: Path, archive_path: Path) -> dict[str, Any]:
+def run_evaluation(project_root: Path, archive_path: Path, *, mask_correction_v2: bool = False) -> dict[str, Any]:
     """Open the official test only after all configuration and normal thresholds are locked."""
     project_root = project_root.resolve(strict=True)
     git = git_state(project_root)
     protocol = load_config(project_root / "configs" / "visa-pcb-external-v1.toml")
     preflight_config = load_preflight_config(project_root / "configs" / "visa-pcb-external-preflight-v1.toml")
-    execution = load_evaluation_config(project_root / "configs" / "visa-pcb-external-evaluation-v1.toml")
+    version = "v2" if mask_correction_v2 else "v1"
+    execution = load_evaluation_config(
+        project_root / "configs" / f"visa-pcb-external-evaluation-{version}.toml",
+        mask_correction_v2=mask_correction_v2,
+    )
     plan = json.loads((project_root / "data" / "manifests" / "visa-pcb-external-plan-v1.json").read_text(encoding="utf-8"))
     unsigned = dict(plan)
     claimed = unsigned.pop("plan_sha256", None)
@@ -341,8 +374,8 @@ def run_evaluation(project_root: Path, archive_path: Path) -> dict[str, Any]:
                for category in ("pcb1", "pcb2", "pcb3", "pcb4"))
     ):
         raise ValueError("VisA category counts differ before official test opening")
-    output = project_root / "artifacts" / "visa-pcb-external-evaluation-v1"
-    handoff = project_root / "artifacts" / "handoff" / "visa-pcb-external-evaluation-v1.zip"
+    output = project_root / "artifacts" / f"visa-pcb-external-evaluation-{version}"
+    handoff = project_root / "artifacts" / "handoff" / f"visa-pcb-external-evaluation-{version}.zip"
     if handoff.exists():
         raise FileExistsError(f"Completed external evaluation exists and was not overwritten: {handoff}")
     output.mkdir(parents=True, exist_ok=True)
@@ -397,7 +430,8 @@ def run_evaluation(project_root: Path, archive_path: Path) -> dict[str, Any]:
         if any(not math.isfinite(value) for value in thresholds[category].values()):
             raise ValueError("Non-finite normal-only VisA threshold")
     calibration_evidence = {
-        "status": "normal_only_thresholds_locked_before_external_test",
+        "status": ("normal_only_thresholds_recomputed_after_test_mask_parser_correction"
+                   if mask_correction_v2 else "normal_only_thresholds_locked_before_external_test"),
         "plan_sha256": plan["plan_sha256"],
         "execution_config_sha256": execution["config_sha256"],
         "checkpoint_sha256": layer["checkpoint_sha256"],
@@ -405,6 +439,8 @@ def run_evaluation(project_root: Path, archive_path: Path) -> dict[str, Any]:
         "count": len(calibration_rows), "thresholds": thresholds, "rows": calibration_rows,
         "external_final_images_decoded": 0,
     }
+    if mask_correction_v2:
+        calibration_evidence["prior_v1_test_mask_observed"] = True
     _write_json_once(output / "calibration.json", calibration_evidence)
 
     # If any test file is unreadable, duplicated exactly, or has an empty mask, stop without metrics.
@@ -450,7 +486,7 @@ def run_evaluation(project_root: Path, archive_path: Path) -> dict[str, Any]:
                 with _jpeg(data, name) as image:
                     mask = _read_mask(
                         archive, record, image.size, 256, execution["pixel_ground_truth_threshold"],
-                        audited["mask_sha256"],
+                        audited["mask_sha256"], execution.get("mask_binarization"),
                     )
                     raw, anomaly_map = _predict(model, image, gate["protocol"], gpu)
                 baseline_score = candidate_image_score(raw, anomaly_map, {
@@ -526,8 +562,11 @@ def run_evaluation(project_root: Path, archive_path: Path) -> dict[str, Any]:
     )
     improvement = paired["confidence_interval"][0] > 0 and category_overkill_ok and category_escape_ok
     result = {
-        "schema_version": 1, "status": "evaluated_preregistered_cross_dataset_transfer",
-        "comparison_status": "prospective_visa_transfer_after_realiad_final_observed_not_same_product",
+        "schema_version": 2 if mask_correction_v2 else 1,
+        "status": "evaluated_exploratory_after_mask_parser_correction" if mask_correction_v2
+        else "evaluated_preregistered_cross_dataset_transfer",
+        "comparison_status": "post_test_mask_parser_correction_exploratory" if mask_correction_v2
+        else "prospective_visa_transfer_after_realiad_final_observed_not_same_product",
         "git": git, "plan_sha256": plan["plan_sha256"],
         "evaluation_config_sha256": execution["config_sha256"],
         "preflight_handoff_sha256": execution["preflight_handoff_sha256"],
@@ -544,7 +583,10 @@ def run_evaluation(project_root: Path, archive_path: Path) -> dict[str, Any]:
             "challenger_overkill_each_category_at_most_10pct": category_overkill_ok,
             "no_category_escape_worsens_more_than_5pp": category_escape_ok,
         },
-        "external_transfer_improvement_evidence": improvement,
+        "external_transfer_improvement_evidence": improvement if not mask_correction_v2 else False,
+        "candidate_criteria_met": improvement,
+        "mask_binarization": execution.get("mask_binarization", "grayscale_then_threshold"),
+        "protocol_deviation": execution.get("protocol_deviation"),
         "model_training_on_visa": False,
         "failed_images_excluded": 0,
         "automatic_pass_allowed": False,
@@ -553,6 +595,9 @@ def run_evaluation(project_root: Path, archive_path: Path) -> dict[str, Any]:
             "Category-specific normal-only threshold adaptation was used; this is not full zero-shot evaluation.",
             "Perceptual-hash near-pair flags do not prove same physical item identity.",
             "A positive external-transfer result does not authorize automatic PASS or deployment.",
+            *(["The original test audit failed on the first VisA class-ID mask; this parser correction "
+               "was made after that mask was observed, so this run is exploratory, not the untouched "
+               "preregistered test."] if mask_correction_v2 else []),
         ],
     }
     cases_text = "".join(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n" for row in cases)
@@ -564,6 +609,7 @@ def run_evaluation(project_root: Path, archive_path: Path) -> dict[str, Any]:
     with zipfile.ZipFile(handoff, mode="x", compression=zipfile.ZIP_DEFLATED) as archive:
         for name in ("calibration.json", "test-audit.json", "evaluation.json", "cases.jsonl", "summary.md"):
             archive.write(output / name, name)
-    return {"status": result["status"], "external_transfer_improvement_evidence": improvement,
+    return {"status": result["status"], "external_transfer_improvement_evidence": result["external_transfer_improvement_evidence"],
+            "candidate_criteria_met": improvement,
             "paired_macro_escape_difference": paired, "handoff_zip": str(handoff),
             "handoff_zip_sha256": file_sha256(handoff)}
