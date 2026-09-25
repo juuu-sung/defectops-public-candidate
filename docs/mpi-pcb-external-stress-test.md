@@ -1,6 +1,7 @@
 # MPI-PCB: 새 조립 기판 외부 시험 — 데이터 등록 전 계획
 
-상태: **연구실 등록 출력 수령; 정상 사전 점검 v1 중단, v2 재실행 대기; 시험 사진/마스크/모델 점수 미관찰**
+상태: **연구실 등록 출력 수령; 정상 사전 점검 v2가 손상된 정상 PNG에서 중단;
+선정된 정상 사진 무결성 감사 대기; 시험 사진/마스크/모델 점수 미관찰**
 (2026-09-25).
 
 ## 왜 이 자료를 보나
@@ -133,6 +134,36 @@ git pull --ff-only
 동일한 사진 ID 그룹이 있는 것이므로 v2 JSON을 첨부하고 시험을 계속하지
 않는다. 다른 오류가 나오면 ZIP·등록 결과·기존 모델을 삭제하지 말고 메시지를
 보내 준다. 성공해도 아직 시험 110장의 디코딩·평가나 생산 성능 입증은 아니다.
+
+### v2 중단 후: 선정된 정상 사진만 무결성 감사
+
+연구실의 v2 재실행은 정상 타일
+`extracted/grid2-1_s1024/train/good/0158.png`에서 중단됐다. 이 파일은 ZIP
+CRC와 PNG 시그니처는 통과했지만 Pillow 11.3.0의 `verify()`에서 `IDAT`
+CRC 불일치, `load()`에서 픽셀 디코딩 오류가 확인됐다. 해당 멤버 SHA-256은
+`97459f5c9721adedc6739e63a8ac6a1de6fae61d72a084a7c2df94b14c68cd8e`다.
+원본 ZIP은 공식 게시 MD5와 잠근 SHA-256을 통과했으므로, 동일 ZIP의 재다운로드만
+권하지 않는다. 아직 **다른 정상 타일의 오류 범위는 모른다**.
+
+아래 감사는 기존 해시 선정 규칙을 그대로 사용해 169개 사진 ID × 12영역 =
+2,028개 **훈련 정상 타일만** 끝까지 조사한다. 각 멤버의 ZIP CRC, PNG chunk
+CRC 및 픽셀 디코딩을 확인하고 실패 목록·해시만 JSON에 기록한다. 시험 이미지와
+마스크 내용은 열지 않으며, 모델 점수·임곗값을 계산하지 않는다. 이 감사의
+`completed`는 **데이터 통과를 뜻하지 않는다**. 오류가 있어도 원본 ZIP·이미지·
+기존 v2 산출물은 수정·삭제·대체하지 않는다.
+
+```powershell
+Set-Location "C:\개인 프로젝트\defectops"
+git pull --ff-only
+& ".\.venv\Scripts\python.exe" ".\scripts\audit_mpi_pcb_selected_normals.py" `
+    --archive "$env:USERPROFILE\Downloads\extracted.zip" `
+    --registration ".\artifacts\data-audit\mpi-pcb-registration-v1.json" `
+    --output ".\artifacts\data-audit\mpi-pcb-selected-normal-decode-audit-v1.json"
+```
+
+실행 뒤 JSON **파일만** 이 작업에 첨부한다. 원본 ZIP이나 이미지 자체는 첨부하지
+않는다. 결과를 확인하기 전에는 v2 사전 점검을 다시 시도하거나 시험 사진을 열지
+않는다. 발견한 파일을 조용히 건너뛰거나 Pillow의 손상 허용 옵션을 켜지 않는다.
 
 사전 점검 보고서를 확인한 다음 두 checkpoint의 SHA-256과 평가 코드를 고정한다.
 예정된 비교는 각 영역의 기존 상위 1% 이미지 점수를 구한 후 12영역의
