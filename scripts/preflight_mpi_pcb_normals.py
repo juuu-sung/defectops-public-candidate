@@ -69,6 +69,39 @@ def decode_normal(raw: bytes, name: str) -> tuple[tuple[int, int], str]:
         raise ValueError(f"Unreadable calibration normal: {name}") from exc
 
 
+def summarize_decoded_duplicates(
+    rows: list[dict[str, object]], selected: list[str], regions: list[str],
+) -> tuple[dict[str, dict[str, object]], list[list[str]]]:
+    """Distinguish identical tiles from identical 12-region photo representations."""
+    by_photo: dict[str, dict[str, str]] = defaultdict(dict)
+    by_region: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
+    for row in rows:
+        region = str(row["region"])
+        photo_id = str(row["photo_id"])
+        if region not in regions or photo_id not in selected or region in by_photo[photo_id]:
+            raise ValueError(f"Unexpected or repeated calibration row: {region}/{photo_id}")
+        fingerprint = f'{row["width"]}x{row["height"]}:{row["decoded_rgb_sha256"]}'
+        by_photo[photo_id][region] = fingerprint
+        by_region[region][fingerprint].append(photo_id)
+    if len(rows) != len(selected) * len(regions) or any(
+        set(by_photo[photo_id]) != set(regions) for photo_id in selected
+    ):
+        raise ValueError("Incomplete 12-region calibration representation")
+    tile_summary = {}
+    for region in regions:
+        groups = [ids for ids in by_region[region].values() if len(ids) > 1]
+        tile_summary[region] = {
+            "repeated_tile_groups": len(groups),
+            "photos_in_repeated_tile_groups": sum(map(len, groups)),
+            "example_photo_id_groups": groups[:5],
+        }
+    composites: dict[tuple[str, ...], list[str]] = defaultdict(list)
+    for photo_id in selected:
+        composites[tuple(by_photo[photo_id][region] for region in regions)].append(photo_id)
+    repeated_composites = [ids for ids in composites.values() if len(ids) > 1]
+    return tile_summary, repeated_composites
+
+
 def run(archive: Path, registration: Path, output: Path) -> dict[str, object]:
     if output.exists():
         raise FileExistsError(f"Output already exists and will not be overwritten: {output}")
@@ -99,16 +132,12 @@ def run(archive: Path, registration: Path, output: Path) -> dict[str, object]:
         first_region = sorted(normal)[0]
         selected = select_calibration_ids(set(normal[first_region]))
         rows: list[dict[str, object]] = []
-        region_seen: dict[str, set[str]] = defaultdict(set)
         dimensions: dict[str, int] = defaultdict(int)
         for region in sorted(normal):
             for index, photo_id in enumerate(selected, start=1):
                 info = normal[region][photo_id]
                 raw = source.read(info)
                 size, pixel_sha256 = decode_normal(raw, info.filename)
-                if pixel_sha256 in region_seen[region]:
-                    raise ValueError(f"Duplicate decoded normal within {region}: {photo_id}")
-                region_seen[region].add(pixel_sha256)
                 dimensions[f"{size[0]}x{size[1]}"] += 1
                 rows.append({
                     "region": region, "photo_id": photo_id, "member": info.filename,
@@ -118,11 +147,18 @@ def run(archive: Path, registration: Path, output: Path) -> dict[str, object]:
                 })
                 if index % 50 == 0 or index == len(selected):
                     print(f"{region} normal preflight {index}/{len(selected)}", flush=True)
+    tile_duplicates, composite_duplicates = summarize_decoded_duplicates(
+        rows, selected, sorted(normal),
+    )
     selected_digest = hashlib.sha256(
         json.dumps(selected, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
     report = {
-        "status": "normal_preflight_passed_test_sealed",
+        "status": (
+            "normal_preflight_needs_review_test_sealed"
+            if composite_duplicates else "normal_preflight_passed_test_sealed"
+        ),
+        "protocol_version": 2,
         "archive_sha256": sha256,
         "registration_json_sha256": hashlib.sha256(registration.read_bytes()).hexdigest(),
         "selection_rule": f"SHA256({SELECTION_SALT}\\0photo_id), ascending",
@@ -133,11 +169,17 @@ def run(archive: Path, registration: Path, output: Path) -> dict[str, object]:
         "regions": len(normal),
         "dimensions": dict(sorted(dimensions.items())),
         "calibration_rows": rows,
+        "tile_duplicate_summary": tile_duplicates,
+        "identical_12_region_photo_id_groups": composite_duplicates,
         "test_images_decoded": 0,
         "test_masks_decoded": 0,
         "model_scores_computed": 0,
         "automatic_pass_allowed": False,
-        "note": "Same physical board; normal calibration is an adaptation, not zero-shot evidence.",
+        "note": (
+            "Identical individual tiles are recorded but do not fail the preflight. "
+            "Identical complete 12-region representations require review. "
+            "Same physical board; normal calibration is an adaptation, not zero-shot evidence."
+        ),
     }
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("x", encoding="utf-8") as target:
@@ -158,11 +200,12 @@ def main() -> int:
         "calibration_original_photos": report["calibration_original_photos"],
         "calibration_region_images_decoded": report["calibration_region_images_decoded"],
         "selected_photo_ids_sha256": report["selected_photo_ids_sha256"],
+        "identical_12_region_photo_id_groups": report["identical_12_region_photo_id_groups"],
         "test_images_decoded": report["test_images_decoded"],
         "model_scores_computed": report["model_scores_computed"],
         "output": str(args.output),
     }, ensure_ascii=False, indent=2))
-    return 0
+    return 1 if report["status"] == "normal_preflight_needs_review_test_sealed" else 0
 
 
 if __name__ == "__main__":

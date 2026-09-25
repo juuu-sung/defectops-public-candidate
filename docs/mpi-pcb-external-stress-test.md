@@ -1,6 +1,6 @@
 # MPI-PCB: 새 조립 기판 외부 시험 — 데이터 등록 전 계획
 
-상태: **연구실 등록 출력 수령; 정상 사전 점검 준비, 시험 사진/마스크/모델 점수 미관찰**
+상태: **연구실 등록 출력 수령; 정상 사전 점검 v1 중단, v2 재실행 대기; 시험 사진/마스크/모델 점수 미관찰**
 (2026-09-25).
 
 ## 왜 이 자료를 보나
@@ -103,17 +103,35 @@ git pull --ff-only
 마스크의 내용은 열지 않는다. 모델 추론도 하지 않는다. 원본 ZIP, 등록 JSON,
 기존 모델과 임곗값은 덮어쓰지 않는다.
 
+### v1 중단 원인과 v2 판정 규칙
+
+첫 실행은 `grid1-1_s1024`의 사진 ID `0722`에서 **한 영역의 디코딩 픽셀이
+이전 정상 이미지와 같다는 이유만으로** 중단했다. v1은 영역 한 장의 중복을
+원본 사진 전체의 중복으로 취급했는데, 실제로 12영역 중 다른 영역이 같은지는
+검사하지 않았다. 따라서 이것은 데이터 오류 또는 전체 원본 사진 중복을
+입증하지 않는다. 중단 전에는 선택된 정상 훈련 사진만 읽었으며, 시험 사진,
+마스크, 모델 점수는 열거나 계산하지 않았다.
+
+v2는 **같은 169개 사진 ID**와 동일한 12영역을 디코딩한다. 단일 영역에서
+동일한 타일은 영역별 요약에 기록하고 통과를 막지 않는다. 12영역의 이미지
+크기와 RGB 픽셀 해시가 사진 ID 두 개에서 **모두 같을 때만** 사진의
+12영역 표현이 완전히 동일하다고 판단해 `needs_review`로 중단한다. 이는
+원본 카메라 파일 자체가 동일하다는 주장과는 다르다. 시험 개봉 전에 이
+규칙을 고정하며, 사진 ID를 교체하거나 임곗값을 조정하지 않는다.
+
 ```powershell
 Set-Location "C:\개인 프로젝트\defectops"
 git pull --ff-only
 & ".\.venv\Scripts\python.exe" ".\scripts\preflight_mpi_pcb_normals.py" `
     --archive "$env:USERPROFILE\Downloads\extracted.zip" `
     --registration ".\artifacts\data-audit\mpi-pcb-registration-v1.json" `
-    --output ".\artifacts\data-audit\mpi-pcb-normal-preflight-v1.json"
+    --output ".\artifacts\data-audit\mpi-pcb-normal-preflight-v2.json"
 ```
 
-`normal_preflight_passed_test_sealed`가 나오면 새 JSON **파일만** 이 작업에
-첨부한다. 오류가 나오면 ZIP·등록 결과·기존 모델을 삭제하지 말고 메시지를
+`normal_preflight_passed_test_sealed`가 나오면 새 v2 JSON **파일만** 이 작업에
+첨부한다. `normal_preflight_needs_review_test_sealed`가 나오면 12영역 전체가
+동일한 사진 ID 그룹이 있는 것이므로 v2 JSON을 첨부하고 시험을 계속하지
+않는다. 다른 오류가 나오면 ZIP·등록 결과·기존 모델을 삭제하지 말고 메시지를
 보내 준다. 성공해도 아직 시험 110장의 디코딩·평가나 생산 성능 입증은 아니다.
 
 사전 점검 보고서를 확인한 다음 두 checkpoint의 SHA-256과 평가 코드를 고정한다.

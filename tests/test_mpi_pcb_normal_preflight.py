@@ -8,6 +8,7 @@ from scripts.preflight_mpi_pcb_normals import (
     decode_normal,
     normal_members,
     select_calibration_ids,
+    summarize_decoded_duplicates,
 )
 
 
@@ -36,6 +37,37 @@ class MpiPcbNormalPreflightTests(unittest.TestCase):
         size, digest = decode_normal(output.getvalue(), "train/good/0000.png")
         self.assertEqual(size, (3, 2))
         self.assertEqual(len(digest), 64)
+
+    def test_one_identical_tile_does_not_imply_identical_photos(self):
+        regions = [f"region-{index}" for index in range(12)]
+        selected = ["0001", "0002"]
+        rows = [
+            {"region": region, "photo_id": photo_id, "width": 1024, "height": 1024,
+             "decoded_rgb_sha256": "same" if index == 0 else f"{index}-{photo_id}"}
+            for index, region in enumerate(regions) for photo_id in selected
+        ]
+        tiles, composites = summarize_decoded_duplicates(rows, selected, regions)
+        self.assertEqual(tiles[regions[0]]["example_photo_id_groups"], [selected])
+        self.assertEqual(tiles[regions[1]]["repeated_tile_groups"], 0)
+        self.assertEqual(composites, [])
+
+    def test_identical_all_region_representations_require_review(self):
+        regions = [f"region-{index}" for index in range(12)]
+        selected = ["0001", "0002"]
+        rows = [
+            {"region": region, "photo_id": photo_id, "width": 1024, "height": 1024,
+             "decoded_rgb_sha256": f"{index}"}
+            for index, region in enumerate(regions) for photo_id in selected
+        ]
+        _, composites = summarize_decoded_duplicates(rows, selected, regions)
+        self.assertEqual(composites, [selected])
+
+    def test_missing_region_fails(self):
+        with self.assertRaisesRegex(ValueError, "Incomplete 12-region"):
+            summarize_decoded_duplicates(
+                [{"region": "a", "photo_id": "1", "width": 1, "height": 1,
+                  "decoded_rgb_sha256": "abc"}], ["1"], ["a", "b"],
+            )
 
 
 if __name__ == "__main__":
