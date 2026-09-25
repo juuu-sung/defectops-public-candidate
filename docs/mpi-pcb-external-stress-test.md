@@ -1,7 +1,8 @@
 # MPI-PCB: 새 조립 기판 외부 시험 — 데이터 등록·정상 품질 게이트
 
-상태: **훈련 정상 전체 20,244개 중 손상 타일 16개 확인; v3 보정 후보 169장 확정,
-별도 사전 점검 대기; 시험 사진/마스크/모델 점수 미관찰**
+상태: **훈련 정상 전체 20,244개 중 손상 타일 16개 확인; v3 보정 후보에서
+12영역 전체가 같은 사진 ID 2개 발견; v4 정상 전용 사전 점검 대기;
+시험 사진/마스크/모델 점수 미관찰**
 (2026-09-25).
 
 ## 왜 이 자료를 보나
@@ -240,6 +241,50 @@ JSON 또는 오류 메시지를 공유하고 여기서 멈춘다. 어느 경우�
 열지 않는다. 통과 후에도 두 기존 모델의 checkpoint 해시, 사진 단위 점수
 결합법과 모델별 정상 임곗값을 실행 코드·설정으로 잠근 다음에만 외부 시험을
 한 번 진행한다.
+
+### v3 검토 결과와 중복 제거 v4 정상 사전 점검
+
+연구실 v3 보고서는 정상 후보 169개 사진의 12영역, 총 2,028개 PNG를 모두
+읽었지만 `normal_preflight_v3_needs_review_test_sealed`로 멈췄다. 사진 ID
+`0879`와 `0722`는 **12영역 모두에서 디코딩 픽셀 해시뿐 아니라 PNG 멤버
+바이트 해시까지 같다**. 다른 전체 12영역 중복 그룹은 보고되지 않았다. 받은
+v3 JSON의 SHA-256은
+`da5794ff706be9e91b87903626b0c82fedf63b5a41c7f229f9b9149dcaa98e3e`다.
+Mac에서 2,028개 행의 경로·크기·명단 해시·중복 그룹을 재계산해 보고서와
+일치함을 확인했지만, 원본 ZIP 바이트를 독립 재검증한 것은 아니다.
+시험 이미지·마스크 디코딩과 모델 점수는 보고서상 모두 0건이다.
+
+이 둘을 별개의 보정 사진 두 장으로 세지 않는다. **시험을 열기 전에** 기존
+해시 순위 59위 `0879`를 유지하고 122위 `0722`를 새 명단에서만 제외한다.
+같은 순서에서 아직 쓰지 않은 첫 번째 완전한 정상 사진 ID `1481`을 추가해
+169장을 유지한다. 새 v4 명단 SHA-256은
+`75768131852bfe1234f754c3b77054cce64e2a7c890a94db9724943b21faf11e`다.
+이는 결과를 보고 임곗값이나 모델을 바꾸는 일이 아니라, 정상 보정 집합의
+중복을 제거하는 **버전이 명시된 데이터 준비 단계**다. `1481`도 다른 후보와
+같은지는 아직 모르므로 별도 사전 점검을 통과해야 한다. 원본 ZIP, 기존 v2·v3
+JSON, 모델 checkpoint는 수정·삭제·덮어쓰지 않는다.
+
+다음 명령은 연구실의 원본 ZIP과 등록·전체 정상 감사·v3 JSON의 잠근 SHA-256을
+먼저 대조한다. v3의 12영역 동일 그룹을 다시 계산한 뒤, v4의 169개 정상
+사진 × 12영역 = 2,028개 **훈련 정상 타일만** ZIP CRC·PNG CRC·픽셀 디코딩·
+전체 중복 검사한다. GPU 학습, 모델 점수 계산, 시험 데이터 개봉은 하지 않는다.
+
+```powershell
+Set-Location "C:\개인 프로젝트\defectops"
+git pull --ff-only
+& ".\.venv\Scripts\python.exe" ".\scripts\preflight_mpi_pcb_normals_v4.py" `
+    --archive "$env:USERPROFILE\Downloads\extracted.zip" `
+    --registration ".\artifacts\data-audit\mpi-pcb-registration-v1.json" `
+    --pool-audit ".\artifacts\data-audit\mpi-pcb-normal-pool-integrity-v1.json" `
+    --v3-preflight ".\artifacts\data-audit\mpi-pcb-normal-preflight-v3.json" `
+    --output ".\artifacts\data-audit\mpi-pcb-normal-preflight-v4.json"
+```
+
+`normal_preflight_v4_passed_test_sealed`가 나오면 새 v4 JSON **파일만** 작업에
+첨부한다. `normal_preflight_v4_needs_review_test_sealed`나 다른 오류가 나오면
+보고서 또는 오류 메시지를 공유하고 멈춘다. 성공하더라도 데이터 준비 게이트만
+통과한 것이며, 두 기존 모델의 checkpoint와 평가 코드를 별도로 잠그기 전에는
+시험 110장과 마스크를 열지 않는다. 자동 PASS도 허용하지 않는다.
 
 사전 점검 보고서를 확인한 다음 두 checkpoint의 SHA-256과 평가 코드를 고정한다.
 예정된 비교는 각 영역의 기존 상위 1% 이미지 점수를 구한 후 12영역의
