@@ -4,8 +4,14 @@ from __future__ import annotations
 
 import hashlib
 import io
+import json
 import tarfile
+import tempfile
+import zipfile
 from collections import Counter
+from contextlib import redirect_stdout
+from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -14,7 +20,50 @@ from PIL import Image
 from defectops.realiad_followup_final import _write_sample
 from defectops.visa_pcb_external_evaluation import _pixel_sha
 from defectops.visa_pcb_external_registration import file_sha256
-from defectops.visa_pcb_normal_bank_visual_diagnostics import render_card, select_cases
+from defectops.visa_pcb_normal_bank_visual_diagnostics import main, render_card, run, select_cases
+
+
+def test_cli_passes_archive_to_archive_path() -> None:
+    output = io.StringIO()
+    with patch("defectops.visa_pcb_normal_bank_visual_diagnostics.run", return_value={"status": "ok"}) as run:
+        with redirect_stdout(output):
+            assert main(["--project", "C:/project", "--archive", "C:/archive.tar"]) == 0
+    run.assert_called_once_with(Path("C:/project"), Path("C:/archive.tar"))
+    assert '"status": "ok"' in output.getvalue()
+
+
+def test_packages_all_15_cards_without_inference() -> None:
+    cases = [_case(index, 1, "REVIEW_REQUIRED", "PASS") for index in range(3)]
+    cases += [_case(index + 3, 1, "PASS", "PASS") for index in range(6)]
+    cases += [_case(index, 0, "PASS", "REVIEW_REQUIRED") for index in range(5)]
+    cases += [_case(5, 0, "REVIEW_REQUIRED", "REVIEW_REQUIRED")]
+    audited = {row["image"]: {} for row in cases}
+    with tempfile.TemporaryDirectory() as directory:
+        project = Path(directory)
+        source_tar = project / "source.tar"
+        with tarfile.open(source_tar, "w"):
+            pass
+        report = {"source_archive_sha256": file_sha256(source_tar)}
+        evidence = ({}, report, {}, cases, cases, audited, audited)
+        fake_card = Image.new("RGB", (1024, 338), "white")
+        with patch("defectops.visa_pcb_normal_bank_visual_diagnostics.load_paired_evidence",
+                   return_value=evidence), patch(
+                       "defectops.visa_pcb_normal_bank_visual_diagnostics.load_comparison",
+                       return_value={},
+                   ), patch(
+                       "defectops.visa_pcb_normal_bank_visual_diagnostics.render_card",
+                       return_value=fake_card,
+                   ) as render:
+            result = run(project, source_tar)
+        assert render.call_count == 15
+        assert result["selected_count"] == 15
+        assert result["model_changed"] is False
+        assert result["inference_performed"] is False
+        with zipfile.ZipFile(result["handoff_zip"]) as archive:
+            assert len(archive.namelist()) == 20
+            assert archive.testzip() is None
+            assert len(archive.read("selection.jsonl").splitlines()) == 15
+            assert json.loads(archive.read("summary.json"))["selected_count"] == 15
 
 
 def _case(number: int, label: int, old: str, new: str) -> dict:

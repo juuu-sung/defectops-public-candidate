@@ -309,7 +309,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project", type=Path, required=True)
     parser.add_argument("--archive", type=Path, required=True)
-    print(json.dumps(run(**vars(parser.parse_args(argv))), ensure_ascii=False, indent=2))
+    args = parser.parse_args(argv)
+    print(json.dumps(run(args.project, args.archive), ensure_ascii=False, indent=2))
     return 0
 
 
