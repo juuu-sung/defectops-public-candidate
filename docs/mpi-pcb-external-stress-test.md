@@ -2,7 +2,8 @@
 
 상태: **v4 정상 보정 사진 169장 × 12영역 사전 점검 통과;
 두 기존 모델의 checkpoint 신원·사진 점수·정상 임곗값 규칙을 코드로 잠금;
-연구실 checkpoint 확인 대기; 시험 사진/마스크/모델 점수 미관찰**
+연구실 checkpoint 보고서 확인, 정상 전용 GPU 보정 실행 대기;
+시험 사진/마스크/모델 점수 미관찰**
 (2026-09-26).
 
 ## 왜 이 자료를 보나
@@ -345,3 +346,48 @@ git pull --ff-only
 원본 ZIP·checkpoint·v4 JSON을 옮기거나 고치지 말고 메시지를 공유한다.
 이 결과를 확인한 다음 정상 169장만 모델로 점수화해 두 개의 임곗값을 만들고,
 그때까지 시험 사진은 계속 봉인한다.
+
+### 모델 신원 확인 결과와 정상 전용 GPU 보정
+
+연구실의 `mpi-pcb-model-preflight-v1.json` SHA-256은
+`b7d328daa3b2ca0e9c6fe50bffacae4d3bfddbf0947e39f1f8c27492b6bab2bf`다.
+보고된 원본 ZIP·v4 명단·두 기존 checkpoint 해시는 잠근 값과 일치한다.
+보고서의 정상 점수 계산, 시험 이미지·마스크 디코딩과 시험 점수 계산은 각각
+0건이다. Mac에는 원본 ZIP·checkpoint가 없으므로 **실제 바이트의 해시를
+Mac에서 독립 재계산한 것이 아니라 연구실 보고서를 코드·설정과 대조**했다.
+
+다음 프로그램은 그 보고서와 파일 해시를 다시 확인한 뒤 **정상 훈련 사진
+169장만** 두 기존 모델로 추론한다. 각 사진의 12개 영역은 모델마다 1번씩
+점수화하므로 모델별 2,028개 영역, 두 모델 합계 4,056번의 정상 영역 추론이다.
+원본 사진의 점수는 12영역 점수 중 최댓값이며, 각 모델의 169개 사진 점수로
+95% `higher` 임곗값을 계산한다. 결과 JSON에는 12개 영역별 점수와 사진별
+점수를 모두 보존해 임곗값을 독립 재계산할 수 있게 한다. 기존 모델 checkpoint,
+원본 ZIP·v4 JSON·신원 확인 JSON은 수정하지 않는다. 결과 파일이 이미 있으면
+덮어쓰지 않고 중단한다.
+
+실행 중 선택된 `train/good` 타일의 ZIP/PNG CRC, 멤버 바이트 해시, RGB 픽셀
+해시가 v4 기록과 다르면 **점수화를 중단**한다. ZIP 전체 해시와 중앙 디렉터리의
+파일명은 확인하지만, `test` 멤버의 사진·마스크 내용을 읽거나 추론하지 않는다.
+이는 새 기판의 정상 사진을 이용해 임곗값을 적응시키는 **정상 전용 보정**이지
+모델 재학습이나 외부 성능 평가가 아니다.
+
+연구실 Windows에서는 기존 `.venv`와 원본 ZIP을 그대로 사용한다.
+
+```powershell
+Set-Location "C:\개인 프로젝트\defectops"
+git pull --ff-only
+& ".\.venv\Scripts\python.exe" ".\scripts\calibrate_mpi_pcb_normals.py" `
+    --archive "$env:USERPROFILE\Downloads\extracted.zip" `
+    --v4-preflight ".\artifacts\data-audit\mpi-pcb-normal-preflight-v4.json" `
+    --model-preflight ".\artifacts\data-audit\mpi-pcb-model-preflight-v1.json" `
+    --config ".\configs\mpi-pcb-model-protocol-v1.toml" `
+    --output ".\artifacts\calibrations\mpi-pcb-normal-calibration-v1.json"
+```
+
+출력이 `mpi_pcb_normal_calibrated_test_sealed`이면 생성된 **JSON 파일만** 이
+작업에 첨부한다. 모델별 정상 사진 수 169, 영역 점수 수 2,028,
+`test_images_decoded = 0`, `test_masks_decoded = 0`, `test_scores_computed = 0`을
+함께 확인한다. 이 단계는 GPU를 사용하며 사진 4,056영역을 추론하므로 신원
+검사보다 오래 걸린다. 오류가 나면 원본·checkpoint·기존 결과를 지우거나
+명령을 임의 변경하지 말고 메시지를 공유한다. **보정 결과를 검증하고 시험
+무결성·평가 규칙을 별도로 잠그기 전에는 시험 110장을 열지 않는다.**
