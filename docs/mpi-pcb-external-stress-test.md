@@ -1,9 +1,9 @@
 # MPI-PCB: 새 조립 기판 외부 시험 — 데이터 등록·정상 품질 게이트
 
-상태: **훈련 정상 전체 20,244개 중 손상 타일 16개 확인; v3 보정 후보에서
-12영역 전체가 같은 사진 ID 2개 발견; v4 정상 전용 사전 점검 대기;
-시험 사진/마스크/모델 점수 미관찰**
-(2026-09-25).
+상태: **v4 정상 보정 사진 169장 × 12영역 사전 점검 통과;
+두 기존 모델의 checkpoint 신원·사진 점수·정상 임곗값 규칙을 코드로 잠금;
+연구실 checkpoint 확인 대기; 시험 사진/마스크/모델 점수 미관찰**
+(2026-09-26).
 
 ## 왜 이 자료를 보나
 
@@ -294,3 +294,54 @@ git pull --ff-only
 미탐·오검출·AUROC/AP 및 모델별 판정 역전으로 기록할 예정이다. 이 점수·임곗값
 방식은 시험을 열기 전에 최종 실행 설정과 checkpoint 해시까지 잠가야 하며,
 시험 결과를 보고 후보를 추가하거나 규칙을 바꾸지 않는다.
+
+### v4 통과 확인과 두 모델 신원·보정 규칙 잠금
+
+사용자가 첨부한 v4 JSON 파일의 SHA-256은
+`65605ddcb5d89b2e4f5bcbcc8d2002e2996455d6235e37e35d1faf767dd5c93d`다.
+169개 사진 ID의 SHA-256은
+`75768131852bfe1234f754c3b77054cce64e2a7c890a94db9724943b21faf11e`이고,
+169 × 12 = 2,028개의 256×256 정상 타일이 기록됐다. 12영역 전체가 같은
+사진 ID 그룹은 보고되지 않았다. Mac에서 첨부된 JSON의 행·사진 ID·중복 그룹을
+재계산해 일치함을 확인했다. **Mac에서 원본 2.8 GB ZIP을 다시 디코딩한 것은 아니다.**
+v4 보고서상 시험 이미지/마스크 디코딩과 모델 점수 계산은 모두 0건이다.
+
+이번에는 `configs/mpi-pcb-model-protocol-v1.toml`에 다음을 **시험 개봉 전에**
+고정한다.
+
+- 후보는 기존 Real-IAD PCB seed 42 layer1–layer2 checkpoint
+  (`cd0e12d3d2daadfc1f30fde6e666002287af29cc610a870a6196899468c0de13`)와
+  기존 VisA PCB3 v2 정상 뱅크 seed 42 checkpoint
+  (`be8062541e2a14cb563284d34cfc9f60e3ca5e8cc1d75e0ccbd28d1287785e85`)
+  두 개뿐이다. 둘 다 이 단계에서 다시 학습하지 않는다.
+- 입력 영역은 256×256으로 bilinear antialias/ ImageNet 정규화한다. **영역별**
+  이상 맵 값 중 상위 1%의 평균을 영역 점수로 사용하고, 같은 원본 사진의
+  **12개 영역 점수 중 최댓값**을 사진 한 장의 점수로 사용한다.
+- 두 모델 각각 v4 정상 사진 **169장의 사진 단위 점수**로 95% `higher` 분위
+  임곗값을 별도로 정한다. 점수 ≥ 해당 모델 임곗값이면 검토 대상으로 표시한다.
+  이는 정상 데이터 적응이며, 기존 VisA 임곗값을 MPI에 그대로 옮기는 시험이
+  아니다. 아직 임곗값 숫자는 계산되지 않았다.
+- 이 단계는 시험 사진/마스크를 읽지 않으며 생산 자동 PASS를 허용하지 않는다.
+  후속 시험은 손상·중복 감사와 원본 사진 단위 55 정상/55 수동 변형의
+  평가 규칙을 추가로 잠근 뒤에만 실행한다.
+
+연구실 컴퓨터에서는 기존 두 checkpoint와 공식 ZIP의 파일 해시, v4 JSON 신원만
+대조한다. 모델을 GPU에 올리거나 정상 사진에 대한 추론도 아직 하지 않는다.
+출력 파일이 이미 있으면 덮어쓰지 않고 중단한다.
+
+```powershell
+Set-Location "C:\개인 프로젝트\defectops"
+git pull --ff-only
+& ".\.venv\Scripts\python.exe" ".\scripts\preflight_mpi_pcb_models.py" `
+    --archive "$env:USERPROFILE\Downloads\extracted.zip" `
+    --preflight ".\artifacts\data-audit\mpi-pcb-normal-preflight-v4.json" `
+    --config ".\configs\mpi-pcb-model-protocol-v1.toml" `
+    --output ".\artifacts\data-audit\mpi-pcb-model-preflight-v1.json"
+```
+
+`mpi_pcb_model_protocol_locked_test_sealed`가 나오면 생성된 **JSON 파일만** 이
+작업에 첨부한다. `normal_scores_computed`, `test_images_decoded`,
+`test_masks_decoded`, `test_scores_computed`가 모두 0이어야 한다. 오류가 나면
+원본 ZIP·checkpoint·v4 JSON을 옮기거나 고치지 말고 메시지를 공유한다.
+이 결과를 확인한 다음 정상 169장만 모델로 점수화해 두 개의 임곗값을 만들고,
+그때까지 시험 사진은 계속 봉인한다.

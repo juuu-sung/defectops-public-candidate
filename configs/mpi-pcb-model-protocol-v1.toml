@@ -1,0 +1,37 @@
+schema_version = 1
+status = "frozen_models_normal_calibration_protocol_test_sealed"
+source_archive_sha256 = "0fa9b20fae64142a418487a1d898ee2ee824eee0bd564896a245f4d991112607"
+normal_preflight_v4_sha256 = "65605ddcb5d89b2e4f5bcbcc8d2002e2996455d6235e37e35d1faf767dd5c93d"
+normal_photo_count = 169
+regions_per_photo = 12
+input_preprocessing = "stretch_256_bilinear_antialias_imagenet"
+region_image_score = "mean_of_top_1pct_anomaly_map"
+original_photo_aggregation = "maximum_of_12_region_scores"
+calibration_quantile = 0.95
+calibration_quantile_method = "higher"
+decision_rule = "score >= model_specific_normal_calibration_threshold"
+normal_calibration_only = true
+test_image_decoding_allowed = false
+test_mask_decoding_allowed = false
+automatic_pass_allowed = false
+confirmatory_claim_allowed = false
+
+[models.realiad_pcb]
+source = "realiad_followup_development_pcb_seed42_layer1_layer2"
+checkpoint_sha256 = "cd0e12d3d2daadfc1f30fde6e666002287af29cc610a870a6196899468c0de13"
+category = "realiad_pcb"
+seed = 42
+backbone = "wide_resnet50_2"
+layers = ["layer1", "layer2"]
+image_size = 256
+num_neighbors = 9
+
+[models.visa_pcb3_v2]
+source = "visa_pcb3_normal_bank_v2_seed42"
+checkpoint_sha256 = "be8062541e2a14cb563284d34cfc9f60e3ca5e8cc1d75e0ccbd28d1287785e85"
+category = "pcb3"
+seed = 42
+backbone = "wide_resnet50_2"
+layers = ["layer1", "layer2"]
+image_size = 256
+num_neighbors = 9
