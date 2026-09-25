@@ -52,3 +52,6 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 PCB3 한 품목에서 미탐이 줄더라도 정상 오검출 증가·위치 지표·시간 비용을 함께 본다.
 PCB1·2·4로의 확대나 모델 교체는 이번 결과만으로 자동 결정하지 않는다. 진짜
 확인적 결론에는 새로운 미관측·중복 통제 holdout과 사전 고정 기준이 필요하다.
+현재 201장 사후 비교에서 미탐 9장과 정상 오검출 6장이 확인됐다. 다음 검토는
+[PCB3 v2 오류 사진 검토](visa-pcb-normal-bank-pcb3-error-review.md)에 따라
+저장된 지도를 읽는 방식으로만 진행한다.
