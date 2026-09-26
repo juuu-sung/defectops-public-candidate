@@ -1,0 +1,30 @@
+schema_version = 1
+status = "prospective_external_stress_test_after_normal_adaptation"
+calibration_report_sha256 = "6fb949ae182453fc703770dba30342a644af4641eeb69ec57c89d10250019cbd"
+normal_protocol_config_sha256 = "0fe96e7985ab39ec7833da9c4624fbc720faae464bf9b780567d25c8b005255c"
+source_archive_sha256 = "0fa9b20fae64142a418487a1d898ee2ee824eee0bd564896a245f4d991112607"
+test_original_photos_per_class = 55
+regions_per_photo = 12
+image_size = 256
+calibration_replay_absolute_tolerance = 0.0001
+decision_rule = "score >= frozen_model_threshold"
+photo_score = "maximum_of_12_region_top_1pct_map_means"
+duplicate_blocking_unit = "all_12_regions_identical_decoded_RGB"
+partial_tile_duplicates_report_only = true
+mask_rule = "native_256_grayscale_nonzero_no_resizing"
+empty_region_mask_allowed = true
+empty_whole_defect_mask_allowed = false
+audit_failure_action = "stop_all_test_scoring_no_exclusions"
+primary_metrics = ["escape_rate", "overkill_rate"]
+secondary_metrics = ["image_auroc", "image_average_precision", "precision", "recall", "f1", "review_rate"]
+pixel_metrics_enabled = false
+confidence_level = 0.95
+paired_bootstrap_replicates = 5000
+paired_bootstrap_seed = 20260926
+post_test_tuning_allowed = false
+automatic_pass_allowed = false
+confirmatory_claim_allowed = false
+
+[thresholds]
+realiad_pcb = 67.42196179599297
+visa_pcb3_v2 = 66.18967593588481
