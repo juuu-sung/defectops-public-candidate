@@ -1,0 +1,39 @@
+schema_version = 2
+status = "integrity_amended_external_test_before_test_scoring"
+calibration_report_sha256 = "6fb949ae182453fc703770dba30342a644af4641eeb69ec57c89d10250019cbd"
+normal_protocol_config_sha256 = "0fe96e7985ab39ec7833da9c4624fbc720faae464bf9b780567d25c8b005255c"
+source_archive_sha256 = "0fa9b20fae64142a418487a1d898ee2ee824eee0bd564896a245f4d991112607"
+prior_handoff_sha256 = "cee3ff8d11bf73df7c0128869449e2cfd29b20230fedb0a17a51651710f6cfa1"
+test_original_photos_per_class = 55
+included_normal_photos = 54
+included_defect_photos = 55
+excluded_test_photos = ["good/0013"]
+reconstructed_photo = "defect/0054"
+reconstruction_source_member_sha256 = "126cf49bf0dedd8ba012a42a10c026240b5a8c0dd0d78ace293a50ce537a8845"
+reconstruction_decoded_rgb_sha256 = "7ac16f5e75932c4eebe6ada691be04464272fa75125c5393393dad04bd7d54af"
+localization_ineligible_photos = ["defect/0006"]
+sensitivity_excludes_reconstructed_photo = true
+regions_per_photo = 12
+image_size = 256
+calibration_replay_absolute_tolerance = 0.0001
+decision_rule = "score >= frozen_model_threshold"
+photo_score = "maximum_of_12_region_top_1pct_map_means"
+duplicate_blocking_unit = "all_12_regions_identical_decoded_RGB"
+partial_tile_duplicates_report_only = true
+mask_rule = "native_256_grayscale_nonzero_no_resizing"
+empty_region_mask_allowed = true
+empty_whole_defect_mask_allowed = false
+audit_failure_action = "only_reviewed_reconstruction_duplicate_and_mask_amendments_else_stop"
+primary_metrics = ["escape_rate", "overkill_rate"]
+secondary_metrics = ["image_auroc", "image_average_precision", "precision", "recall", "f1", "review_rate"]
+pixel_metrics_enabled = false
+confidence_level = 0.95
+paired_bootstrap_replicates = 5000
+paired_bootstrap_seed = 20260926
+post_test_tuning_allowed = false
+automatic_pass_allowed = false
+confirmatory_claim_allowed = false
+
+[thresholds]
+realiad_pcb = 67.42196179599297
+visa_pcb3_v2 = 66.18967593588481
