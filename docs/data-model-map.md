@@ -1,7 +1,7 @@
 # 데이터와 모델 연결 관계
 
-기준일: 2026-09-26. 검증된 연구실 결과와 현재 구현 상태를 구분했다.
-**MPI-PCB 전용 모델은 학습·보정 코드만 준비됐으며 실제 GPU 실행 전이다.**
+기준일: 2026-09-27. 검증된 연구실 결과와 현재 구현 상태를 구분했다.
+**MPI-PCB 전용 모델은 학습·정상 보정·저장 재검증 완료이며, 새 모델의 시험 성능은 아직 없다.**
 
 ## 먼저 세 가지를 구분한다
 
@@ -25,7 +25,7 @@ PaDiM도 이번 프로젝트에서는 사전학습 특징을 사용하며 정상
 | **Real-IAD**: pcb | 개발 비교 후 선택한 세밀한 특징 PatchCore, seed 42·43·44 | 자체 개발·최종 시험. 그중 PCB seed 42 모델을 **VisA PCB1–4와 MPI-PCB에도 그대로 적용**, 각 대상의 정상 자료로 경고 기준만 다시 보정 | 자체 평가와 외부 스트레스 시험 완료. 외부 시험 때 해당 제품의 bank를 새로 학습하지 않았음 |
 | **Real-IAD**: terminalblock | pcb와 별도로 만든 세밀한 특징 PatchCore, seed 42·43·44 | terminalblock 자체 개발·최종 시험 | 평가 완료. VisA/MPI 외부 비교에 사용한 모델은 이것이 아니라 위 PCB 모델 |
 | **VisA**: pcb3 | **PCB3 정상 기준표 v2 PatchCore** | PCB3 정상 보정·같은 PCB3 시험. 이후 **MPI-PCB에 그대로 적용**하고 MPI 정상으로 경고 기준 보정 | 학습·사후 평가·MPI 스트레스 시험 완료. PCB1·2·4 전용 bank까지 학습한 상태는 아님 |
-| **MPI-PCB**: 정상 원본 64장 | **이번에 만들 MPI 전용 PatchCore 하나**: 12영역 공용 bank | 별도 정상 원본 169장으로 새 경고 기준 산출 → 이후 기존 109장 시험에서 탐색 비교 예정 | 명단 검증 완료. **학습·보정 실행기 준비 완료 / 실제 학습·평가 대기** |
+| **MPI-PCB**: 정상 원본 64장 | **MPI 전용 PatchCore 하나**: 12영역 공용 bank 78,643×768 | 별도 정상 원본 169장으로 경고 기준 46.8394 산출 → 기존 109장 시험에서 탐색 비교 예정 | **실제 학습·정상 보정·저장 재검증 완료 / 시험 실행기 준비, 실제 평가 대기** |
 
 `transistor`와 `transistor1`, `metal_nut`과 `plastic_nut`, 다른 데이터셋의 `pcb`는
 같은 제품의 다른 촬영 세션으로 간주할 수 없다. 이름이 비슷하다고 모델을 공유하지 않는다.
@@ -67,7 +67,8 @@ Real-IAD·VisA·MPI 모델은 연구 실험용이다. 새 MPI 학습을 실행�
 
 ## 근거와 다음 행동
 
-- 이번 실행 안내: [MPI 전용 정상 기준표 학습·보정](mpi-pcb-normal-bank-pilot.md).
+- 이번 실행 안내: [MPI 전용 정상 기준표 비교 평가](mpi-pcb-normal-bank-evaluation.md).
+- 이번 학습 결과: [수령·검증 보고서](../reports/mpi-pcb-normal-bank-fit-v1.md).
 - MVTec 3품목: [PaDiM–PatchCore 비교](../reports/three-category-padim-vs-patchcore-v1.md).
 - Real-IAD 초기: [평가](../reports/realiad-patchcore-evaluation-v1.md), [반복·진단](../reports/realiad-patchcore-multiseed-diagnostics-v1.md).
 - Real-IAD 후속: [개발 모델 선택](../reports/realiad-followup-development-selection-v1.md), [최종 평가](realiad-followup-final.md).
@@ -75,5 +76,6 @@ Real-IAD·VisA·MPI 모델은 연구 실험용이다. 새 MPI 학습을 실행�
 - MPI: [기존 모델·정상 보정](mpi-pcb-external-stress-test.md), [외부 평가 v2](mpi-pcb-external-evaluation-v2.md), [맵 진단](mpi-pcb-map-diagnostics.md).
 - 운영 시연: [검사 API](patchcore-local-api.md), [검토부터 모의 티켓까지](../reports/local-review-to-mock-ticket-demo-v1.md).
 
-다음 순서: **연구실 새 bank 학습·정상 보정 → 전달 ZIP 검증 → 같은 시험의 탐색 비교 →
-채택 여부 판단**. 이번 변경에는 새 시험 실행기나 서비스 모델 교체를 포함하지 않았다.
+다음 순서: **새 프로세스에서 저장 모델 로드 → 짧은 정상 점수·속도 점검 → 같은 시험의
+탐색 비교 → 채택 여부 판단**. 평가 실행기는 준비됐지만 실제 평가 결과는 아직 없고
+서비스 모델은 교체하지 않았다.
