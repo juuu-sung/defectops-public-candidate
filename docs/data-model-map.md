@@ -1,7 +1,7 @@
 # 데이터와 모델 연결 관계
 
 기준일: 2026-09-28. 검증된 연구실 결과와 현재 구현 상태를 구분했다.
-**MPI-PCB A 점수 보정 완료: 검출33/55, 미탐22/55, 정상 오경보3/54. 다음은 잔여 오류·정상 패치 출처 진단이다.**
+**MPI-PCB A: 검출33/55, 미탐22/55, 정상 오경보3/54. 출처 진단 완료. 다음은 같은 bank의 동일 영역 검색 대조이며 후보 성적은 아직 없다.**
 
 ## 먼저 세 가지를 구분한다
 
@@ -71,6 +71,11 @@ VisA와 학습량·bank 크기도 달라지므로 개선을 데이터 출처 하
 선정12장 → 실제 최근접 bank index → 기존 정상 학습64장의 동일 특징 값/원본 위치를 연결한다.
 출처만 재구성하며 bank를 새로 학습하거나 128장·169장의 역할을 바꾸지 않는다.
 
+출처 진단의 선택 bank 벡터369개는 모두 연결됐다. 대표 미탐과 다른 영역 매칭의 관계를
+시험하기 위해 [동일 영역 검색](mpi-pcb-region-search.md)을 준비했다. 같은 checkpoint를
+읽되 입력 영역에 해당하는 bank 행만 검색한다. 영역마다 새 모델을 학습하는 작업이 아니다.
+기존 A 중앙값·MAD·기준은 유지하고, 후보용 수치만 같은 정상128장·169장으로 다시 계산한다.
+
 ## 검사 서비스와 연구 모델은 별개다
 
 현재 실제로 확인한 운영 시연은 **MVTec transistor PatchCore → Windows 검사 API →
@@ -83,7 +88,8 @@ Real-IAD·VisA·MPI 모델은 연구 실험용이다. 새 MPI 학습을 실행�
 
 ## 근거와 다음 행동
 
-- 이번 실행 안내: [MPI A 잔여 오류·정상 패치 출처](mpi-pcb-patch-trace.md).
+- 이번 실행 안내: [MPI 동일 영역 검색 A 대조](mpi-pcb-region-search.md).
+- 출처 진단 결과: [369개 출처 수령 검토](../reports/mpi-pcb-patch-trace-v1.md).
 - 완료한 점수 비교: [A/B 규칙](mpi-pcb-score-probe.md), [결과](../reports/mpi-pcb-score-probe-v1.md).
 - 실제 평가 결과: [MPI 전용 모델 109장 결과](../reports/mpi-pcb-normal-bank-evaluation-v1.md).
 - 이번 학습 결과: [수령·검증 보고서](../reports/mpi-pcb-normal-bank-fit-v1.md).
@@ -94,7 +100,7 @@ Real-IAD·VisA·MPI 모델은 연구 실험용이다. 새 MPI 학습을 실행�
 - MPI: [기존 모델·정상 보정](mpi-pcb-external-stress-test.md), [외부 평가 v2](mpi-pcb-external-evaluation-v2.md), [맵 진단](mpi-pcb-map-diagnostics.md).
 - 운영 시연: [검사 API](patchcore-local-api.md), [검토부터 모의 티켓까지](../reports/local-review-to-mock-ticket-demo-v1.md).
 
-다음 순서: **A 보존 → 선정12장 재현 → 원래 학습64장의 특징과 대조해 패치 출처 추적 →
-정상/오류 카드 검토 → 근거에 따라 변경 하나를 결정**.
-A/B 결과는 수령·검산했다. 출처 진단 실행기는 준비했으며 실제 GPU 출처 복원 결과는 대기 중이다.
+다음 순서: **A 보존 → 전체 bank 출처 복원 → 같은 영역만 검색 → 동일 정상 자료로 후보 보정 →
+시험109장에서 추가 검출·새 미탐·오경보·시간 비교**.
+A/B와 출처 진단은 수령·검토했다. 동일 영역 검색은 실행기 준비 단계이며 GPU 결과는 대기 중이다.
 서비스 모델은 교체하지 않았다.
