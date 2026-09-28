@@ -6,76 +6,24 @@
 이미지로 공정 원인을 확정하거나 이상 점수를 심각도로 해석하지 않는다.
 MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 
-## 지금 진행 중 (2026-09-28)
+## 지금 진행 중 (2026-09-29)
 
-[데이터 → 모델 → 보정·시험 연결표](docs/data-model-map.md)에서 전체 연구와 현재
-검사 서비스의 연결 상태를 한눈에 볼 수 있다. 같은 PatchCore라도 품목의 정상 기준표가
-다르면 별도 모델이다. MPI-PCB의 [점수 A/B 비교](reports/mpi-pcb-score-probe-v1.md)에서
-**A는 검출 1→33/55장, 미탐 54→22장, 정상 오경보 1→3/54장**이었다.
-영역별 정상 차이 보정의 이득이 있지만 아직 불량40%를 놓친다. A를 연구 기준선으로 보존하고
-[12개 사례의 잔여 오류·정상 패치 출처 진단](reports/mpi-pcb-patch-trace-v1.md)을 수령·검토했다.
-조회한 bank 벡터369개의 출처가 모두 연결됐고 대표 미탐에 다른 영역 매칭이 많았으나,
-정상 대조에도 있어 원인은 미확정이다. [같은 영역만 검색한 A 대조 결과](reports/mpi-pcb-region-search-v1.md)는
-후보 검출22/55·미탐33/55·오경보7/54로 악화됐다. 12영역 추론은 약7.9배 빨라졌지만 서비스 교체는 하지 않는다.
-다음은 [저장 지도 비교](docs/mpi-pcb-region-map-review.md)다. 판정 변화23장과 고정 대조7장을
-새 추론 없이 비교한다. 정상0411의 후보 지도는 저장되지 않아 숫자·과거 공유 방식 참고만 제공한다.
+지금까지의 연구 방향을 다시 점검했고, v1에서는 새 데이터셋과 사후 모델 튜닝을 더 늘리지
+않기로 했다. MPI-PCB는 영역별 정상화 A가 검출을 `33/55`까지 늘렸지만 `22/55`를 놓쳤고,
+같은 영역만 검색한 후보는 검출 `22/55`, 미탐 `33/55`, 정상 오경보 `7/54`로 더 나빴다.
+[저장 지도 비교](docs/mpi-pcb-region-map-review.md)까지 완료해 새 미탐의 다수가 결함 반응 소실보다
+높아진 경고 경계와 연결된다는 점을 확인했다. 기존 A는 연구 기준선으로 보존하고 서비스 모델은
+바꾸지 않는다.
 
-Real-IAD PCB 최종 평가에서 세 seed가 모두 놓친 불량 67장을 저장 맵으로 진단했다.
-상당수는 결함 위치 점수 순위가 높아도 결함 영역이 작아 이미지 전체 점수에 기여하는 몫이
-낮았고, 9장은 결함 픽셀이 상위 1%에 전혀 들지 않았다. 두 문제는 구분해야 한다.
-기존 최종 성적·모델·임곗값은 변경하지 않았다.
+이제 중심은 **동결된 transistor PatchCore 검사 → 사람 검토 → 모의 SOP → 승인 → 모의 티켓**을
+반복 가능하고 복구 가능한 하나의 시스템으로 만드는 것이다. 구체적인 범위, 중단 판단, 단계별
+완료 기준은 [v1 완성 로드맵](docs/v1-completion-roadmap.md)에 고정했다. 전체 연구와 현재 서비스의
+관계는 [데이터 → 모델 → 보정·시험 연결표](docs/data-model-map.md)에서 볼 수 있다.
 
-[개발 데이터 점수 방식 탐색](docs/realiad-development-score-probe.md)을 실행할 수 있게 준비했다.
-기존 PCB 모델을 그대로 쓰면서 상위 0.1%·0.25%·0.5%·1% 점수 방식의 미탐과 정상 오탐을
-비교하고, 짧은 한국어 결과표를 생성한다. 연구실 GPU 결과를 확인했으며 상위 0.25%는
-기존보다 개발 데이터 불량 4장을 덜 놓쳤지만 기존에 잡던 2장을 새로 놓쳤다.
-이 실험은 이미 관찰한 데이터의 탐색 비교이며, 새 미관측 시험 없이 모델을 교체하거나
-자동 PASS에 사용할 수 없다. [VisA PCB1–4 외부 평가](docs/visa-pcb-external-preregistration.md)는
-공식 시험 802장을 모두 열었고, 기존 Real-IAD PCB 모델의 다른 기판 전이가 약하다는
-탐색적 결과를 확인했다. 상위 1% 점수는 불량 400장 중 30장, 상위 0.25%는 17장만
-검토 대상으로 잡았다. [사후 시각 검토](docs/visa-pcb-external-preregistration.md)에서
-PCB3의 판정 역전 17장과 기판별 미탐·오검출을 살펴봤다. 다음은
-[VisA 기판별 정상 memory bank 개발 실험](docs/visa-pcb-normal-bank-development.md)이다.
-첫 실행은 PCB3의 정상 train·calibration만 사용하며 시험 이미지는 다시 열지 않는다.
-v1은 정상 특징 849장 추출 뒤 347만 패치의 10% coreset 선택 중 연구실 8GB GPU에서
-메모리 부족으로 멈췄다. 기존 결과는 보존했으며, 모든 849장을 유지하되 각 사진의
-공간 패치를 1/4로 줄이는 별도 v2 파일럿은 연구실 8GB GPU에서 완료했다. 기준표는
-86,937×768, 전체 실행은 약 2시간 15분이었다. 변경된 패치 밀도 때문에 후속 비교는
-사후 탐색적이다.
-[PCB3 v2의 별도 탐색 평가](docs/visa-pcb-normal-bank-pcb3-evaluation.md)는 완료된
-정상 기준표와 이전 평가의 고정 기록을 동일 PCB3 test 201장에서 비교했다.
-미탐은 기존 73/100장→v2 9/100장, 정상 오검출은 5/101장→6/101장이었다.
-이미 관찰한 시험의 사후 탐색이며 현장 성능 보증이나 자동 PASS 근거가 아니다.
-남은 15장 오류 사진도 [읽기 전용 검토](docs/visa-pcb-normal-bank-pcb3-error-review.md)를
-완료했다. 다른 조립 기판의 [MPI-PCB 정상 데이터 준비·보정](docs/mpi-pcb-external-stress-test.md)도 완료했다.
-169개 정상 사진의 점수로 Real-IAD PCB 임곗값 `67.42196179599297`, VisA PCB3 v2 임곗값
-`66.18967593588481`을 고정했다. [외부 시험 v1](docs/mpi-pcb-external-evaluation.md)은
-데이터 손상·보정/시험 중복으로 시험 점수 계산 전에 멈췄다.
-[v2](docs/mpi-pcb-external-evaluation-v2.md)는 공식 정렬 원본에서 손상 영역을 재구성하고
-나머지 11영역 RGB의 정확한 일치를 검증한다. 중복 정상 한 장만 시험에서 제외하여
-정상 54장·수동 변형 55장을 비교하고 복구 사진 제외 108장 결과도 함께 보고한다.
-v2 실행·검증을 완료했다. 불량 55장 중 Real-IAD 모델은 2장, VisA 모델은 3장만
-검출했고 정상 오경보는 각각 2/54장, 4/54장이었다. 복구 사진을 제외해도 결론은 같다.
-[저장 맵 원인 진단](docs/mpi-pcb-map-diagnostics.md)도 수령·검증했다. 위치 분석 대상
-54장 중 최고 점수 영역에 결함 표시가 없는 사진은 Real-IAD 39장·VisA 33장이었다.
-단순히 임곗값만의 문제라고 단정할 수 없다.
-[MPI-PCB 전용 정상 기준표 파일럿 학습·보정](docs/mpi-pcb-normal-bank-pilot.md)을 진행했다.
-학습용 정상 원본 64장(12영역씩 768개 이미지)을 고정하고, 기존 보정 169장·시험과
-픽셀이 중복되지 않는지 검사했다. 연구실 준비 ZIP의 명단·해시·중복 분리를 검증했고,
-이를 고정 입력으로 사용한 [연구실 학습 결과](reports/mpi-pcb-normal-bank-fit-v1.md)도 수령·검증했다.
-bank는 78,643×768, 새 임곗값은 46.8394이며 정상 2,028영역의 저장 전후 점수 차이는 0이다.
-학습 직후 보정은 약 5시간 11분, 재로딩 후 같은 계산은 약 3분 14초였다. 속도 차이의
-원인은 아직 미확정이다. 새 프로세스의 [109장 평가 결과](reports/mpi-pcb-normal-bank-evaluation-v1.md)는
-TP 1 / FP 1 / TN 53 / FN 54, AUROC 0.9118이다. 위치 분석 54장 중 최고 점수 영역이
-결함을 포함한 사진은 45장이나, 기존 경고 기준을 넘은 불량은 1장이다.
-점수 비교는 완료했다. 별도 정상128장으로 영역별 정상 수준을 정한 A와 모델 원시 점수 B의
-검출은 각각33/55장·8/55장이었다. 출처 진단·동일 영역 검색 결과까지 수령·검토했다.
-새 검출4장보다 새 미탐15장이 많았고 새 정상 오경보4장이 추가돼 기존 A를 보존한다.
-다음 연구실 실행은 `scripts/run_mpi_region_map_review.ps1`이다. 기존 저장 지도를 CPU로
-읽어 결함·정상 부분 반응과 경고 경계 변화를 비교한다. 정상128장·169장과 이미 본 시험109장의
-고정 성적은 바꾸지 않는다. 구현·합성 테스트와 실제 지도 검토 결과는 구분한다.
-한 기판의 반복 촬영·수동 변형 자료이므로 생산 검증이나 자동 PASS에 쓰지 않는다.
-공식 API의 CC-BY-4.0 표기 확인과 출처·복구 한계는 v2 문서에 기록했다.
+현재 작업은 첫 단계인 재현성 정리다. 개발·테스트 의존성을 한 설치 명령으로 제공하고,
+전체 CPU 테스트를 `python -m pytest -q`로 통일했으며 같은 검사를 GitHub Actions에서도 실행한다.
+다음 단계는 기존 모델이나 임곗값을 건드리지 않고, 검사 bundle을 같은 장비의 SQLite 검토
+저장소에 안전하게 등록하는 단일 진입점을 만드는 것이다.
 
 ## 현재 상태
 
@@ -151,49 +99,25 @@ warm sample p95는 Cable 42.04 ms, Metal Nut 25.97 ms였고 설정을 변경하�
 오류·경고·디코딩 픽셀 중복은 0건이며, final holdout 710장은 추출하지 않고 봉인을 유지한다.
 가짜 추론 결과를 실험 성능으로 제시하지 않는다.
 
-## 먼저 할 일
+## v1 마무리 순서
 
-1. [계획 검토](docs/plan-review.md)와 [실험 규칙](docs/data-protocol.md)을 기준으로 진행한다.
-2. 연구실 Windows의 드라이버/Python/실행 방식을 확인한 뒤 ML 의존성을 고정한다.
-3. 맥북 데이터는 `data/transistor/`에 준비되어 있다. 원본은 Git 제외 상태다.
-4. 비공개 원격 저장소 `https://github.com/juuu-sung/defectops`의 같은 commit을 연구실에서 받고,
-   고정 manifest의 체크섬을 검증한다.
-5. 단일 이미지 검사·탐색적 오류 분석·모델 1회 로드 warm 속도 측정 완료.
-6. PatchCore fit·평가·오류 분석·warm 측정과 FN/FP contact sheet 판독 완료.
-7. PatchCore 단일 이미지 검사 구현·연구실 Windows smoke test 완료.
-8. 로컬 상주 검사 API의 연구실 Windows smoke test와 실제 산출물의 맥북 SQLite 등록 완료.
-   맥북 로컬 검토 UI·실제 사람 의견 1건, 모의 SOP 검색, 저장된 근거 revision만 사용하는
-   로컬 승인/모의 티켓 상태 전이와 실제 1회 시연까지 완료했다.
-9. 연구실 Windows에서 PaDiM·PatchCore seed 43·44 추가 실행과 3-seed 무결성 검증·집계 완료.
-   다음 품목은 초기 allowlist를 보존해 cable·metal_nut으로
-   [사전등록](docs/three-category-preregistration.md)했다. 두 품목의 test를 보기 전에 모델·seed·전처리·
-   calibration·평가·선택 규칙을 고정했다. 공식 데이터 등록·manifest audit도 완료했으며 오류와
-   디코딩 픽셀 중복은 0건이었다. test를 열지 않는
-   [두 품목 12개 fit/calibration](docs/additional-category-fits.md)도 완료했다. 다음 체크포인트는
-   사전 고정한 [공식 test 평가와 3품목 macro 집계](docs/additional-category-evaluation.md)다.
-   이 평가도 완료했고 PatchCore는 macro escape rate 4.31%로 PaDiM의 35.85%보다 낮아 정확도
-   우선 포트폴리오 후보가 됐다. 상세 결과는
-   [3품목 비교 보고서](reports/three-category-padim-vs-patchcore-v1.md)에 기록했다.
-   [PatchCore 추가 품목 오류 분석과 warm 측정](docs/patchcore-additional-diagnostics.md)도 완료했고,
-   Real-IAD 외부 카테고리 등록, test를 열지 않는 6개 fit/calibration, 고정 평가와
-   [3-seed 오류 진단](reports/realiad-patchcore-multiseed-diagnostics-v1.md)까지 완료했다.
-   미관찰 Real-IAD `pcb`·`terminalblock`의 그룹 단위 development/final 경로 계획과 후보 네 개를
-   고정했다. 두 원본 ZIP의 development 등록·감사도 완료했고 final 이미지는 추출하지 않았다.
-   [PatchCore 후보 네 개의 development 비교 실행 흐름](docs/realiad-followup-development.md)을 구현했다.
-   연구실 Windows 실행 결과를 [검증·비교](reports/realiad-followup-development-selection-v1.md)해
-   `fine_features_top_1pct`를 선택하고 final gate를 고정했다. 선택 후보는 warm p95가 약 10초/장으로
-   느리고 PCB development 불량 224장 중 62장을 놓쳤다. 다음은 final 실행기와 재개 절차를 준비한 뒤
-   봉인된 holdout에서 seed 42·43·44를 한 번씩 평가하는 것이다.
+1. 전체 CPU 테스트의 설치·실행·자동 검사를 통일한다.
+2. transistor 검사 결과를 같은 장비의 검토 저장소에 안전하게 연결한다.
+3. 실패·재시도·중복 요청·검토 revision 변경을 통합 시험한다.
+4. 최초 모델 준비와 상주 모델 재사용을 나눠 전체 응답시간과 자원을 측정한다.
+5. 시연, DB 백업·복구, 모델 복구, 결과 재생 모드와 문서를 마감한다.
+
+새 데이터셋이나 MPI-PCB 모델 연구는 [재개 조건](docs/v1-completion-roadmap.md#모델-연구-재개-조건)이
+생기기 전까지 추가하지 않는다.
 
 Python 3.11 이상. manifest/환경 점검 도구는 표준 라이브러리만 사용한다.
 이미지 점검과 전체 테스트에는 Pillow/NumPy가 필요하다. 새 환경에서는 아래처럼 설치한다.
 ML 학습·평가용 Windows 라이브러리는 별도 requirements에 고정했다. 아래는 맥북 데이터 도구 실행이다.
 
 ```sh
-python3 -m pip install -e '.[data]'
-python3 -m pip install -r requirements/api.txt
+python3 -m pip install -e '.[test]'
 python3 scripts/check_environment.py --output artifacts/environment-mac.json
-python3 -m unittest discover -s tests -v
+python3 -m pytest -q
 python3 scripts/prepare_data.py verify --root data --manifest data/manifests/transistor-v1.json
 ```
 

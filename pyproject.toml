@@ -11,6 +11,14 @@ dependencies = []
 
 [project.optional-dependencies]
 data = ["Pillow==11.3.0", "numpy==2.3.3"]
+test = [
+  "Pillow==11.3.0",
+  "numpy==2.3.3",
+  "fastapi==0.117.1",
+  "httpx==0.28.1",
+  "streamlit==1.64.0",
+  "pytest==9.1.1",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
