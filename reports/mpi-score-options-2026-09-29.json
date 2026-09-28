@@ -1,0 +1,1608 @@
+{
+  "date": "2026-09-29",
+  "status": "post_test_exploratory_analysis_only",
+  "source_payload_sha256": {
+    "raw-scores.json": "6471e598103e63c17259110907647cc9f976d8488b2c2c9493322baffa93c9cd",
+    "scores.json": "95072879335092002dd471b817c333cffc653b066da54e708e0f9fc16064a597",
+    "calibration.json": "7412f3672411f87d4a581e612385971fff590dc3cf18f15446c73bd576e29016"
+  },
+  "analysis_code_sha256": "c00fdbe2af512fd17011f3987d6319ca00792951b4754c351f1456fa26a710df",
+  "gpu_inference_performed": false,
+  "model_or_service_gate_modified": false,
+  "test_previously_observed": true,
+  "candidate_selection_used_test_results": true,
+  "normalization_fit": "128 normal development photos only",
+  "threshold_fit": "169 distinct normal calibration photos; 95% higher quantile; >= comparison",
+  "sensitivity_scope": "1000 photo-row normal-pool bootstrap perturbations, fixed reused test. Not independent-board or deployment confidence intervals.",
+  "regions": [
+    "grid1-1_s1024",
+    "grid1-2_s1024",
+    "grid1-3_s1024",
+    "grid2-1_s1024",
+    "grid2-2_s1024",
+    "grid2-3_s1024",
+    "grid3-1_s1024",
+    "grid3-2_s1024",
+    "grid3-3_s1024",
+    "grid4-1_s1024",
+    "grid4-2_s1024",
+    "grid4-3_s1024"
+  ],
+  "results": {
+    "top1_none": {
+      "tp": 1,
+      "fn": 54,
+      "fp": 1,
+      "tn": 53,
+      "auroc": 0.9117845117845118,
+      "threshold": 46.839376955497556,
+      "center": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "width": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "raw_region_boundaries": [
+        46.839376955497556,
+        46.839376955497556,
+        46.839376955497556,
+        46.839376955497556,
+        46.839376955497556,
+        46.839376955497556,
+        46.839376955497556,
+        46.839376955497556,
+        46.839376955497556,
+        46.839376955497556,
+        46.839376955497556,
+        46.839376955497556
+      ],
+      "calibration_alerts": 9,
+      "calibration_boundary_keys": [
+        "calibration/1218"
+      ],
+      "false_negatives": [
+        "defect/0000",
+        "defect/0001",
+        "defect/0002",
+        "defect/0003",
+        "defect/0004",
+        "defect/0005",
+        "defect/0006",
+        "defect/0007",
+        "defect/0008",
+        "defect/0009",
+        "defect/0011",
+        "defect/0012",
+        "defect/0013",
+        "defect/0014",
+        "defect/0015",
+        "defect/0016",
+        "defect/0017",
+        "defect/0018",
+        "defect/0019",
+        "defect/0020",
+        "defect/0021",
+        "defect/0022",
+        "defect/0023",
+        "defect/0024",
+        "defect/0025",
+        "defect/0026",
+        "defect/0027",
+        "defect/0028",
+        "defect/0029",
+        "defect/0030",
+        "defect/0031",
+        "defect/0032",
+        "defect/0033",
+        "defect/0034",
+        "defect/0035",
+        "defect/0036",
+        "defect/0037",
+        "defect/0038",
+        "defect/0039",
+        "defect/0040",
+        "defect/0041",
+        "defect/0042",
+        "defect/0043",
+        "defect/0044",
+        "defect/0045",
+        "defect/0046",
+        "defect/0047",
+        "defect/0048",
+        "defect/0049",
+        "defect/0050",
+        "defect/0051",
+        "defect/0052",
+        "defect/0053",
+        "defect/0054"
+      ],
+      "false_positives": [
+        "good/0012"
+      ]
+    },
+    "top1_mad": {
+      "tp": 33,
+      "fn": 22,
+      "fp": 3,
+      "tn": 51,
+      "auroc": 0.9488215488215488,
+      "threshold": 5.496627513743306,
+      "center": [
+        34.99551376191582,
+        35.101132674915036,
+        34.37380550547344,
+        35.12207416790288,
+        34.335350687910875,
+        34.18951894306555,
+        35.30393474857982,
+        34.10068746601662,
+        33.96570154806463,
+        35.03898986083705,
+        35.417240029428065,
+        37.77597525352385
+      ],
+      "width": [
+        2.0717984263489875,
+        1.953218556031949,
+        1.8495698324063916,
+        1.982179981906242,
+        1.7739327506321239,
+        1.7119846256767808,
+        1.7831733284926976,
+        1.7335808713261613,
+        1.6563886142358548,
+        1.8926916820247008,
+        1.6967264588286248,
+        1.9806016538201305
+      ],
+      "raw_region_boundaries": [
+        46.38341799511575,
+        45.83724753035422,
+        44.54020193486801,
+        46.01737919363994,
+        44.08599825256575,
+        43.59966073966608,
+        45.10537432774601,
+        43.629535780647096,
+        43.070252778524576,
+        45.442411035287115,
+        44.743513366321736,
+        48.662604797677076
+      ],
+      "calibration_alerts": 9,
+      "calibration_boundary_keys": [
+        "calibration/0411"
+      ],
+      "false_negatives": [
+        "defect/0000",
+        "defect/0004",
+        "defect/0016",
+        "defect/0017",
+        "defect/0019",
+        "defect/0020",
+        "defect/0021",
+        "defect/0022",
+        "defect/0023",
+        "defect/0024",
+        "defect/0025",
+        "defect/0026",
+        "defect/0027",
+        "defect/0028",
+        "defect/0034",
+        "defect/0039",
+        "defect/0041",
+        "defect/0043",
+        "defect/0044",
+        "defect/0047",
+        "defect/0051",
+        "defect/0053"
+      ],
+      "false_positives": [
+        "good/0012",
+        "good/0019",
+        "good/0046"
+      ]
+    },
+    "native_raw_none": {
+      "tp": 8,
+      "fn": 47,
+      "fp": 2,
+      "tn": 52,
+      "auroc": 0.9336700336700336,
+      "threshold": 50.940853118896484,
+      "center": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "width": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "raw_region_boundaries": [
+        50.940853118896484,
+        50.940853118896484,
+        50.940853118896484,
+        50.940853118896484,
+        50.940853118896484,
+        50.940853118896484,
+        50.940853118896484,
+        50.940853118896484,
+        50.940853118896484,
+        50.940853118896484,
+        50.940853118896484,
+        50.940853118896484
+      ],
+      "calibration_alerts": 9,
+      "calibration_boundary_keys": [
+        "calibration/1671"
+      ],
+      "false_negatives": [
+        "defect/0000",
+        "defect/0001",
+        "defect/0003",
+        "defect/0004",
+        "defect/0005",
+        "defect/0008",
+        "defect/0009",
+        "defect/0011",
+        "defect/0012",
+        "defect/0013",
+        "defect/0014",
+        "defect/0015",
+        "defect/0016",
+        "defect/0017",
+        "defect/0018",
+        "defect/0019",
+        "defect/0020",
+        "defect/0021",
+        "defect/0022",
+        "defect/0023",
+        "defect/0024",
+        "defect/0025",
+        "defect/0026",
+        "defect/0027",
+        "defect/0028",
+        "defect/0030",
+        "defect/0031",
+        "defect/0032",
+        "defect/0033",
+        "defect/0034",
+        "defect/0035",
+        "defect/0036",
+        "defect/0037",
+        "defect/0038",
+        "defect/0039",
+        "defect/0040",
+        "defect/0041",
+        "defect/0042",
+        "defect/0043",
+        "defect/0044",
+        "defect/0046",
+        "defect/0047",
+        "defect/0048",
+        "defect/0049",
+        "defect/0050",
+        "defect/0051",
+        "defect/0053"
+      ],
+      "false_positives": [
+        "good/0012",
+        "good/0023"
+      ]
+    },
+    "native_raw_mad": {
+      "tp": 46,
+      "fn": 9,
+      "fp": 3,
+      "tn": 51,
+      "auroc": 0.971043771043771,
+      "threshold": 5.6920057976697285,
+      "center": [
+        38.12100410461426,
+        39.26042556762695,
+        38.110008239746094,
+        38.53522872924805,
+        38.02033615112305,
+        38.3312931060791,
+        38.612579345703125,
+        37.63124465942383,
+        37.93692207336426,
+        38.58136558532715,
+        39.207101821899414,
+        41.485748291015625
+      ],
+      "width": [
+        2.3634719848632812,
+        2.197601318359375,
+        2.1110572814941406,
+        2.17919921875,
+        2.060596466064453,
+        1.6451683044433594,
+        2.02899169921875,
+        1.7617053985595703,
+        1.7058982849121094,
+        1.7477741241455078,
+        1.8685150146484375,
+        2.107908248901367
+      ],
+      "raw_region_boundaries": [
+        51.57390034508604,
+        51.769185012695154,
+        50.12615852522364,
+        50.93924331665039,
+        49.74926318261967,
+        47.69560063311318,
+        50.161611861080004,
+        47.658882001810966,
+        47.64690500131883,
+        48.52970603298051,
+        49.84270011831126,
+        53.48397426471805
+      ],
+      "calibration_alerts": 9,
+      "calibration_boundary_keys": [
+        "calibration/0030"
+      ],
+      "false_negatives": [
+        "defect/0016",
+        "defect/0017",
+        "defect/0019",
+        "defect/0021",
+        "defect/0024",
+        "defect/0025",
+        "defect/0027",
+        "defect/0035",
+        "defect/0044"
+      ],
+      "false_positives": [
+        "good/0012",
+        "good/0019",
+        "good/0040"
+      ]
+    },
+    "top1_q90": {
+      "tp": 53,
+      "fn": 2,
+      "fp": 3,
+      "tn": 51,
+      "auroc": 0.9946127946127946,
+      "threshold": 2.3169610768645974,
+      "center": [
+        34.99551376191582,
+        35.101132674915036,
+        34.37380550547344,
+        35.12207416790288,
+        34.335350687910875,
+        34.18951894306555,
+        35.30393474857982,
+        34.10068746601662,
+        33.96570154806463,
+        35.03898986083705,
+        35.417240029428065,
+        37.77597525352385
+      ],
+      "width": [
+        4.802981333034786,
+        5.316622364811778,
+        4.528142940707319,
+        4.528958576481514,
+        3.706166529073947,
+        4.593822429819802,
+        4.973929765747812,
+        3.2780921895329627,
+        4.117661403446661,
+        4.1980514962498745,
+        3.049038668958154,
+        4.5503633865495985
+      ],
+      "raw_region_boundaries": [
+        46.123834563464655,
+        47.41953975457174,
+        44.865336449571494,
+        45.61549490834264,
+        42.922394280153576,
+        44.833226706985585,
+        46.82833641487574,
+        41.69589947553834,
+        43.50616274755819,
+        44.76571177632119,
+        42.48174394725915,
+        48.31899010574905
+      ],
+      "calibration_alerts": 9,
+      "calibration_boundary_keys": [
+        "calibration/1365"
+      ],
+      "false_negatives": [
+        "defect/0019",
+        "defect/0024"
+      ],
+      "false_positives": [
+        "good/0012",
+        "good/0023",
+        "good/0046"
+      ]
+    },
+    "top1_q95": {
+      "tp": 46,
+      "fn": 9,
+      "fp": 2,
+      "tn": 52,
+      "auroc": 0.9777777777777777,
+      "threshold": 1.680343383829598,
+      "center": [
+        34.99551376191582,
+        35.101132674915036,
+        34.37380550547344,
+        35.12207416790288,
+        34.335350687910875,
+        34.18951894306555,
+        35.30393474857982,
+        34.10068746601662,
+        33.96570154806463,
+        35.03898986083705,
+        35.417240029428065,
+        37.77597525352385
+      ],
+      "width": [
+        6.361932077058924,
+        6.4501372982815965,
+        5.339759187000553,
+        6.756325855487724,
+        5.483547513077895,
+        6.057781507329246,
+        7.016123812373088,
+        5.2267067112573855,
+        7.1355953187477255,
+        5.559030227544838,
+        4.896809598294702,
+        6.045347111981087
+      ],
+      "raw_region_boundaries": [
+        45.68574423597507,
+        45.939578208875034,
+        43.346434526593136,
+        46.475021618168526,
+        43.54959347142656,
+        44.368672019591536,
+        47.09343197683023,
+        42.88334950749573,
+        45.95595193160782,
+        44.38006952420076,
+        43.64556163979584,
+        47.93423427609464
+      ],
+      "calibration_alerts": 9,
+      "calibration_boundary_keys": [
+        "calibration/0050"
+      ],
+      "false_negatives": [
+        "defect/0019",
+        "defect/0021",
+        "defect/0022",
+        "defect/0024",
+        "defect/0025",
+        "defect/0027",
+        "defect/0028",
+        "defect/0043",
+        "defect/0044"
+      ],
+      "false_positives": [
+        "good/0012",
+        "good/0023"
+      ]
+    },
+    "top1_std": {
+      "tp": 45,
+      "fn": 10,
+      "fp": 2,
+      "tn": 52,
+      "auroc": 0.9747474747474747,
+      "threshold": 3.2923734804361864,
+      "center": [
+        35.366495503476116,
+        35.63945409305759,
+        34.71599630782062,
+        35.64988110403007,
+        34.54413899236427,
+        34.77461029014483,
+        35.896478377373505,
+        34.397001489701616,
+        34.47828025364019,
+        35.41909394972028,
+        35.3554603197362,
+        37.600992181224804
+      ],
+      "width": [
+        3.2673507801925816,
+        3.2469053042429885,
+        2.8783374671904314,
+        3.2062336809506413,
+        2.6497111099203146,
+        2.8170389002582565,
+        3.4350409922105416,
+        2.630814861805532,
+        2.9024027125146317,
+        3.089042033869995,
+        2.582551556745272,
+        3.4516748369629506
+      ],
+      "raw_region_boundaries": [
+        46.123834563464655,
+        46.32947901023479,
+        44.19255825254426,
+        46.20599984727326,
+        43.267977581483045,
+        44.04935445871223,
+        47.205916244338695,
+        43.05862657264754,
+        44.03407397386942,
+        45.58937402198651,
+        43.85818457702352,
+        48.96519487753052
+      ],
+      "calibration_alerts": 9,
+      "calibration_boundary_keys": [
+        "calibration/1365"
+      ],
+      "false_negatives": [
+        "defect/0019",
+        "defect/0021",
+        "defect/0022",
+        "defect/0024",
+        "defect/0025",
+        "defect/0027",
+        "defect/0028",
+        "defect/0043",
+        "defect/0044",
+        "defect/0047"
+      ],
+      "false_positives": [
+        "good/0012",
+        "good/0046"
+      ]
+    }
+  },
+  "paired_q90_vs_mad": {
+    "gained_tp": 20,
+    "lost_tp": 0
+  },
+  "q90_finite_sample_rank_diagnostic": {
+    "status": "post_test_diagnostic_not_a_replacement_gate",
+    "rank_one_based": 162,
+    "threshold": 2.4681992400284583,
+    "comparison": ">",
+    "tp": 52,
+    "fp": 2,
+    "limit": "Any split-conformal coverage claim requires a fixed scorer and exchangeable normal calibration/future data; not established here."
+  },
+  "normal_pool_sensitivity": {
+    "top1_mad": {
+      "tp_fp_percentiles_2_5_10_50_90_97_5": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          5.0,
+          1.0
+        ],
+        [
+          37.0,
+          3.0
+        ],
+        [
+          54.0,
+          6.0
+        ],
+        [
+          55.0,
+          8.0
+        ]
+      ]
+    },
+    "top1_q90": {
+      "tp_fp_percentiles_2_5_10_50_90_97_5": [
+        [
+          3.0,
+          0.0
+        ],
+        [
+          7.900000000000006,
+          1.0
+        ],
+        [
+          52.0,
+          3.0
+        ],
+        [
+          55.0,
+          7.0
+        ],
+        [
+          55.0,
+          9.0
+        ]
+      ]
+    }
+  },
+  "q90_separate_sensitivity_percentiles_2_5_10_50_90_97_5": {
+    "development_only": [
+      [
+        4.0,
+        0.0
+      ],
+      [
+        10.0,
+        1.0
+      ],
+      [
+        52.0,
+        3.0
+      ],
+      [
+        55.0,
+        5.0
+      ],
+      [
+        55.0,
+        6.0
+      ]
+    ],
+    "calibration_only": [
+      [
+        45.0,
+        0.0
+      ],
+      [
+        46.0,
+        0.0
+      ],
+      [
+        53.0,
+        3.0
+      ],
+      [
+        55.0,
+        7.2000000000000455
+      ],
+      [
+        55.0,
+        9.0
+      ]
+    ]
+  },
+  "oracle_sweep_not_deployable": {
+    "top1_mad": [
+      {
+        "fp_budget": 0,
+        "tp": 5,
+        "fn": 50,
+        "fp": 0,
+        "tn": 54,
+        "auroc": 0.9488215488215488
+      },
+      {
+        "fp_budget": 1,
+        "tp": 6,
+        "fn": 49,
+        "fp": 1,
+        "tn": 53,
+        "auroc": 0.9488215488215488
+      },
+      {
+        "fp_budget": 2,
+        "tp": 28,
+        "fn": 27,
+        "fp": 2,
+        "tn": 52,
+        "auroc": 0.9488215488215488
+      },
+      {
+        "fp_budget": 3,
+        "tp": 43,
+        "fn": 12,
+        "fp": 3,
+        "tn": 51,
+        "auroc": 0.9488215488215488
+      },
+      {
+        "fp_budget": 5,
+        "tp": 52,
+        "fn": 3,
+        "fp": 4,
+        "tn": 50,
+        "auroc": 0.9488215488215488
+      }
+    ],
+    "top1_q90": [
+      {
+        "fp_budget": 0,
+        "tp": 49,
+        "fn": 6,
+        "fp": 0,
+        "tn": 54,
+        "auroc": 0.9946127946127946
+      },
+      {
+        "fp_budget": 1,
+        "tp": 52,
+        "fn": 3,
+        "fp": 1,
+        "tn": 53,
+        "auroc": 0.9946127946127946
+      },
+      {
+        "fp_budget": 2,
+        "tp": 53,
+        "fn": 2,
+        "fp": 2,
+        "tn": 52,
+        "auroc": 0.9946127946127946
+      },
+      {
+        "fp_budget": 3,
+        "tp": 53,
+        "fn": 2,
+        "fp": 2,
+        "tn": 52,
+        "auroc": 0.9946127946127946
+      },
+      {
+        "fp_budget": 5,
+        "tp": 54,
+        "fn": 1,
+        "fp": 4,
+        "tn": 50,
+        "auroc": 0.9946127946127946
+      }
+    ]
+  },
+  "q90_test_predictions": [
+    {
+      "key": "good/0000",
+      "label": 0,
+      "score": 0.12222945727432434,
+      "alert": false,
+      "winning_region": "grid4-2_s1024"
+    },
+    {
+      "key": "good/0001",
+      "label": 0,
+      "score": 1.5987518029797585,
+      "alert": false,
+      "winning_region": "grid3-3_s1024"
+    },
+    {
+      "key": "good/0002",
+      "label": 0,
+      "score": 0.59839910049249,
+      "alert": false,
+      "winning_region": "grid1-2_s1024"
+    },
+    {
+      "key": "good/0003",
+      "label": 0,
+      "score": 0.9873500471060279,
+      "alert": false,
+      "winning_region": "grid3-1_s1024"
+    },
+    {
+      "key": "good/0004",
+      "label": 0,
+      "score": 0.8222257158798728,
+      "alert": false,
+      "winning_region": "grid4-1_s1024"
+    },
+    {
+      "key": "good/0005",
+      "label": 0,
+      "score": 0.8511251098491228,
+      "alert": false,
+      "winning_region": "grid1-2_s1024"
+    },
+    {
+      "key": "good/0006",
+      "label": 0,
+      "score": -0.4539241066607673,
+      "alert": false,
+      "winning_region": "grid1-2_s1024"
+    },
+    {
+      "key": "good/0007",
+      "label": 0,
+      "score": 1.0897147200250425,
+      "alert": false,
+      "winning_region": "grid1-1_s1024"
+    },
+    {
+      "key": "good/0008",
+      "label": 0,
+      "score": 0.4138919855435929,
+      "alert": false,
+      "winning_region": "grid4-2_s1024"
+    },
+    {
+      "key": "good/0009",
+      "label": 0,
+      "score": -0.09433538072578125,
+      "alert": false,
+      "winning_region": "grid1-2_s1024"
+    },
+    {
+      "key": "good/0010",
+      "label": 0,
+      "score": -0.02852571802628882,
+      "alert": false,
+      "winning_region": "grid4-1_s1024"
+    },
+    {
+      "key": "good/0011",
+      "label": 0,
+      "score": 1.311160536797373,
+      "alert": false,
+      "winning_region": "grid4-3_s1024"
+    },
+    {
+      "key": "good/0012",
+      "label": 0,
+      "score": 2.4716815115523514,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "good/0014",
+      "label": 0,
+      "score": -0.651374648845076,
+      "alert": false,
+      "winning_region": "grid1-2_s1024"
+    },
+    {
+      "key": "good/0015",
+      "label": 0,
+      "score": -0.015765893016813293,
+      "alert": false,
+      "winning_region": "grid4-2_s1024"
+    },
+    {
+      "key": "good/0016",
+      "label": 0,
+      "score": 0.4545133085829986,
+      "alert": false,
+      "winning_region": "grid3-3_s1024"
+    },
+    {
+      "key": "good/0017",
+      "label": 0,
+      "score": 1.7075020485831804,
+      "alert": false,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "good/0018",
+      "label": 0,
+      "score": 1.9931063782238774,
+      "alert": false,
+      "winning_region": "grid4-1_s1024"
+    },
+    {
+      "key": "good/0019",
+      "label": 0,
+      "score": 2.105402107883155,
+      "alert": false,
+      "winning_region": "grid2-3_s1024"
+    },
+    {
+      "key": "good/0020",
+      "label": 0,
+      "score": 0.544824928643113,
+      "alert": false,
+      "winning_region": "grid3-1_s1024"
+    },
+    {
+      "key": "good/0021",
+      "label": 0,
+      "score": 2.025124538910461,
+      "alert": false,
+      "winning_region": "grid2-2_s1024"
+    },
+    {
+      "key": "good/0022",
+      "label": 0,
+      "score": -0.026264516595968745,
+      "alert": false,
+      "winning_region": "grid3-1_s1024"
+    },
+    {
+      "key": "good/0023",
+      "label": 0,
+      "score": 2.3437599358397354,
+      "alert": true,
+      "winning_region": "grid4-1_s1024"
+    },
+    {
+      "key": "good/0024",
+      "label": 0,
+      "score": -0.22193961191123096,
+      "alert": false,
+      "winning_region": "grid1-2_s1024"
+    },
+    {
+      "key": "good/0025",
+      "label": 0,
+      "score": 0.9653571180931412,
+      "alert": false,
+      "winning_region": "grid1-2_s1024"
+    },
+    {
+      "key": "good/0026",
+      "label": 0,
+      "score": 0.766682356705432,
+      "alert": false,
+      "winning_region": "grid4-1_s1024"
+    },
+    {
+      "key": "good/0027",
+      "label": 0,
+      "score": 0.6882392662650125,
+      "alert": false,
+      "winning_region": "grid2-1_s1024"
+    },
+    {
+      "key": "good/0028",
+      "label": 0,
+      "score": 2.134190308165634,
+      "alert": false,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "good/0029",
+      "label": 0,
+      "score": 0.6357853576351143,
+      "alert": false,
+      "winning_region": "grid4-2_s1024"
+    },
+    {
+      "key": "good/0030",
+      "label": 0,
+      "score": 1.431888865790964,
+      "alert": false,
+      "winning_region": "grid2-1_s1024"
+    },
+    {
+      "key": "good/0031",
+      "label": 0,
+      "score": 0.4736916392767113,
+      "alert": false,
+      "winning_region": "grid1-3_s1024"
+    },
+    {
+      "key": "good/0032",
+      "label": 0,
+      "score": 0.634882897666298,
+      "alert": false,
+      "winning_region": "grid4-2_s1024"
+    },
+    {
+      "key": "good/0033",
+      "label": 0,
+      "score": -0.05394111796146111,
+      "alert": false,
+      "winning_region": "grid4-1_s1024"
+    },
+    {
+      "key": "good/0034",
+      "label": 0,
+      "score": 0.34276461239297834,
+      "alert": false,
+      "winning_region": "grid2-2_s1024"
+    },
+    {
+      "key": "good/0035",
+      "label": 0,
+      "score": 0.5664115491067679,
+      "alert": false,
+      "winning_region": "grid4-3_s1024"
+    },
+    {
+      "key": "good/0036",
+      "label": 0,
+      "score": -0.03032429665517864,
+      "alert": false,
+      "winning_region": "grid3-3_s1024"
+    },
+    {
+      "key": "good/0037",
+      "label": 0,
+      "score": -0.1102159563704876,
+      "alert": false,
+      "winning_region": "grid3-3_s1024"
+    },
+    {
+      "key": "good/0038",
+      "label": 0,
+      "score": 1.0284190296892344,
+      "alert": false,
+      "winning_region": "grid4-2_s1024"
+    },
+    {
+      "key": "good/0039",
+      "label": 0,
+      "score": 2.305932725040257,
+      "alert": false,
+      "winning_region": "grid4-2_s1024"
+    },
+    {
+      "key": "good/0040",
+      "label": 0,
+      "score": 2.1362630010322357,
+      "alert": false,
+      "winning_region": "grid4-1_s1024"
+    },
+    {
+      "key": "good/0041",
+      "label": 0,
+      "score": 1.4246881280370973,
+      "alert": false,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "good/0042",
+      "label": 0,
+      "score": 1.1789795108192374,
+      "alert": false,
+      "winning_region": "grid2-1_s1024"
+    },
+    {
+      "key": "good/0043",
+      "label": 0,
+      "score": 0.5371934058498495,
+      "alert": false,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "good/0044",
+      "label": 0,
+      "score": 0.9813238757932663,
+      "alert": false,
+      "winning_region": "grid4-2_s1024"
+    },
+    {
+      "key": "good/0045",
+      "label": 0,
+      "score": 0.44941602533460767,
+      "alert": false,
+      "winning_region": "grid2-1_s1024"
+    },
+    {
+      "key": "good/0046",
+      "label": 0,
+      "score": 2.6205288410446608,
+      "alert": true,
+      "winning_region": "grid3-3_s1024"
+    },
+    {
+      "key": "good/0047",
+      "label": 0,
+      "score": 0.5536950478588103,
+      "alert": false,
+      "winning_region": "grid3-3_s1024"
+    },
+    {
+      "key": "good/0048",
+      "label": 0,
+      "score": 0.03956858018093314,
+      "alert": false,
+      "winning_region": "grid3-1_s1024"
+    },
+    {
+      "key": "good/0049",
+      "label": 0,
+      "score": 0.2512666155634781,
+      "alert": false,
+      "winning_region": "grid3-1_s1024"
+    },
+    {
+      "key": "good/0050",
+      "label": 0,
+      "score": 1.303698876083153,
+      "alert": false,
+      "winning_region": "grid1-1_s1024"
+    },
+    {
+      "key": "good/0051",
+      "label": 0,
+      "score": -0.3898994144685313,
+      "alert": false,
+      "winning_region": "grid1-2_s1024"
+    },
+    {
+      "key": "good/0052",
+      "label": 0,
+      "score": 0.08617145188504736,
+      "alert": false,
+      "winning_region": "grid2-3_s1024"
+    },
+    {
+      "key": "good/0053",
+      "label": 0,
+      "score": 1.8244621099056366,
+      "alert": false,
+      "winning_region": "grid2-1_s1024"
+    },
+    {
+      "key": "good/0054",
+      "label": 0,
+      "score": 1.1719588302148316,
+      "alert": false,
+      "winning_region": "grid1-2_s1024"
+    },
+    {
+      "key": "defect/0000",
+      "label": 1,
+      "score": 2.8685197345682387,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0001",
+      "label": 1,
+      "score": 3.0795008517696894,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0002",
+      "label": 1,
+      "score": 3.3739524357419257,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0003",
+      "label": 1,
+      "score": 3.0008625848678023,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0004",
+      "label": 1,
+      "score": 2.8633778838004953,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0005",
+      "label": 1,
+      "score": 3.0454380111498986,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0006",
+      "label": 1,
+      "score": 3.7650294689399737,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0007",
+      "label": 1,
+      "score": 3.5681204849719075,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0008",
+      "label": 1,
+      "score": 3.0857896403700646,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0009",
+      "label": 1,
+      "score": 3.2464104826435887,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0010",
+      "label": 1,
+      "score": 3.928740166211995,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0011",
+      "label": 1,
+      "score": 3.091130773411475,
+      "alert": true,
+      "winning_region": "grid4-2_s1024"
+    },
+    {
+      "key": "defect/0012",
+      "label": 1,
+      "score": 3.168166622968253,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0013",
+      "label": 1,
+      "score": 3.1847389534509314,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0014",
+      "label": 1,
+      "score": 3.136331779788104,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0015",
+      "label": 1,
+      "score": 3.1066971916459347,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0016",
+      "label": 1,
+      "score": 2.890882341905014,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0017",
+      "label": 1,
+      "score": 2.8216745828258922,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0018",
+      "label": 1,
+      "score": 3.3067023280436585,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0019",
+      "label": 1,
+      "score": 2.2723476955076154,
+      "alert": false,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0020",
+      "label": 1,
+      "score": 2.9058085380740124,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0021",
+      "label": 1,
+      "score": 2.5198808309605845,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0022",
+      "label": 1,
+      "score": 2.633083235289644,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0023",
+      "label": 1,
+      "score": 2.737440159602799,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0024",
+      "label": 1,
+      "score": 2.1048930264016805,
+      "alert": false,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0025",
+      "label": 1,
+      "score": 2.5515117544501704,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0026",
+      "label": 1,
+      "score": 2.8918644484683806,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0027",
+      "label": 1,
+      "score": 2.364414737658171,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0028",
+      "label": 1,
+      "score": 2.520241671992095,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0029",
+      "label": 1,
+      "score": 3.5230800333119845,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0030",
+      "label": 1,
+      "score": 3.1384259275458577,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0031",
+      "label": 1,
+      "score": 3.26653587345629,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0032",
+      "label": 1,
+      "score": 2.91978973817538,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0033",
+      "label": 1,
+      "score": 2.944262093159943,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0034",
+      "label": 1,
+      "score": 2.744772464476929,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0035",
+      "label": 1,
+      "score": 2.7729669755747297,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0036",
+      "label": 1,
+      "score": 3.1409476034702135,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0037",
+      "label": 1,
+      "score": 3.0866701276816078,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0038",
+      "label": 1,
+      "score": 3.006893207173431,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0039",
+      "label": 1,
+      "score": 2.8863918725814623,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0040",
+      "label": 1,
+      "score": 3.095357024189522,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0041",
+      "label": 1,
+      "score": 2.7703874768148604,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0042",
+      "label": 1,
+      "score": 2.9777775078456292,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0043",
+      "label": 1,
+      "score": 2.6313426856306044,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0044",
+      "label": 1,
+      "score": 2.644819839341971,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0045",
+      "label": 1,
+      "score": 3.506782943145158,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0046",
+      "label": 1,
+      "score": 2.916658093068923,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0047",
+      "label": 1,
+      "score": 2.697561586315631,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0048",
+      "label": 1,
+      "score": 3.1702738676088953,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0049",
+      "label": 1,
+      "score": 3.1551622732926377,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0050",
+      "label": 1,
+      "score": 3.1801826342845425,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0051",
+      "label": 1,
+      "score": 2.8667361938545097,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0052",
+      "label": 1,
+      "score": 2.935710779457928,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0053",
+      "label": 1,
+      "score": 2.8900586024308774,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    },
+    {
+      "key": "defect/0054",
+      "label": 1,
+      "score": 3.2602103770409894,
+      "alert": true,
+      "winning_region": "grid3-2_s1024"
+    }
+  ],
+  "independent_stdlib_replay_passed": true,
+  "q90_localization_check": {
+    "status": "received_statistics_only_no_raw_map_recomputation",
+    "source_zip_sha256": "070a15bfed987802201868dee759fc5c24445bf12c6c6d3643feb3b25798e857",
+    "eligible_photos": 54,
+    "winner_contains_gt": 53,
+    "winner_top1_overlaps_gt": 53,
+    "grid3_2_winners": 53,
+    "missed_photos": [
+      {
+        "key": "defect/0019",
+        "alert": false,
+        "region": "grid3-2_s1024",
+        "gt_pixels": 552,
+        "top1_gt_overlap_min": 384,
+        "top1_gt_recall_min": 0.6956521739130435,
+        "top1_gt_score_share_min": 0.5895821437248822
+      },
+      {
+        "key": "defect/0024",
+        "alert": false,
+        "region": "grid3-2_s1024",
+        "gt_pixels": 576,
+        "top1_gt_overlap_min": 435,
+        "top1_gt_recall_min": 0.7552083333333334,
+        "top1_gt_score_share_min": 0.6682310008038866
+      }
+    ],
+    "winner_without_gt": [
+      {
+        "key": "defect/0011",
+        "alert": true,
+        "region": "grid4-2_s1024",
+        "gt_pixels": 0,
+        "top1_gt_overlap_min": 0,
+        "top1_gt_recall_min": null,
+        "top1_gt_score_share_min": 0.0
+      }
+    ]
+  }
+}
