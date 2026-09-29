@@ -16,8 +16,10 @@ MPI-PCB의 [성능 개선 검토](reports/performance-improvement-review-2026-09
 연구실 [재현·정상 검증 결과](reports/mpi-score-validation-v1-received-review.md)를 수령했다.
 기존406장 점수 차이는0이며 새 정상256장 오경보는 A13장·Q9014장·원시 점수18장이다.
 세 방법 모두 관측5% 목표를 초과했다. [다섯 사례 지도 검토](reports/mpi-score-case-review-v1-received-review.md)에서
-잔여 미탐은 결함에 반응하지만 경고 기준에 못 미침을 확인했다. 다음은 [26×26 공간 집계 단일 비교](docs/mpi-spatial-score-v1.md)다.
-기존 모델은 유지하고 후보 점수만 별도 정상 자료로 보정한다. 이미 본 자료의 탐색 비교이며 실제 후보 결과는 대기 중이다.
+잔여 미탐은 결함에 반응하지만 경고 기준에 못 미침을 확인했다. [26×26 공간 집계 결과](reports/mpi-spatial-score-v1-received-review.md)는
+검출53→49장·정상 오경보3→5장으로 악화되어 비채택이다. 기존 모델·Q90 기준은 유지한다.
+다음은 [기존·추가 미탐6장의 지도·집계 진단](docs/mpi-spatial-miss-review-v1.md)이다.
+재학습·임곗값 변경 없이72영역의 결함 반응과 점수 기여를 확인하며 연구실 실행 대기다.
 
 이제 중심은 **동결된 transistor PatchCore 검사 → 사람 검토 → 모의 SOP → 승인 → 모의 티켓**을
 반복 가능하고 복구 가능한 하나의 시스템으로 만드는 것이다. 구체적인 범위, 중단 판단, 단계별
