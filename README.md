@@ -23,8 +23,10 @@ MPI-PCB의 [성능 개선 검토](reports/performance-improvement-review-2026-09
 세 방법 모두 관측5% 목표를 초과했다. [다섯 사례 지도 검토](reports/mpi-score-case-review-v1-received-review.md)에서
 잔여 미탐은 결함에 반응하지만 경고 기준에 못 미침을 확인했다. [26×26 공간 집계 결과](reports/mpi-spatial-score-v1-received-review.md)는
 검출53→49장·정상 오경보3→5장으로 악화되어 비채택이다. 기존 모델·Q90 기준은 유지한다.
-[기존·추가 미탐6장의 지도·집계 진단](docs/mpi-spatial-miss-review-v1.md)은 준비됐으며 GPU 결과는 아직 없다.
-통합 계획의 Phase2로 실행한다. 이미 완료했다면 다시 계산하지 말고 결과ZIP을 먼저 전달한다.
+[미탐6장 진단 수령 검토](reports/mpi-spatial-miss-review-v1-received-review.md)를 완료했다.
+72영역 점수·고정 판정 차이0이며 주요 길쭉한 결함의 포함률이 top1 약70~78%에서 창 평균 약37~41%로
+줄어드는 양상을 확인했다. 다른 결함 부위의 약한 반응도 남아 있다. Phase2 제한 진단은 완료하고,
+다음은 정상 척도 보정 안정화 후보1개의 사전 설계 제안이다. 지금은 추가 GPU 실행이나 기준 변경이 없다.
 
 별도 서비스 트랙의 중심은 **동결된 transistor PatchCore 검사 → 사람 검토 → 모의 SOP → 승인 → 모의 티켓**을
 반복 가능하고 복구 가능한 하나의 시스템으로 만드는 것이다. 구체적인 범위, 중단 판단, 단계별
