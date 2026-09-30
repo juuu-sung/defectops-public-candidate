@@ -1,0 +1,116 @@
+{
+  "source_zip_sha256": "052030f33d2441dc683699d11ef0a371a768e64cf8b59fe1b1f4f97030870091",
+  "source_zip_bytes": 30367352,
+  "verified_files": 154,
+  "outer_receipt_files": 153,
+  "verified_normal_tiles": 120,
+  "verified_contact_sheets": 10,
+  "identity": {
+    "archive_sha256": "0fa9b20fae64142a418487a1d898ee2ee824eee0bd564896a245f4d991112607",
+    "config_sha256": "27d773bbb8d70788948d59365352d0aa1670b411dfcab5b150c552aac9930807",
+    "code_sha256": "676c423e39e9f61b8efa4e5c0f17f7734d31489d3aa2fb06627b5940b274c5ad",
+    "pillow_version": "11.3.0"
+  },
+  "selection_matches_pinned_config": true,
+  "all_file_checksums_match": true,
+  "all_original_and_rgb_hashes_match": true,
+  "all_contact_pixels_reproduced": true,
+  "html_reproduced": true,
+  "source_archive_independently_rehashed_on_mac": false,
+  "source_archive_reason": "Full extracted.zip not supplied; selected member and RGB hashes independently matched to pinned prior fingerprints.",
+  "report": {
+    "appearance_cause_confirmed": false,
+    "automatic_pass_allowed": false,
+    "data_excluded": false,
+    "identity": {
+      "archive_sha256": "0fa9b20fae64142a418487a1d898ee2ee824eee0bd564896a245f4d991112607",
+      "code_sha256": "676c423e39e9f61b8efa4e5c0f17f7734d31489d3aa2fb06627b5940b274c5ad",
+      "config_sha256": "27d773bbb8d70788948d59365352d0aa1670b411dfcab5b150c552aac9930807",
+      "pillow_version": "11.3.0"
+    },
+    "model_scores_computed": 0,
+    "photo_ids": [
+      "1554",
+      "1681",
+      "1570",
+      "1582",
+      "0432",
+      "1671",
+      "0616",
+      "0705",
+      "1365",
+      "0290"
+    ],
+    "rights_note": "No public redistribution or Git/Notion image upload; private review only.",
+    "status": "normal_visual_material_prepared_not_reviewed",
+    "test_images_decoded": 0,
+    "test_masks_decoded": 0,
+    "threshold_changed": false,
+    "training": false,
+    "verified_normal_photos": 10,
+    "verified_normal_tiles": 120
+  },
+  "photos": [
+    {
+      "photo_id": "1554",
+      "cohort": "development",
+      "tiles_verified": 12,
+      "contact_pixels_reproduced": true
+    },
+    {
+      "photo_id": "1681",
+      "cohort": "development",
+      "tiles_verified": 12,
+      "contact_pixels_reproduced": true
+    },
+    {
+      "photo_id": "1570",
+      "cohort": "development",
+      "tiles_verified": 12,
+      "contact_pixels_reproduced": true
+    },
+    {
+      "photo_id": "1582",
+      "cohort": "development",
+      "tiles_verified": 12,
+      "contact_pixels_reproduced": true
+    },
+    {
+      "photo_id": "0432",
+      "cohort": "development",
+      "tiles_verified": 12,
+      "contact_pixels_reproduced": true
+    },
+    {
+      "photo_id": "1671",
+      "cohort": "calibration",
+      "tiles_verified": 12,
+      "contact_pixels_reproduced": true
+    },
+    {
+      "photo_id": "0616",
+      "cohort": "calibration",
+      "tiles_verified": 12,
+      "contact_pixels_reproduced": true
+    },
+    {
+      "photo_id": "0705",
+      "cohort": "calibration",
+      "tiles_verified": 12,
+      "contact_pixels_reproduced": true
+    },
+    {
+      "photo_id": "1365",
+      "cohort": "calibration",
+      "tiles_verified": 12,
+      "contact_pixels_reproduced": true
+    },
+    {
+      "photo_id": "0290",
+      "cohort": "calibration",
+      "tiles_verified": 12,
+      "contact_pixels_reproduced": true
+    }
+  ],
+  "local_evidence": "artifacts/received/mpi-normal-visual-review-v1"
+}

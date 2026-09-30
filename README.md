@@ -31,9 +31,10 @@ MPI-PCB의 [성능 개선 검토](reports/performance-improvement-review-2026-09
 기존 Q90을 연구 기준선으로 보존하되 안정성 문제는 미해결이다.
 [정상 표본 영향 분석](reports/mpi-normal-influence-v1-review.md)에서3,000회 반복을 추적했다.
 grid3-2 정상 폭의 표본 민감성과 다른 영역의 정상 반응이 사진 경고 기준에 미치는 영향을 확인했다.
-[정상10장 원본 검토 실행기](docs/mpi-normal-visual-review-v1.md)를 준비했다. 연구실에서는
-`scripts\run_mpi_normal_visual_review.ps1`로 정상120타일만 검증·추출한다. GPU·모델은 필요 없다.
-실제 Windows 추출과 외관 검토는 대기 중이며 사진 제거·혼합비 탐색·새 학습·서비스 변경은 하지 않는다.
+[정상10장 원본 검토 결과](reports/mpi-normal-visual-review-v1-received-review.md)를 수령했다.
+120타일의 파일·픽셀 해시와10개 모음 이미지를 검증했고 색조·반사·각도·선명도 차이를 관찰했다.
+0290의 큰 검은 영역과 최고 점수 타일은 일치하지만 픽셀 반응 위치는 미확정이다.
+다음은 보정 정상5장의 반응 위치 대조 제안이다. 사진 제거·새 학습·보정 변경은 하지 않았다.
 
 별도 서비스 트랙의 중심은 **동결된 transistor PatchCore 검사 → 사람 검토 → 모의 SOP → 승인 → 모의 티켓**을
 반복 가능하고 복구 가능한 하나의 시스템으로 만드는 것이다. 구체적인 범위, 중단 판단, 단계별
