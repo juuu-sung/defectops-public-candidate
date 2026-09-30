@@ -1,0 +1,1184 @@
+{
+  "schema_version": 1,
+  "name": "mpi-normal-visual-review-v1",
+  "archive_sha256": "0fa9b20fae64142a418487a1d898ee2ee824eee0bd564896a245f4d991112607",
+  "preparation_zip_sha256": "689716c33cc8df1308b985d5d1b6c76a13f451f6499cccfd349553b3dc23965b",
+  "fingerprints_sha256": "6c203d36816f24a6099d5e4ecb78048c55bd86722773030fc6619bb17a3ef4ec",
+  "selection_report_sha256": "b97b06867188cc43e7f913f053f61d1ebdb5884e13be2868620234adabf2392b",
+  "regions": [
+    "grid1-1_s1024",
+    "grid1-2_s1024",
+    "grid1-3_s1024",
+    "grid2-1_s1024",
+    "grid2-2_s1024",
+    "grid2-3_s1024",
+    "grid3-1_s1024",
+    "grid3-2_s1024",
+    "grid3-3_s1024",
+    "grid4-1_s1024",
+    "grid4-2_s1024",
+    "grid4-3_s1024"
+  ],
+  "photos": [
+    {
+      "photo_id": "1554",
+      "cohort": "development",
+      "focus_region": "grid3-2_s1024",
+      "reason": "낮은 검출 반복에서 개발 정상 Q90 경계 지지 횟수 1위",
+      "tiles": [
+        {
+          "decoded_rgb_sha256": "fab50516ff47b78c75cbfb3693239e36afc6420db70ac2cc4268bfbb948c2b3d",
+          "height": 256,
+          "member": "extracted/grid1-1_s1024/train/good/1554.png",
+          "member_sha256": "e920919efebe6f845c80e964baba1486b22073b4cf6bbbdf4b452f6466ae9f83",
+          "photo_id": "1554",
+          "region": "grid1-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "3f8fcaaa8107d727820be43b6f19c308e3f94ef1e4300aa0a77e3d2c8e2c4d66",
+          "height": 256,
+          "member": "extracted/grid1-2_s1024/train/good/1554.png",
+          "member_sha256": "2375845c13783ae5e03e45a68dd61d66905fd9208143c478ec47fc3d44d5c2e2",
+          "photo_id": "1554",
+          "region": "grid1-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "a8e3704798070fcbc2dfecf818fb142bef13230208c4787ec7f320a0d89ff8c6",
+          "height": 256,
+          "member": "extracted/grid1-3_s1024/train/good/1554.png",
+          "member_sha256": "f0a1cbb310b47170963c9221bbc888ff250070ea17f701a86b360991fc725c0e",
+          "photo_id": "1554",
+          "region": "grid1-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "20f92979cda8f5008dfa655f1ad2d86e11f0d7da5730839ba1e43a73d77532f4",
+          "height": 256,
+          "member": "extracted/grid2-1_s1024/train/good/1554.png",
+          "member_sha256": "323a5aeebb2939717066fa3599c0de42752917c8d1bce34af2f08f3066ed79e5",
+          "photo_id": "1554",
+          "region": "grid2-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "ba233eb1573dd77f4f112a2f217f2686533c44d2ca1f3f0d591b3ab156f2cd05",
+          "height": 256,
+          "member": "extracted/grid2-2_s1024/train/good/1554.png",
+          "member_sha256": "b79d1b529ae5cf02d89313f35700a1c85193af5fa7a3aaffcf521bce49404222",
+          "photo_id": "1554",
+          "region": "grid2-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "679d9035c47d0aff45bd15616ac2c2b9a9c3d5777102f5757565d1fa66802c14",
+          "height": 256,
+          "member": "extracted/grid2-3_s1024/train/good/1554.png",
+          "member_sha256": "82bb0eeeb77f7c5214de1abd569d2b222a56936a2d88023def9636996daf6d0c",
+          "photo_id": "1554",
+          "region": "grid2-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "b1a7ef50dab5e2c6544b15827adbceab8b4ef4da50d82293102bd8fb13938776",
+          "height": 256,
+          "member": "extracted/grid3-1_s1024/train/good/1554.png",
+          "member_sha256": "aaa48a94495fe902244561f5ce38030927d5980779c6fde8e8fbc10fea226453",
+          "photo_id": "1554",
+          "region": "grid3-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "2f80eb3ff204b03c22857fd74b9457feddd28a1fb9bec5e6745afd9fc23ebdb5",
+          "height": 256,
+          "member": "extracted/grid3-2_s1024/train/good/1554.png",
+          "member_sha256": "444ed3abe9923136165143c1f0fa0b7d4a425a7a852b2c8a683861a1d57bb980",
+          "photo_id": "1554",
+          "region": "grid3-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "ff29e8c2818ad0f5bad0c087f4c3c7c5ce563a4aa58fc9b903cf9bad7868e36c",
+          "height": 256,
+          "member": "extracted/grid3-3_s1024/train/good/1554.png",
+          "member_sha256": "dbbc593c2d8c1d647221242414d6e0c95f0215af2c5da91a5ff6e476295987d6",
+          "photo_id": "1554",
+          "region": "grid3-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "8b80bfefbfd09e20628fde3423f2c030378fb17765f6ee12b4b74fd20abe9ea8",
+          "height": 256,
+          "member": "extracted/grid4-1_s1024/train/good/1554.png",
+          "member_sha256": "47af6da7b111e1b154338e34a2237f2ae22918fbe427d008c4e9b390873d64a1",
+          "photo_id": "1554",
+          "region": "grid4-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "3e233963f43e886e0c176b9454bf25971908d16dc20142858b990b0e38c75f2d",
+          "height": 256,
+          "member": "extracted/grid4-2_s1024/train/good/1554.png",
+          "member_sha256": "fba8c5cdf0027f379c77b41f94915f9fe9bebf5133a39a8b626fac7339e81bbf",
+          "photo_id": "1554",
+          "region": "grid4-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "d0cc75d8f28a9ee9d85629c575ee62a252adcdc1e1ce7d0cc5dc5d0e1e9ccb82",
+          "height": 256,
+          "member": "extracted/grid4-3_s1024/train/good/1554.png",
+          "member_sha256": "a92b5246c13f6c938f996d0fd2d8c800fc0537f15b8fad6d7d470e7d6584c912",
+          "photo_id": "1554",
+          "region": "grid4-3_s1024",
+          "width": 256
+        }
+      ]
+    },
+    {
+      "photo_id": "1681",
+      "cohort": "development",
+      "focus_region": "grid3-2_s1024",
+      "reason": "낮은 검출 반복에서 개발 정상 Q90 경계 지지 횟수 2위",
+      "tiles": [
+        {
+          "decoded_rgb_sha256": "c0cc95ea52164019f75796099f6f0b2e1cecc08c0e119041b82fef1e20d84d42",
+          "height": 256,
+          "member": "extracted/grid1-1_s1024/train/good/1681.png",
+          "member_sha256": "04cd57bd02b02cabc905cee480cce27d4eab8208b577f514467dc3e3662a7b5f",
+          "photo_id": "1681",
+          "region": "grid1-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "7590d53be254ab86a172acd1d98b7cd81ec13b7b819d1da3e8b16d36c5a5fff6",
+          "height": 256,
+          "member": "extracted/grid1-2_s1024/train/good/1681.png",
+          "member_sha256": "125ad485856feb52eb55006db48f465b926d5b961dcace136bf4b5928980577f",
+          "photo_id": "1681",
+          "region": "grid1-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "42f6c18894c9780fd1151c639aa0fbc4c3bf53c38d417710ec9959d884e01c99",
+          "height": 256,
+          "member": "extracted/grid1-3_s1024/train/good/1681.png",
+          "member_sha256": "c8d25351c0e4563e5566e970cca9ba007ba958c8f90f70c86c694959e4cae904",
+          "photo_id": "1681",
+          "region": "grid1-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "1f2fcee43391bca66b82af615fdcf6c4bf01754e95c09850369cdb88cae420d0",
+          "height": 256,
+          "member": "extracted/grid2-1_s1024/train/good/1681.png",
+          "member_sha256": "ecb5f6b81f3d5e890775549051755b0aff196c149a94c78ca43cdb4aee4d9078",
+          "photo_id": "1681",
+          "region": "grid2-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "824bb73b0ffe03fa614701bb0dfa180a441ad9bb796c6f130353ac0f945781fe",
+          "height": 256,
+          "member": "extracted/grid2-2_s1024/train/good/1681.png",
+          "member_sha256": "9a8bc0ab405dbe83fe3ebecd03510c5e857a763871d6b04f16ae7518ffc35a57",
+          "photo_id": "1681",
+          "region": "grid2-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "ef82b3173327b8e84fc5dbbe824051626f10331f9dea51c23d6638f8f8ab5735",
+          "height": 256,
+          "member": "extracted/grid2-3_s1024/train/good/1681.png",
+          "member_sha256": "a6f17c6f0cf594c577684972dbd3133078592c04d5b2fc4e4976bf1ebd0363e9",
+          "photo_id": "1681",
+          "region": "grid2-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "0d09bdd67104990f7e0c096217878429f4411261851162c31afdc8a880b34aab",
+          "height": 256,
+          "member": "extracted/grid3-1_s1024/train/good/1681.png",
+          "member_sha256": "f3769727c2dc2b0cb69d9de4c7adb20bbfa5d42f8436ffb350fd52e592ebb3a8",
+          "photo_id": "1681",
+          "region": "grid3-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "675f65013903f89a1069b4a1c2d6d0f40f88a414f89dbd4fa99bc1d07b3b8788",
+          "height": 256,
+          "member": "extracted/grid3-2_s1024/train/good/1681.png",
+          "member_sha256": "834ed7a63777836ac9416c0e55a8e164950a4b3ec22e033489ece7f8020ea657",
+          "photo_id": "1681",
+          "region": "grid3-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "c4fd28dc66d929520d313b6dd7be87fd5e3b088ef9b4f53c7561262b77df8a4b",
+          "height": 256,
+          "member": "extracted/grid3-3_s1024/train/good/1681.png",
+          "member_sha256": "8cc4ad7712d3bce6f658ca976a8ecf310ee2698e713109188c65a5d7b0489684",
+          "photo_id": "1681",
+          "region": "grid3-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "1fdd0e52f254e81f6010698a18b933a5aabe524da319700fad78de2b7779c5b1",
+          "height": 256,
+          "member": "extracted/grid4-1_s1024/train/good/1681.png",
+          "member_sha256": "e84466d0f48ae07370e1047ac115b0c99200006d575be90ef99e81d738227b0c",
+          "photo_id": "1681",
+          "region": "grid4-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "504a4968af90b770a4ff084c3a0f358bcd3ee3f95470e99fd8d0e19ea0b9a8d9",
+          "height": 256,
+          "member": "extracted/grid4-2_s1024/train/good/1681.png",
+          "member_sha256": "5be217247fc5b89bdb39ecf35b3f57211cf26e1bb30f2f86495d74cba584cfa8",
+          "photo_id": "1681",
+          "region": "grid4-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "35b13729d10ccb76bda609016f8c601d73795c79685c0af3502aef3ecb98eded",
+          "height": 256,
+          "member": "extracted/grid4-3_s1024/train/good/1681.png",
+          "member_sha256": "c4b041242cb4a7d508961092908baa61535985131fb383c1e1885168011c2037",
+          "photo_id": "1681",
+          "region": "grid4-3_s1024",
+          "width": 256
+        }
+      ]
+    },
+    {
+      "photo_id": "1570",
+      "cohort": "development",
+      "focus_region": "grid3-2_s1024",
+      "reason": "낮은 검출 반복에서 개발 정상 Q90 경계 지지 횟수 3위",
+      "tiles": [
+        {
+          "decoded_rgb_sha256": "0b46174e7e8aff08539df1393167078279bd58fde5f99fc88571844cdbef6441",
+          "height": 256,
+          "member": "extracted/grid1-1_s1024/train/good/1570.png",
+          "member_sha256": "fb0d1dafe4042f0b01627903eeb2836b8a82ae44ab546e919c19eec04812f783",
+          "photo_id": "1570",
+          "region": "grid1-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "1182ce8e36ba59d19bf4a1c0b84ca0d10c3ef1542d55e8470cc0208c3a4cb137",
+          "height": 256,
+          "member": "extracted/grid1-2_s1024/train/good/1570.png",
+          "member_sha256": "1cba1ad494347e57558dc70441bd08a6713c3895483c69a1935d98ba2da5c434",
+          "photo_id": "1570",
+          "region": "grid1-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "80804d5732c2d43edd77bf3e1dfdfafab5a5cc91de6d7905b20844fb9405f3d0",
+          "height": 256,
+          "member": "extracted/grid1-3_s1024/train/good/1570.png",
+          "member_sha256": "87c8cf09494dec00834d08d9917c0481b08b3826631628b60f351d764046be5c",
+          "photo_id": "1570",
+          "region": "grid1-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "35011231dc01a7c492cf606925cb6052c00f62bd1486fddde7b4fb22f3d14d85",
+          "height": 256,
+          "member": "extracted/grid2-1_s1024/train/good/1570.png",
+          "member_sha256": "ee91498867effae531a6b1a09395963bc56e0ea0aa20a21be594d96ae721018b",
+          "photo_id": "1570",
+          "region": "grid2-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "dd2650f8dc1d7eb70d6c53cfa9daf4fef16ea775af3487f89ce483e6ffd5accc",
+          "height": 256,
+          "member": "extracted/grid2-2_s1024/train/good/1570.png",
+          "member_sha256": "2af8a2e24853b2451596871ff02fe4d2dbd6390e7333d664c9b1c76e4268e64e",
+          "photo_id": "1570",
+          "region": "grid2-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "47a0df02b3429f50d5cd5fa37cfba9e82054bf7c048f242b73275249786a5988",
+          "height": 256,
+          "member": "extracted/grid2-3_s1024/train/good/1570.png",
+          "member_sha256": "7bdefa8bb330caddde34b3397ff6c92c2bf8ce440b2cb614ec2a6e10a91c02d8",
+          "photo_id": "1570",
+          "region": "grid2-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "531a3f216d3c8866364aed2e95cfc3aa9d71506b4f75850478a8e601325b3a0f",
+          "height": 256,
+          "member": "extracted/grid3-1_s1024/train/good/1570.png",
+          "member_sha256": "3ffce9e685f2f644f65933bca09cd32844c7aeb881566c3b51def2a50db9cd74",
+          "photo_id": "1570",
+          "region": "grid3-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "bcb1a5bffa43ab7e3171da7d7665339e2c2c6fccc399ad6a5c9531c6ac873c72",
+          "height": 256,
+          "member": "extracted/grid3-2_s1024/train/good/1570.png",
+          "member_sha256": "9573212c622ff913b04e0f3f9ae8224aae0c14d6654547a1b782cd0fe60680d5",
+          "photo_id": "1570",
+          "region": "grid3-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "55a9076019050384fd6aa4dedc1f76054181c93bfd12fe96d323ed089d2b88c4",
+          "height": 256,
+          "member": "extracted/grid3-3_s1024/train/good/1570.png",
+          "member_sha256": "76bbc5ffc4fab6385fdefb8af40c3c30cd26ecabcd38e48b2dd25225732f492c",
+          "photo_id": "1570",
+          "region": "grid3-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "4eefeb34192b2f6a81d8f83b6a4e441639b8688ef847c7b27970b29000141d43",
+          "height": 256,
+          "member": "extracted/grid4-1_s1024/train/good/1570.png",
+          "member_sha256": "801e336a0f75230f9e34ead401f934a56108626d365d5e1060f044203c90f699",
+          "photo_id": "1570",
+          "region": "grid4-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "4846e51fc90c46ad04b6fe6f70100ceedeed23b011b3ea606b6e71778225e711",
+          "height": 256,
+          "member": "extracted/grid4-2_s1024/train/good/1570.png",
+          "member_sha256": "0869b0af427f3630fc98491dc76798cadad11610d29ac4fde4f62a8077297e33",
+          "photo_id": "1570",
+          "region": "grid4-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "d0f407ffe3f3eb4bb0cae042ab539e19e7924d01861ef19986c7379e48ee0948",
+          "height": 256,
+          "member": "extracted/grid4-3_s1024/train/good/1570.png",
+          "member_sha256": "ae19e1d75c57c753aa0fa41d43d9eee7409a90f085ea0aa4ff5c349cd6f87fd8",
+          "photo_id": "1570",
+          "region": "grid4-3_s1024",
+          "width": 256
+        }
+      ]
+    },
+    {
+      "photo_id": "1582",
+      "cohort": "development",
+      "focus_region": "grid3-2_s1024",
+      "reason": "검출 유지 반복의 Q90 경계 지지 최다 대조 사진",
+      "tiles": [
+        {
+          "decoded_rgb_sha256": "bf913e18045efbea389a7f35c17a75ef7666714b405c12f979e078455a2bb1f3",
+          "height": 256,
+          "member": "extracted/grid1-1_s1024/train/good/1582.png",
+          "member_sha256": "b36da0d54d5ffbeca58a221892a1909ab94e83de342ad1feb7a28c988473c782",
+          "photo_id": "1582",
+          "region": "grid1-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "f4920dca32068a5e8c7ecad2fe5e61b118ba44f27db31b5f42d948b980120ec9",
+          "height": 256,
+          "member": "extracted/grid1-2_s1024/train/good/1582.png",
+          "member_sha256": "3501c68c5d66a35a82f831334b6b06165439f301b8b417af00fa6fc96de1c88d",
+          "photo_id": "1582",
+          "region": "grid1-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "fa052163f88a86adc5bed9751f238a29eb54438fe45bab001f760c7e56a8b27e",
+          "height": 256,
+          "member": "extracted/grid1-3_s1024/train/good/1582.png",
+          "member_sha256": "da89c37f3aacfe1939c0016bd40f4fa6738df76f34d3b358be6c6ce7be0333d1",
+          "photo_id": "1582",
+          "region": "grid1-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "90c4e676588cb32342d6cddd5a6713e2df10e296333d85742c5c2da5762ceae1",
+          "height": 256,
+          "member": "extracted/grid2-1_s1024/train/good/1582.png",
+          "member_sha256": "ef47cde655474758011126561e94fc3badd177fe9fc2b679a7faa87844a5d50e",
+          "photo_id": "1582",
+          "region": "grid2-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "5d009a243f4c96a2031ef9b3e529ff933a2d1a352b08228468934af595f0851f",
+          "height": 256,
+          "member": "extracted/grid2-2_s1024/train/good/1582.png",
+          "member_sha256": "ced3bf436caa997b1c3e2e83576d1ad256486c2f07a221733907740a2b4da83a",
+          "photo_id": "1582",
+          "region": "grid2-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "6f569b33a3218c250d538612b8f0a63de63c745f59086c16f7eeeec144aa9da9",
+          "height": 256,
+          "member": "extracted/grid2-3_s1024/train/good/1582.png",
+          "member_sha256": "bcb08c9c0223565e80fa8041c85806bc381b6132444a4bb7ae8163ab789482c7",
+          "photo_id": "1582",
+          "region": "grid2-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "36e4afce78f698a91abaeca801ddfc0512af4ac34f32935b5f90becb647de243",
+          "height": 256,
+          "member": "extracted/grid3-1_s1024/train/good/1582.png",
+          "member_sha256": "0b31d4febe4ca4a31b9f32dc829158bf19f415b8fb500e044c51c32dfff9bb87",
+          "photo_id": "1582",
+          "region": "grid3-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "c389f58750b211c54202d811abf0a502171d1f8f3524851de832ba350934164e",
+          "height": 256,
+          "member": "extracted/grid3-2_s1024/train/good/1582.png",
+          "member_sha256": "5dbc7ecfed0367976be850f42caf2193389e52f63aa213db2ae70c1e89e95b3c",
+          "photo_id": "1582",
+          "region": "grid3-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "56f81f96e8767989adcf07cff9948bf90e6a4517e05b0f76fb9c06c8eb51bb58",
+          "height": 256,
+          "member": "extracted/grid3-3_s1024/train/good/1582.png",
+          "member_sha256": "98fc49e9217870b720a12d48dec9837f946ccb27e9b9cab8ed740351c48f541d",
+          "photo_id": "1582",
+          "region": "grid3-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "74ac1d08619bccaa9b4b040194dc5d9e7575baba2d50a192989b37b7b5e5eef2",
+          "height": 256,
+          "member": "extracted/grid4-1_s1024/train/good/1582.png",
+          "member_sha256": "668aff0c8dcdcac2cb8c6164774335d18abfad866445dcd0fc39b5d6877ac8b6",
+          "photo_id": "1582",
+          "region": "grid4-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "9d97512819cf10ae58a6a0e38ca67a876776254008858f3d7410dc7bf75ad2eb",
+          "height": 256,
+          "member": "extracted/grid4-2_s1024/train/good/1582.png",
+          "member_sha256": "6bc7751acbbc4d311b0809fea9ffcbf175e0fac0e3ed2ef21cc795fa1f90a6c2",
+          "photo_id": "1582",
+          "region": "grid4-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "2e196817abca94e9a43f7272876b43f5394705400e0c35786faaf14d3c3fde18",
+          "height": 256,
+          "member": "extracted/grid4-3_s1024/train/good/1582.png",
+          "member_sha256": "d4a0a69658eb69490fadf12c794bbe3d53949a9515d69dabd80076093a3f7b54",
+          "photo_id": "1582",
+          "region": "grid4-3_s1024",
+          "width": 256
+        }
+      ]
+    },
+    {
+      "photo_id": "0432",
+      "cohort": "development",
+      "focus_region": "grid3-2_s1024",
+      "reason": "원래 고정 개발 정상의 Q90 경계 대조 사진",
+      "tiles": [
+        {
+          "decoded_rgb_sha256": "ca9f0728a15fd91acfd65a440612c2d305e8849bfb10dadd6a00a1fa9446c649",
+          "height": 256,
+          "member": "extracted/grid1-1_s1024/train/good/0432.png",
+          "member_sha256": "5d6e94c4368f5a519fcc6628eb0e05e294bbfed93066177182b11f2d336dd9ea",
+          "photo_id": "0432",
+          "region": "grid1-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "1b1c14b0fac26a4efe88d232d92ad1e55fd4fcddb4fa7940af0285ffa1b0c1ed",
+          "height": 256,
+          "member": "extracted/grid1-2_s1024/train/good/0432.png",
+          "member_sha256": "aeadb375e1f300d20b02e8904effb04c08cffb0058ccbb977c8b66cf9e415a23",
+          "photo_id": "0432",
+          "region": "grid1-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "990cd883c6bc648437b8767562040f2225d23f2bb8728601bc8cddab0b75e4e8",
+          "height": 256,
+          "member": "extracted/grid1-3_s1024/train/good/0432.png",
+          "member_sha256": "7d02d8549e8f6ec7ec3d4dae42f7f1c734cb66e8459e130b65b5c6f3ddc17c4f",
+          "photo_id": "0432",
+          "region": "grid1-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "9b196eed08dc4e35b25e476c6d49567726642a78af21274cd279db8a52d33a98",
+          "height": 256,
+          "member": "extracted/grid2-1_s1024/train/good/0432.png",
+          "member_sha256": "ad6a4390c4e6aeef480b729a14cf25abf5b0664eec079fbc353f627f63904cee",
+          "photo_id": "0432",
+          "region": "grid2-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "9b7040f457ef1c560fdad4f4151e952fd14e56304ebb14ebc527a6f231dfa078",
+          "height": 256,
+          "member": "extracted/grid2-2_s1024/train/good/0432.png",
+          "member_sha256": "73cd802c03c4ad1c9341180adf5019c788bd051001e805097bad147f2c803dc3",
+          "photo_id": "0432",
+          "region": "grid2-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "36b91b9848c2bfba7c614513d3377b5f2228a88cff8ec3854b449997799be518",
+          "height": 256,
+          "member": "extracted/grid2-3_s1024/train/good/0432.png",
+          "member_sha256": "e1f3100359778f51b5d857c7d2f3f2e16a8a36f4e1ab78a6b6f2f9f0428996fe",
+          "photo_id": "0432",
+          "region": "grid2-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "3a79e4ee5c16f95d017fd91b2f473705cabd8a4accef528a83fe905ba7aea094",
+          "height": 256,
+          "member": "extracted/grid3-1_s1024/train/good/0432.png",
+          "member_sha256": "2de85d3f009754a02bd50373ba36c6b420d5974fbd455628b074cbfce5b38c0a",
+          "photo_id": "0432",
+          "region": "grid3-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "295936931b4562ae1c53a45153daf5dcbaab9f6b1f90b945c5ad2c841d2d3527",
+          "height": 256,
+          "member": "extracted/grid3-2_s1024/train/good/0432.png",
+          "member_sha256": "41f2732cee27ef672934dbcc5a6a814de8e1056c9b6e1499187dbe56ff69acff",
+          "photo_id": "0432",
+          "region": "grid3-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "54c4cb0741d59a3e03171a0b8c51dde1463181c1e5185320faf2339516507d92",
+          "height": 256,
+          "member": "extracted/grid3-3_s1024/train/good/0432.png",
+          "member_sha256": "076c769d7a75fc809dd20819eaf6986c65be5f7b2989407fde8839ac2b9bc20e",
+          "photo_id": "0432",
+          "region": "grid3-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "f45ad2a3cba733876c0e6f215b00904980cc87b10f0b4097e4f703a4494b9327",
+          "height": 256,
+          "member": "extracted/grid4-1_s1024/train/good/0432.png",
+          "member_sha256": "e36a730df974336ee1c00f69c43d3534c9b8afe3df5d5ec7a71eee90824a0559",
+          "photo_id": "0432",
+          "region": "grid4-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "2739c7123c5afa765541844320f614dbb0a4574b099f0feb263291d595a55c62",
+          "height": 256,
+          "member": "extracted/grid4-2_s1024/train/good/0432.png",
+          "member_sha256": "ea4eb96a7d0ce441139987c618dc155838237477c7435be6f4b10ad89bcdecc5",
+          "photo_id": "0432",
+          "region": "grid4-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "6fbffbba3720fa176766cd51393b72f62f6e4a3cf03b8441529de68cef4eea38",
+          "height": 256,
+          "member": "extracted/grid4-3_s1024/train/good/0432.png",
+          "member_sha256": "89e7a7639fb8599de9d765f613859a250aaa5decaeafd98fec3ca9f6632c1d2f",
+          "photo_id": "0432",
+          "region": "grid4-3_s1024",
+          "width": 256
+        }
+      ]
+    },
+    {
+      "photo_id": "1671",
+      "cohort": "calibration",
+      "focus_region": "grid2-1_s1024",
+      "reason": "낮은 검출 반복에서 보정 경계 사진 1위",
+      "tiles": [
+        {
+          "decoded_rgb_sha256": "c1d7b17cfdc5cdad8eed3754a22909a38906412b2b8d8722d29a27a74441341f",
+          "height": 256,
+          "member": "extracted/grid1-1_s1024/train/good/1671.png",
+          "member_sha256": "6a6af294b1503eca8348464ef07d9fbdbd8a20d1ef446a9831e694ed8ee02e73",
+          "photo_id": "1671",
+          "region": "grid1-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "7abd558b90da6ad09349b8753fa06f55b7d78df2498d672b614c205ee82d815e",
+          "height": 256,
+          "member": "extracted/grid1-2_s1024/train/good/1671.png",
+          "member_sha256": "b32c247b15a0c01e4f30088b73ac2cac25c1b7a34b8ed8f121b20b8c1bfa1f0c",
+          "photo_id": "1671",
+          "region": "grid1-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "4a68e4dd0264c299736e57ca3e5db8fa930dc38a9ab9adf0a19e65ce5fa6c133",
+          "height": 256,
+          "member": "extracted/grid1-3_s1024/train/good/1671.png",
+          "member_sha256": "fca415d5b217b099f0b43d076365197f3102f26765101b2aec939f56a668ab3f",
+          "photo_id": "1671",
+          "region": "grid1-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "494e24ce4633f0c3d322dbe13f83bab553a11f1dec88f665f672b3faf8f1cac7",
+          "height": 256,
+          "member": "extracted/grid2-1_s1024/train/good/1671.png",
+          "member_sha256": "a2a389963136b76c4fed921472744a7d996aa8232482c2fec4b2bd7825e2548d",
+          "photo_id": "1671",
+          "region": "grid2-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "e307e7a8a7c4f7fa27df123050ed851e37fbf23a6d400f96e8b5167f47559268",
+          "height": 256,
+          "member": "extracted/grid2-2_s1024/train/good/1671.png",
+          "member_sha256": "0312e5cb9d206a11805efe9b4d919a1788eadc4922201bcc75e937822516f85d",
+          "photo_id": "1671",
+          "region": "grid2-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "879132d246423d0ecbf8a00b3265c8a10bf5723bc878091a41650c2411c69389",
+          "height": 256,
+          "member": "extracted/grid2-3_s1024/train/good/1671.png",
+          "member_sha256": "49c3c787bb12f8cb82edb1785b02137f3ccdd680d53436e92fc7a4d7846017b4",
+          "photo_id": "1671",
+          "region": "grid2-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "3c4dd36c49bd2d9a2fb69ca54ea2798c68f31f93ac6d5fe086316ea02c300866",
+          "height": 256,
+          "member": "extracted/grid3-1_s1024/train/good/1671.png",
+          "member_sha256": "c1cac1d0f4a8f47855aef88256f7c9635cc4a1e188bf509bb0c344cf5cda0377",
+          "photo_id": "1671",
+          "region": "grid3-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "99bd57589c3660f0e731757e0fb61767304296c4b1303417e3fc287f5873ea1c",
+          "height": 256,
+          "member": "extracted/grid3-2_s1024/train/good/1671.png",
+          "member_sha256": "0a47c2e4271edd43f26e58ec86dc6fa951901769849a04554c2467924446396d",
+          "photo_id": "1671",
+          "region": "grid3-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "b7c41a91b1ee72f4474ece4194968a2a2ccd9a5cc02903b7b2e9f5f6098a1f66",
+          "height": 256,
+          "member": "extracted/grid3-3_s1024/train/good/1671.png",
+          "member_sha256": "6257927610442622bd23d4802a2b1c4bc0b325b100f2c0c885f1eda6ca97436c",
+          "photo_id": "1671",
+          "region": "grid3-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "9f43e353ed0c316bc67cf9a96484003348c797bf766c366902c254574d29f41d",
+          "height": 256,
+          "member": "extracted/grid4-1_s1024/train/good/1671.png",
+          "member_sha256": "e229a61b08898a1def5557f48320ad63950b4c26e82a144ab0671713cf2e427a",
+          "photo_id": "1671",
+          "region": "grid4-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "93214330e9f986ac31bf5debe06f1db67f2fb376a4b938bf638f1f41d3b9a5af",
+          "height": 256,
+          "member": "extracted/grid4-2_s1024/train/good/1671.png",
+          "member_sha256": "dce2fc0ad007f441ee8e8f15b8319c87d857e28725f3535429a412536019b354",
+          "photo_id": "1671",
+          "region": "grid4-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "cdaeffce0b2676234a2b67834c3386f8c513597d38a2b8124294e13244d1b3a7",
+          "height": 256,
+          "member": "extracted/grid4-3_s1024/train/good/1671.png",
+          "member_sha256": "d2739e795d6ea12198b79d434d3587ee5c69e4e9cea488b40a47b01c5e7eede2",
+          "photo_id": "1671",
+          "region": "grid4-3_s1024",
+          "width": 256
+        }
+      ]
+    },
+    {
+      "photo_id": "0616",
+      "cohort": "calibration",
+      "focus_region": "grid1-2_s1024",
+      "reason": "낮은 검출 반복에서 보정 경계 사진 2위",
+      "tiles": [
+        {
+          "decoded_rgb_sha256": "be47a1ba85299353aa912ffee2d8f3a2c60aee92965ce8c5146eb87ec6b8a244",
+          "height": 256,
+          "member": "extracted/grid1-1_s1024/train/good/0616.png",
+          "member_sha256": "be4139913f7cf0a02c866bb3d90d06abde4b662f38184e479bdb2f6dfe36d094",
+          "photo_id": "0616",
+          "region": "grid1-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "a284d202b3f2a22be9e74aa8f0fe4421ead5d66281ac575a0ea64090a7fdebfb",
+          "height": 256,
+          "member": "extracted/grid1-2_s1024/train/good/0616.png",
+          "member_sha256": "cf5ee319e7fe5064f7f549dee93178665a626a670837b65166fda77903fb573a",
+          "photo_id": "0616",
+          "region": "grid1-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "b9ef2be99aaafb35c308d6bf20b2811d42d2bcf1ec2b63905bde43b75a81cb1c",
+          "height": 256,
+          "member": "extracted/grid1-3_s1024/train/good/0616.png",
+          "member_sha256": "44252648c159cd26828e93f32170574dc99104a59524a07d46877bbccd36e791",
+          "photo_id": "0616",
+          "region": "grid1-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "e582ac5bd659c9032ba0e3f82daa85e01e70683bfa704ebf5dd6d851f7d3eca8",
+          "height": 256,
+          "member": "extracted/grid2-1_s1024/train/good/0616.png",
+          "member_sha256": "b3111d3dc56e4ff7a4955fdc80e17cfb029116fa63dab171919d74675a48ced8",
+          "photo_id": "0616",
+          "region": "grid2-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "0c759be8b8574f64e17d5450e4cd931814c7f5b70bb4caa76ac97c92f2610a7e",
+          "height": 256,
+          "member": "extracted/grid2-2_s1024/train/good/0616.png",
+          "member_sha256": "519c002237ebf1337782e3c9443c845276d6262a0e2259369e7802ef63cc1560",
+          "photo_id": "0616",
+          "region": "grid2-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "7a0fd6bd016760ce64c61ecd740a1b67fe8951a95cf286f3cde62cdfc2a412e5",
+          "height": 256,
+          "member": "extracted/grid2-3_s1024/train/good/0616.png",
+          "member_sha256": "fd3431becdfcf37e1dc28ba4007f1c2ff33377418017fd5f4582cbaa9cd4bb37",
+          "photo_id": "0616",
+          "region": "grid2-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "a5d23515d4698f58171338c9fff3eefcfceebf5da0469f37e8dd0634b49655df",
+          "height": 256,
+          "member": "extracted/grid3-1_s1024/train/good/0616.png",
+          "member_sha256": "44aad164f0278a58cdf7f3b8166877e972ed1fa948527654303f2134c21c95f2",
+          "photo_id": "0616",
+          "region": "grid3-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "bf9e855936a26845372600a926012563c40e6f1017e3539c079e837657e7008e",
+          "height": 256,
+          "member": "extracted/grid3-2_s1024/train/good/0616.png",
+          "member_sha256": "7706b77a5a19eaa5195a660daae71cf71c9c6fe5bc3bad3ab063f4b7eef74ba2",
+          "photo_id": "0616",
+          "region": "grid3-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "102c29cb27d624f8b8b81273d6a691f35a479601aeac5a630a5296bf7e9b1029",
+          "height": 256,
+          "member": "extracted/grid3-3_s1024/train/good/0616.png",
+          "member_sha256": "20dffcd0a754dac9c8e37bf83166a75c042a19f5b17104c568a3c3b18caa0ba1",
+          "photo_id": "0616",
+          "region": "grid3-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "bc11d5577bea626c4eb35593ee2c1925b81c3c23ff8db1f3837c229da6e44f29",
+          "height": 256,
+          "member": "extracted/grid4-1_s1024/train/good/0616.png",
+          "member_sha256": "a7b7220cefd392cebd754213b7532a4acee22b2a830cd313f2fc269948e2e66b",
+          "photo_id": "0616",
+          "region": "grid4-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "179a5b644ae6f1f057b3adbaf3b81dea09d24a5832650f31ff9fcaac6efde230",
+          "height": 256,
+          "member": "extracted/grid4-2_s1024/train/good/0616.png",
+          "member_sha256": "0d42d22fab8688abd6c655df17d05ca77c9e47854389a8e50f99e382fd7ba351",
+          "photo_id": "0616",
+          "region": "grid4-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "b4d28ad28015264b57fdb823c780f54c4cfca8aab0af7d1f7decccfe211854b4",
+          "height": 256,
+          "member": "extracted/grid4-3_s1024/train/good/0616.png",
+          "member_sha256": "4a576decf64991c4585cf4bd5711ab6eaf73700727cac26df122e9b10f95d16f",
+          "photo_id": "0616",
+          "region": "grid4-3_s1024",
+          "width": 256
+        }
+      ]
+    },
+    {
+      "photo_id": "0705",
+      "cohort": "calibration",
+      "focus_region": "grid4-1_s1024",
+      "reason": "낮은 검출 반복에서 보정 경계 사진 3위",
+      "tiles": [
+        {
+          "decoded_rgb_sha256": "a526d0a01a3139f100695c976d6e00d14d55314208eaeb76f7a3bc2535e9f517",
+          "height": 256,
+          "member": "extracted/grid1-1_s1024/train/good/0705.png",
+          "member_sha256": "157c428bad27c45d36fb73b2cf9c3b4f434f96a9daaa44b71dd054922897b139",
+          "photo_id": "0705",
+          "region": "grid1-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "a2db1fd088c01150a4ddaabe77f2fc70a74a1eb9002324cd29413de0bacb42de",
+          "height": 256,
+          "member": "extracted/grid1-2_s1024/train/good/0705.png",
+          "member_sha256": "11c6d4f8f9ba9c92e4936e555710dc029ba4e2be4024fbd73d981aea17011b17",
+          "photo_id": "0705",
+          "region": "grid1-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "2d447f9302ce17a242daedd919dc349efd41e29e74f0d09b095b116286099a4e",
+          "height": 256,
+          "member": "extracted/grid1-3_s1024/train/good/0705.png",
+          "member_sha256": "f1c47e1112657dba65aa4f742a93e10ae79eeb0d4f9081bf75d0058b680a9302",
+          "photo_id": "0705",
+          "region": "grid1-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "d80996693f4b73988fde13ae388cfd1db33c3e127756331f7aee54f2966c40f5",
+          "height": 256,
+          "member": "extracted/grid2-1_s1024/train/good/0705.png",
+          "member_sha256": "8155b861fed214a1814324c16d081de1a74a096c5a584e0ddc8784c086088d67",
+          "photo_id": "0705",
+          "region": "grid2-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "d9bff9db555145e146a353feedff4143472abf5092a487452510b7563f03cc3f",
+          "height": 256,
+          "member": "extracted/grid2-2_s1024/train/good/0705.png",
+          "member_sha256": "6e5ed280418641b4babd998a2560579e0b5104f2ec4bd36e3226c8637da338aa",
+          "photo_id": "0705",
+          "region": "grid2-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "e8a68ecbedd9494006f3581332ce8d13df2b77bd5b7e4fbd1bd83d51fbf99b6e",
+          "height": 256,
+          "member": "extracted/grid2-3_s1024/train/good/0705.png",
+          "member_sha256": "6750ddd6f42ec775288d9eff8595db785ab7daa32b523ae0fd88093f700f5f20",
+          "photo_id": "0705",
+          "region": "grid2-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "c39eda7c478a05ab7cfee670689afd919fe93c27f1ea94c17ec6cf54f6b14242",
+          "height": 256,
+          "member": "extracted/grid3-1_s1024/train/good/0705.png",
+          "member_sha256": "c20a19e221d9ed5eb678047d8c0e8ea688783b84946582ee90ff1a22b681f6af",
+          "photo_id": "0705",
+          "region": "grid3-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "58ce8ed4154df9a83767315d78f4cd7fbcad252a8a7a16388aadb242ccb9bcb4",
+          "height": 256,
+          "member": "extracted/grid3-2_s1024/train/good/0705.png",
+          "member_sha256": "ae7786622e1b799ada5757e23854e89b4a53b514bbeaa530c81ee7896b30d94d",
+          "photo_id": "0705",
+          "region": "grid3-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "63bf38bf33feb49e0f56dd797662f96d61f9ea32170b06e56d58ea97e85d1052",
+          "height": 256,
+          "member": "extracted/grid3-3_s1024/train/good/0705.png",
+          "member_sha256": "86825f688d4c7612443abad189085a19e738e21016af928c308ef364fb5c7670",
+          "photo_id": "0705",
+          "region": "grid3-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "4621cf282d264497a28c0e7707c2b883b229ca823aa086d43c3f78c2411ea380",
+          "height": 256,
+          "member": "extracted/grid4-1_s1024/train/good/0705.png",
+          "member_sha256": "28bb3088ae8987bff094a8efdd27de742b2e8e84c5d912fc14c1fc4815a80000",
+          "photo_id": "0705",
+          "region": "grid4-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "c87821ca869b32d6cf415f2d43c0841a8fb754ea830bf45fec67b6144ca50706",
+          "height": 256,
+          "member": "extracted/grid4-2_s1024/train/good/0705.png",
+          "member_sha256": "80eae22985c36c62b76d43d9229bbf5c260ed27e2e7788fbae07bf19e68deba0",
+          "photo_id": "0705",
+          "region": "grid4-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "5ca47bd33fb2676a22bd2f5c5ed24735e59869c287863ff3ae7d3c4c48a3212c",
+          "height": 256,
+          "member": "extracted/grid4-3_s1024/train/good/0705.png",
+          "member_sha256": "7da9c24e3b1130a5cc4fd24fadc9128f8d0749d74701c4221a09ef1b4dcbec48",
+          "photo_id": "0705",
+          "region": "grid4-3_s1024",
+          "width": 256
+        }
+      ]
+    },
+    {
+      "photo_id": "1365",
+      "cohort": "calibration",
+      "focus_region": "grid1-1_s1024",
+      "reason": "원래 고정 보정 경계 대조 사진",
+      "tiles": [
+        {
+          "decoded_rgb_sha256": "8f3d0487692e35945cd06034e9354a2dafe5aaf546eeb11227fc7cec4616a442",
+          "height": 256,
+          "member": "extracted/grid1-1_s1024/train/good/1365.png",
+          "member_sha256": "507d0450907ef4382a0de08f2f0b6ed8480effc50d334972595b43e998d40511",
+          "photo_id": "1365",
+          "region": "grid1-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "faaec2debe36211ca98e1c11266f6487cbe6650cbecb072f65f30cc589885c65",
+          "height": 256,
+          "member": "extracted/grid1-2_s1024/train/good/1365.png",
+          "member_sha256": "2f697ea5c610247c43b48af1b56294916a586ecee27aebccce869f5717363643",
+          "photo_id": "1365",
+          "region": "grid1-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "95349f0c356b3c90c11697fc73d1394489d77bef00f12d6c7ac92ec67ef237bd",
+          "height": 256,
+          "member": "extracted/grid1-3_s1024/train/good/1365.png",
+          "member_sha256": "f8c8a8658ff9afc306c4cf4a845f65792d375df6355b837882c1fd915507866d",
+          "photo_id": "1365",
+          "region": "grid1-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "d5b505505140d238ee166cd7e4cca79639f345613bef6266be441ad1315fa28d",
+          "height": 256,
+          "member": "extracted/grid2-1_s1024/train/good/1365.png",
+          "member_sha256": "7920f9e963d62e8dce4c50a95436ca0f04345d8bb66f9742deb66f9c69e36a26",
+          "photo_id": "1365",
+          "region": "grid2-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "35069800e7a397d726d9bcec66a1de21c49ec77523929fa371388d4b4288dbc3",
+          "height": 256,
+          "member": "extracted/grid2-2_s1024/train/good/1365.png",
+          "member_sha256": "eba94cc3cf8e1522103ce3ada6b7ec0623092663c6137681ff27d22e46740260",
+          "photo_id": "1365",
+          "region": "grid2-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "992efeb1da31ac68f17a64e7bbff7fb52c96659a44c188fb36f49daae2c7a8eb",
+          "height": 256,
+          "member": "extracted/grid2-3_s1024/train/good/1365.png",
+          "member_sha256": "500516343c359589394f66c3ad67f6871df6985a7bb097d8d1216871bf719549",
+          "photo_id": "1365",
+          "region": "grid2-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "6f1aa1f85795370df372af2ff926a8a8f0113f23352250f01d91351f8a9dd382",
+          "height": 256,
+          "member": "extracted/grid3-1_s1024/train/good/1365.png",
+          "member_sha256": "d0f99c5eb04ce68f4bec05a381380b46b285d1bcf18a0435481a971f3aa96ba9",
+          "photo_id": "1365",
+          "region": "grid3-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "533a67d898273d30d951900d8cd376b770c01576c7b78ffb2597aceeb9d8b6e3",
+          "height": 256,
+          "member": "extracted/grid3-2_s1024/train/good/1365.png",
+          "member_sha256": "742b8601c3801ac8d4d7340449917fbc4ed1a2a605f0ad8f011c688c9d151122",
+          "photo_id": "1365",
+          "region": "grid3-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "0745b0c7434018b9d7239ee67fa3ceb1164c6b5ddfa344f0988f86ab118b3e5f",
+          "height": 256,
+          "member": "extracted/grid3-3_s1024/train/good/1365.png",
+          "member_sha256": "eb7a0a1111955206cb4d210b8bccbc17f51abd5bedc855fb184f981eba4fe259",
+          "photo_id": "1365",
+          "region": "grid3-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "7cf3f186b5dbb3a54ca5b03222bad8448e2d9a872cf580374e523f8fe76b68fc",
+          "height": 256,
+          "member": "extracted/grid4-1_s1024/train/good/1365.png",
+          "member_sha256": "664b0210e0a9cb8615168ebb40632657fbb21fa6d09e0952b85af3235db4d698",
+          "photo_id": "1365",
+          "region": "grid4-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "2b61ade6fe387609f56cf8eb63fe8e8d42972c63cc9830df4fdbafd3970f041b",
+          "height": 256,
+          "member": "extracted/grid4-2_s1024/train/good/1365.png",
+          "member_sha256": "55a13601b0943331bb49be97f936da7edce8c2e9c95bad6e355dbfaa86db8d69",
+          "photo_id": "1365",
+          "region": "grid4-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "feae61af5e574afbd211afd29a1b5100b6b10eccdb0111c74fd86377cc770ad8",
+          "height": 256,
+          "member": "extracted/grid4-3_s1024/train/good/1365.png",
+          "member_sha256": "1fd43478490bc9421f843de39156a638d50f5d3f84320b843da23b553052be85",
+          "photo_id": "1365",
+          "region": "grid4-3_s1024",
+          "width": 256
+        }
+      ]
+    },
+    {
+      "photo_id": "0290",
+      "cohort": "calibration",
+      "focus_region": null,
+      "reason": "표집 포함 횟수와 검출 수의 음의 연관성 최다; 직접 경계와 구분",
+      "tiles": [
+        {
+          "decoded_rgb_sha256": "509380d50096eccb18837dee9970ceaf406717811268e05b9adecfb3b39473af",
+          "height": 256,
+          "member": "extracted/grid1-1_s1024/train/good/0290.png",
+          "member_sha256": "e9aeda7a82088fb441c2c0eaa337db6b7fcdac6f588d948125dbeae7ed99ada4",
+          "photo_id": "0290",
+          "region": "grid1-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "a4ef1f68bf3f150244b19a0b498762b68e712ddca0c6fd7b6845196404910b7e",
+          "height": 256,
+          "member": "extracted/grid1-2_s1024/train/good/0290.png",
+          "member_sha256": "eff763012a1b111b1843ad28311b9ee9159d90f6ab01606dd44b00fc8601ec33",
+          "photo_id": "0290",
+          "region": "grid1-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "e552215e68db2fcef5e541f30d5255c4c5ddf8654ec8a90330ed11d94e1e420f",
+          "height": 256,
+          "member": "extracted/grid1-3_s1024/train/good/0290.png",
+          "member_sha256": "de322e9d1b9656252d3dcc11714a69bb1600595c94e55c53d86876d8bea552f8",
+          "photo_id": "0290",
+          "region": "grid1-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "a2a1c954e8663f73ba0752938d9fcb656638a0231d25ac1460a703df8639c4e4",
+          "height": 256,
+          "member": "extracted/grid2-1_s1024/train/good/0290.png",
+          "member_sha256": "9d5aafe1ded7c8154d94f9938ce54c15fe54f50abedd019c92b09d502eb0a153",
+          "photo_id": "0290",
+          "region": "grid2-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "92b1ba000bd92bfeaa3822e5a2c790e4b273ee2b9f6951b9ace15f711a03b7fb",
+          "height": 256,
+          "member": "extracted/grid2-2_s1024/train/good/0290.png",
+          "member_sha256": "eae21a13a27f254b8d5c2a7e2caed46895c745712a5a946cd6dc784a455471e1",
+          "photo_id": "0290",
+          "region": "grid2-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "66bdf5cb18cc0dc452b262b934dd9de960de4d04e8b4a864d1dbb0ba92608016",
+          "height": 256,
+          "member": "extracted/grid2-3_s1024/train/good/0290.png",
+          "member_sha256": "8d5208a9035f03d9f886c182b96dc1a5bde2025de3799e79e0a63490b484853f",
+          "photo_id": "0290",
+          "region": "grid2-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "b57daaf154f93d5c3069707fbebea07f5e396808139c4c324947fb4f289f2e8a",
+          "height": 256,
+          "member": "extracted/grid3-1_s1024/train/good/0290.png",
+          "member_sha256": "8611aa8518fdc0c205639629c0cdce46a8581842fd1db15b9f939305f841bb7d",
+          "photo_id": "0290",
+          "region": "grid3-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "237092a2afb3a45682ffead69d66c0c2fe2c567061585e35ae92de20156259f8",
+          "height": 256,
+          "member": "extracted/grid3-2_s1024/train/good/0290.png",
+          "member_sha256": "0285a95452aa50cb4b2c525c51e443bc80b3b2eeb1357e225492b3fb22e5bddf",
+          "photo_id": "0290",
+          "region": "grid3-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "d6ce71679d3acb5697285014c78c4e8ee931b4448e9bfe0205a912ca1aa7d9be",
+          "height": 256,
+          "member": "extracted/grid3-3_s1024/train/good/0290.png",
+          "member_sha256": "ced86892ce760949c3d9a89623fff53d25bb3fbfb85c470275f7eb1d0dbc00fe",
+          "photo_id": "0290",
+          "region": "grid3-3_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "3c02d609e7efe735f4c680f10b9b1a7b34654d110992e8ff7760a67a39151e18",
+          "height": 256,
+          "member": "extracted/grid4-1_s1024/train/good/0290.png",
+          "member_sha256": "f1770247d1e35c97ddf2aa4711fbf55ead5633ddb873295d490211adb04bac01",
+          "photo_id": "0290",
+          "region": "grid4-1_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "216760d59dcdbfb3f2db135b605d727c648c9ff4aef7de5e829870f1354cb293",
+          "height": 256,
+          "member": "extracted/grid4-2_s1024/train/good/0290.png",
+          "member_sha256": "434637eb1ac777f02dd1ef28b59c6847522e47390d313c090fbdf4643f9656e0",
+          "photo_id": "0290",
+          "region": "grid4-2_s1024",
+          "width": 256
+        },
+        {
+          "decoded_rgb_sha256": "9ada99c8cf37bbf36f3b668a715f402e07d69a3cd4ad1d7450844e3d86c3f3ea",
+          "height": 256,
+          "member": "extracted/grid4-3_s1024/train/good/0290.png",
+          "member_sha256": "af4e21f934f129fc01dd54e28af4787ea9465bd621fcdb140c60bb26391d443c",
+          "photo_id": "0290",
+          "region": "grid4-3_s1024",
+          "width": 256
+        }
+      ]
+    }
+  ]
+}
