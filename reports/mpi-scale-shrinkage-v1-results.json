@@ -1,0 +1,334 @@
+{
+  "cost": {
+    "cumulative_elapsed_seconds": 3.103287999983877,
+    "measured_elapsed_seconds": 3.103287999983877,
+    "passed": true,
+    "peak_rss_bytes": 53280768,
+    "scope": "source verification through 3000 persisted trials and summary; excludes final report/receipt serialization; not inference latency",
+    "unfinished_prior_attempts": []
+  },
+  "decision": "not_adopted",
+  "research_screening_passed": false,
+  "results": {
+    "automatic_pass_allowed": false,
+    "decision_without_cost": "not_adopted",
+    "experiment_id": "MPI-C1-01",
+    "independent_performance_claim_allowed": false,
+    "point": {
+      "changes": {
+        "test": {
+          "added_alerts": [],
+          "removed_alerts": [
+            {
+              "key": "good/0023",
+              "label": 0
+            },
+            {
+              "key": "defect/0017",
+              "label": 1
+            },
+            {
+              "key": "defect/0021",
+              "label": 1
+            },
+            {
+              "key": "defect/0022",
+              "label": 1
+            },
+            {
+              "key": "defect/0023",
+              "label": 1
+            },
+            {
+              "key": "defect/0025",
+              "label": 1
+            },
+            {
+              "key": "defect/0027",
+              "label": 1
+            },
+            {
+              "key": "defect/0028",
+              "label": 1
+            },
+            {
+              "key": "defect/0041",
+              "label": 1
+            },
+            {
+              "key": "defect/0043",
+              "label": 1
+            },
+            {
+              "key": "defect/0044",
+              "label": 1
+            },
+            {
+              "key": "defect/0047",
+              "label": 1
+            }
+          ]
+        },
+        "validation": {
+          "added_alerts": [],
+          "removed_alerts": [
+            {
+              "key": "validation/0970",
+              "label": 0
+            },
+            {
+              "key": "validation/0998",
+              "label": 0
+            }
+          ]
+        }
+      },
+      "conditions": {
+        "fp_test": true,
+        "fp_validation": true,
+        "minimum_tp": false,
+        "no_lost_tp": false
+      },
+      "counts": {
+        "candidate": {
+          "fn": 13,
+          "fp": 2,
+          "fp_validation": 12,
+          "tn": 52,
+          "tp": 42
+        },
+        "control": {
+          "fn": 2,
+          "fp": 3,
+          "fp_validation": 14,
+          "tn": 51,
+          "tp": 53
+        }
+      },
+      "passed": false,
+      "raw_region_boundaries": {
+        "candidate": [
+          46.123834563464655,
+          46.84199621031787,
+          45.17436771728913,
+          45.923609066353876,
+          44.155664735744196,
+          45.06840724514687,
+          46.63612014396733,
+          43.410501359047224,
+          44.27674390559538,
+          45.44590144254193,
+          44.45389609235623,
+          48.60303646328096
+        ],
+        "control": [
+          46.123834563464655,
+          47.41953975457174,
+          44.865336449571494,
+          45.61549490834264,
+          42.922394280153576,
+          44.833226706985585,
+          46.82833641487574,
+          41.69589947553834,
+          43.50616274755819,
+          44.76571177632119,
+          42.48174394725915,
+          48.31899010574905
+        ]
+      }
+    },
+    "replay": {
+      "decision_changes": 0,
+      "maximum_absolute_difference": 0,
+      "passed": true,
+      "photos": 662
+    },
+    "service_model_changed": false,
+    "stability": {
+      "both": {
+        "conditions": {
+          "fp_test_upper": false,
+          "fp_validation_upper": false,
+          "no_invalid_trials": true,
+          "tp_lower": false,
+          "tp_width_at_most_half": false
+        },
+        "methods": {
+          "candidate": {
+            "invalid_trials": 0,
+            "quantiles": {
+              "fp": [
+                0,
+                2,
+                9
+              ],
+              "fp_validation": [
+                4,
+                12,
+                28.024999999999977
+              ],
+              "tp": [
+                2,
+                43,
+                55
+              ]
+            }
+          },
+          "control": {
+            "invalid_trials": 0,
+            "quantiles": {
+              "fp": [
+                0,
+                3,
+                9
+              ],
+              "fp_validation": [
+                4,
+                12,
+                28
+              ],
+              "tp": [
+                3,
+                52,
+                55
+              ]
+            }
+          },
+          "tp_interval_widths": {
+            "candidate": 53,
+            "control": 52
+          }
+        },
+        "passed": false
+      },
+      "calibration_only": {
+        "conditions": {
+          "fp_test_upper": false,
+          "fp_validation_upper": false,
+          "no_invalid_trials": true,
+          "tp_lower": false,
+          "tp_width_at_most_half": false
+        },
+        "methods": {
+          "candidate": {
+            "invalid_trials": 0,
+            "quantiles": {
+              "fp": [
+                0,
+                2,
+                10
+              ],
+              "fp_validation": [
+                3,
+                12,
+                30
+              ],
+              "tp": [
+                18,
+                42,
+                55
+              ]
+            }
+          },
+          "control": {
+            "invalid_trials": 0,
+            "quantiles": {
+              "fp": [
+                0,
+                3,
+                9
+              ],
+              "fp_validation": [
+                5,
+                14,
+                28
+              ],
+              "tp": [
+                45,
+                53,
+                55
+              ]
+            }
+          },
+          "tp_interval_widths": {
+            "candidate": 37,
+            "control": 10
+          }
+        },
+        "passed": false
+      },
+      "development_only": {
+        "conditions": {
+          "fp_test_upper": true,
+          "fp_validation_upper": true,
+          "no_invalid_trials": true,
+          "tp_lower": false,
+          "tp_width_at_most_half": false
+        },
+        "methods": {
+          "candidate": {
+            "invalid_trials": 0,
+            "quantiles": {
+              "fp": [
+                0,
+                2,
+                4
+              ],
+              "fp_validation": [
+                8,
+                11,
+                16
+              ],
+              "tp": [
+                7,
+                42,
+                52
+              ]
+            }
+          },
+          "control": {
+            "invalid_trials": 0,
+            "quantiles": {
+              "fp": [
+                0,
+                3,
+                6
+              ],
+              "fp_validation": [
+                7,
+                12,
+                17.024999999999977
+              ],
+              "tp": [
+                4,
+                52,
+                55
+              ]
+            }
+          },
+          "tp_interval_widths": {
+            "candidate": 45,
+            "control": 51
+          }
+        },
+        "passed": false
+      }
+    },
+    "stability_passed": false,
+    "status": "exploratory_comparison_complete",
+    "training_performed": false
+  },
+  "evidence": {
+    "source_zip_sha256": "8429a970864c1116d5f52b786057fc84c3e48f465b5c502715ab7f61d35e13dc",
+    "preregistered_config_sha256": "890041c2140ca3a6176fb798d4fbd6a8b32b7f04204fa765c49a7ee029bc1cb9",
+    "runner_sha256": "26126dfe8ea98d2ac90231dbc9cff2f1f05214ad135f8cab005b046dd4582530",
+    "run_identity": "87b021472b9cf3ab2c1e515134ed92222eadf03869d19b11a0a38b0d963cdfac",
+    "local_report_sha256": "669ef3be6c4fe3043d381f134610e5d86e58da4052a0587ee526641c36ee03dc",
+    "local_artifacts": "artifacts/analyses/mpi-scale-shrinkage-v1",
+    "all_trials": 3000,
+    "completed_replay_verified": true,
+    "independent_standard_library_point_check": true,
+    "tests": 426,
+    "subtests": 52
+  }
+}
