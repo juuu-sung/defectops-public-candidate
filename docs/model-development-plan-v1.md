@@ -8,8 +8,8 @@
 [사이클1 기준선 원장·Phase2 실행 카드](mpi-model-cycle-1.md)가 현재 진행 기록이다.
 2026-10-01 후속: 제한 진단을 마치고 [MPI-C1-02 정상64장 다양성 선정 설계](mpi-normal-diversity-v1.md)를
 작성했다. 정상 후보1,086장의 메타데이터를 검산했으며, 특징 추출·선정·학습은 미실행이다.
-후보2/2의 [준비 도구](mpi-normal-diversity-preparation-v1.md)를 구현했고 연구실 선정 실행을 기다린다.
-GPU 학습은 준비 결과 확인 후 진행한다.
+후보2/2의 [준비 결과](../reports/mpi-normal-diversity-preparation-v1-received-review.md)를2026-10-02 검산했다.
+정상64장 명단은 잠갔으며 다음은 C단계 학습·정상 보정 도구 준비다. 새 모델 성능은 미측정이다.
 
 ## 1. 현재 계획에 대한 판단
 
