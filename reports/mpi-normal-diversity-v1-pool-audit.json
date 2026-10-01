@@ -1,0 +1,33 @@
+{
+  "status": "metadata_only_candidate_pool_audited_not_selected",
+  "date": "2026-10-01",
+  "source_commit": "6614e77",
+  "fingerprint_source_zip_sha256": "689716c33cc8df1308b985d5d1b6c76a13f451f6499cccfd349553b3dc23965b",
+  "fingerprint_rows_sha256": "6c203d36816f24a6099d5e4ecb78048c55bd86722773030fc6619bb17a3ef4ec",
+  "source_spatial_cohorts_sha256": "4d3d30da85bb1122f1537e93e84e81be27b27b603f9208e4e641eda6d6239018",
+  "valid_original_photos": 1671,
+  "valid_tiles": 20052,
+  "protected_counts": {"development": 128, "calibration": 169, "validation": 256},
+  "exclusion_counts": {
+    "protected_normal_id": 553,
+    "protected_or_test_exact_rgb": 16,
+    "identical_full_12_region_photo": 16
+  },
+  "eligible_count": 1086,
+  "eligible_ids_sha256": "5e318c663affb53405524ec40d7785b3f05811755434cef168f9ec6170a7c7eb",
+  "eligible_rows_sha256": "31a890ca06b0096c9672173121de0e3f9ace96b33144ba384f2708f1982a70df",
+  "digest_definition": "scripts.fit_mpi_pcb_normal_bank.digest: canonical JSON SHA256; ordered IDs or ordered fingerprint rows, not file-byte hash",
+  "baseline_training_subset": true,
+  "baseline_training_count": 64,
+  "partial_tile_duplicate_groups_in_pool": 0,
+  "new_images_decoded": 0,
+  "descriptors_computed": 0,
+  "new_training": false,
+  "notes": [
+    "Source payload hashes and frozen cohort contracts checked with existing preparation helpers.",
+    "Deterministic pool derivation and exclusion precedence documented in docs/mpi-normal-diversity-v1.md section 3.",
+    "No selected 64-photo manifest exists yet. This is a pool audit, not GPU preflight or a performance result.",
+    "Original archive and checkpoint are on Windows; they were not decoded or rehashed on Mac.",
+    "Exact RGB independence does not prove different physical boards, sessions, or absence of near duplicates."
+  ]
+}
