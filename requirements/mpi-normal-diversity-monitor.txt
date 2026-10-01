@@ -1,0 +1,2 @@
+# Resource sampling only. Keep the existing CUDA/Anomalib installation unchanged.
+psutil>=5.9,<8
