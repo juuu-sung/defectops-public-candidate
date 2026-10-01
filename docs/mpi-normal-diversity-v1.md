@@ -3,14 +3,15 @@
 작성일: 2026-10-01. **사전 설계 보존 /2026-10-02 선정 결과 검산 완료 /새 학습 미실행.**
 후속: [B단계 선정 준비 실행기](mpi-normal-diversity-preparation-v1.md)의 결과를2026-10-02 수령해
 [검산 완료](../reports/mpi-normal-diversity-preparation-v1-received-review.md)했다. 새64장 명단은 잠갔으며
-새 모델은 아직 없다. 아래 사전 설계의 계산 규칙은 유지한다.
+새 모델은 아직 없다. 후속 진행 동의로 [C단계 학습·정상 보정 실행기](mpi-normal-diversity-fit-v1.md)를 준비했다.
+연구실 학습 결과는 미수령이며 아래 사전 설계의 계산 규칙은 유지한다.
 상위: [통합 계획](model-development-plan-v1.md), [사이클 원장](mpi-model-cycle-1.md).
 고정 규칙: [config](../configs/mpi-normal-diversity-v1.json).
 자료 검산: [후보 풀 감사](../reports/mpi-normal-diversity-v1-pool-audit.json).
 
 사용자의 “응 이렇게 진행해보자”에 따라 정상 표본 구성 개선을 설계했다.
-이 카드는 준비 도구 구현의 기준이다. 실제 선정 명단·실행 소스·환경 해시는 아직 없으므로
-GPU 학습 명령이나 독립 시험 개봉 허가로 쓰지 않는다. 준비 결과를 확인한 뒤 실행 범위를 안내한다.
+이 카드는 사전 설계 보존본이다. 선정 명단·실행 소스·환경은 이후 B단계에서 잠갔으며,
+현재 허용한 실행은 C단계 학습·정상 보정·재로드까지다. 독립 시험 개봉 허가로 쓰지 않는다.
 
 ## 1. 이번에 확인할 질문
 
