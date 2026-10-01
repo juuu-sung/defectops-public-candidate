@@ -1,0 +1,53 @@
+{
+  "review_date": "2026-10-01",
+  "status": "received_evidence_verified_normal_map_review_completed",
+  "archive_name": "mpi-normal-map-review-v1.zip",
+  "archive_sha256": "28059c87f0b6185c840b958512b486f162d64d3142de32ae3547bc94910dd09c",
+  "archive_bytes": 31947578,
+  "files": 96,
+  "payload_hashes_verified": 95,
+  "case_receipts_verified": 5,
+  "original_file_and_rgb_hashes_verified": 60,
+  "maps_verified": 60,
+  "cards_rebuilt_pixel_exact": 15,
+  "html_rebuilt_exact": true,
+  "independent_full_sort_top1_checks": 60,
+  "maximum_absolute_previous_score_difference": 0.0,
+  "photo_decision_changes": 0,
+  "execution_sha256": "e36f029d30b5080d629205ac7e77bc17b7a6428abaeb968cffc7c276e0264685",
+  "threshold": 2.3169610768645974,
+  "cases": [
+    {"photo_id":"1671","winning_region":"grid2-1_s1024","top1":47.17448297361048,"q90_score":2.661187688554871,"alert":true,"high_response_observation":"connector metal pin row","regions_at_or_above_threshold":["grid1-1_s1024","grid2-1_s1024"]},
+    {"photo_id":"0616","winning_region":"grid1-2_s1024","top1":49.52962154876895,"q90_score":2.713844972204401,"alert":true,"high_response_observation":"lower visible side of cylindrical capacitor","regions_at_or_above_threshold":["grid1-2_s1024"]},
+    {"photo_id":"0705","winning_region":"grid4-1_s1024","top1":46.49676135109692,"q90_score":2.7293070369658676,"alert":true,"high_response_observation":"white connector metal pin row","regions_at_or_above_threshold":["grid3-1_s1024","grid3-2_s1024","grid4-1_s1024"]},
+    {"photo_id":"1365","winning_region":"grid1-1_s1024","top1":46.123834563464655,"q90_score":2.3169610768645974,"alert":true,"high_response_observation":"connector metal pin row","regions_at_or_above_threshold":["grid1-1_s1024"]},
+    {"photo_id":"0290","winning_region":"grid1-3_s1024","top1":48.20348897794398,"q90_score":3.0541623030809775,"alert":true,"high_response_observation":"slanted boundary between black area and board","regions_at_or_above_threshold":["grid1-2_s1024","grid1-3_s1024"]}
+  ],
+  "photo_0290_grid1_3_attribution": {
+    "top_pixels": 656,
+    "edge_connected_black": {"area_pixels":13930,"top_pixels":161},
+    "adjacent_nonblack_2px": {"area_pixels":664,"top_pixels":290},
+    "other_pixels": {"area_pixels":50942,"top_pixels":205},
+    "black_and_band_top_fraction": 0.6875,
+    "all_exact_black_pixels_including_disconnected": 13942,
+    "note": "Descriptive location overlap; not causal attribution or expected score reduction."
+  },
+  "timing": {
+    "tile_count": 60,
+    "mean_ms": 104.66659166462098,
+    "p95_higher_ms": 98.55120000429451,
+    "first_tile_ms": 653.7075000815094,
+    "total_predict_seconds": 6.279995499877259,
+    "scope": "Preprocessing, GPU inference, map transfer; includes first-call warmup; excludes model load, image decode, file persistence; not a service benchmark."
+  },
+  "review_limits": {
+    "checkpoint_available_on_review_host": false,
+    "gpu_reinference_on_review_host": false,
+    "new_training": false,
+    "new_thresholds": false,
+    "new_performance_evaluation": false,
+    "appearance_cause_confirmed": false,
+    "automatic_pass_allowed": false,
+    "images_uploaded_to_git_or_notion": false
+  }
+}
