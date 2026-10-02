@@ -26,6 +26,8 @@ Phase3 통과나 사용 승인은 아니며 남은 후보1개는 자동 실행�
 후속 진행 동의에 따라 [C단계 학습·정상 보정 실행기](mpi-normal-diversity-fit-v1.md)를 준비했다.
 연구실 [C단계 수령 결과](../reports/mpi-normal-diversity-fit-v1-received-review.md)를 검산했다.64장fit·128/169장보정·재로드297장 차이0이다.
 첫 시도의GPU예약7GiB 위반은 유지하고,저장 모델로 재개한 완료와 구분한다. 불량 성능은 미측정이며 자동PASS·서비스 교체는 금지한다.
+후속 동의로 [D단계 성적·보정 민감도·비용 비교 도구](mpi-normal-diversity-evaluation-v1.md)를 구현했다.
+같은 checkpoint와고정 기준으로 비교하며 후보 추가·재학습·독립final 개봉은 하지 않는다. 연구실 결과 대기다.
 
 ## 1. 결정과 승인 범위
 
