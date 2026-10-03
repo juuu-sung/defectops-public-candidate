@@ -1,11 +1,14 @@
 """CPU regression and orchestration tests, not GPU accuracy evidence."""
 import copy
+import hashlib
+import io
 import json
 from pathlib import Path
 import zipfile
 
 import numpy as np
 import pytest
+from PIL import Image
 
 from scripts import mpi_efficientad_evaluation_protocol as e
 from scripts import run_mpi_efficientad_evaluation as r
@@ -72,6 +75,7 @@ def setup_run(tmp_path, monkeypatch, pass_screen=True, pass_full=True, pass_warm
     keys = e.POLICY["acceptance"]["regression_keys"]
     tests = [photo(k) for k in keys] + [photo(f"defect/{i:04d}") for i in range(55) if f"defect/{i:04d}" not in keys]
     tests += [photo(f"good/{i:04d}", 0) for i in range(54)]
+    tests[4]["regions"] = [{"member": r.ev.REPAIR_MEMBER}]
     cohorts = {"test": tests, "validation": [photo(f"validation/{i:04d}", 0) for i in range(256)],
                "development": [], "calibration": []}
     identity = {"contract": contract(), "fit_signature": "fit", "checkpoint_sha256": "checkpoint"}
@@ -87,6 +91,8 @@ def setup_run(tmp_path, monkeypatch, pass_screen=True, pass_full=True, pass_warm
         r.ev.CHECKPOINT_SHA256 if str(f).endswith("pilot-v1/fit/model.pt") else original_sha(f)))
     accessed = []
     def score(archive, item, runtime, recovered, monitor, c):
+        if item["key"] == "defect/0054":
+            assert recovered == b"recovered"
         accessed.append(item["key"])
         high = bool(item["label"]) and (pass_screen or item["key"] != keys[0])
         raw = np.full((12, 2, 256, 256), 20. if high else 0., dtype=np.float32)
@@ -109,10 +115,14 @@ def setup_run(tmp_path, monkeypatch, pass_screen=True, pass_full=True, pass_warm
 
 def test_screen_failure_stops_before_other_photos_and_exports(tmp_path, monkeypatch):
     args, kw, accessed = setup_run(tmp_path, monkeypatch, pass_screen=False)
-    def forbidden(*args): raise AssertionError("Unselected 0054 recovery must remain unopened")
-    monkeypatch.setattr(r.ev, "recovered_bytes", forbidden)
+    recovery_calls = []
+    def approved(*a):
+        recovery_calls.append(list(accessed))
+        return b"recovered"
+    monkeypatch.setattr(r.ev, "recovered_bytes", approved)
     result = r.execute(*args, **kw)
     assert accessed == e.POLICY["acceptance"]["regression_keys"]
+    assert recovery_calls == [e.POLICY["acceptance"]["regression_keys"][:4]]
     assert not result["screen_passed"] and not result["full_comparison_run"]
     assert not result["warm_evaluated"] and not result["stability_evaluated"]
     with zipfile.ZipFile(args[-1]) as z:
@@ -299,3 +309,103 @@ def test_unaccounted_kill_requires_review(tmp_path, monkeypatch):
     folder.mkdir()
     (folder / "started.json").write_text('{}')
     with pytest.raises(ValueError, match="Unfinished attempt"): r.execute(*args, **kw)
+
+
+def test_selected_0054_real_reader_requires_approved_recovery(tmp_path, monkeypatch):
+    # Exercise actual PNG decoding and both byte/RGB hashes, not the orchestration fake.
+    image = Image.new("RGB", (256, 256), (12, 34, 56))
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    raw = buffer.getvalue()
+    damaged = b"known damaged source fixture"
+    monkeypatch.setattr(r.ev, "DAMAGED_SHA256", hashlib.sha256(damaged).hexdigest())
+    monkeypatch.setattr(r.ev.maps, "REPAIRED_RGB_SHA256", hashlib.sha256(image.tobytes()).hexdigest())
+    path = tmp_path / "approved.png"
+    path.write_bytes(raw)
+    previous = {"recovery.json": {"recovered_png_sha256": hashlib.sha256(raw).hexdigest()}}
+    row = {"member": r.ev.REPAIR_MEMBER, "member_sha256": hashlib.sha256(raw).hexdigest(),
+           "decoded_rgb_sha256": hashlib.sha256(image.tobytes()).hexdigest()}
+    selected = photo(e.POLICY["acceptance"]["regression_keys"][4])
+    assert selected["key"] == "defect/0054"
+    selected["regions"] = [row]*12
+    class Archive:
+        def read(self, name):
+            assert name == r.ev.REPAIR_MEMBER
+            return damaged
+    with pytest.raises(TypeError, match="buffer API"):
+        r.ev.read_tile(Archive(), row, None)  # reproduces the v1 failure exactly
+    recovered = r.recovery_for_photo(selected, None, path, previous)
+    class Inference:
+        def synchronize(self): pass
+        def predict(self, decoded):
+            assert decoded.tobytes() == image.tobytes()
+            return np.ones((2, 256, 256), dtype=np.float32)
+    maps, sample = r.score_photo(Archive(), selected, Inference(), recovered, Monitor(), contract())
+    assert maps.shape == (12, 2, 256, 256) and sample["key"] == "defect/0054"
+    path.write_bytes(b"changed")
+    with pytest.raises(ValueError, match="recovered tile changed"):
+        r.recovery_for_photo(selected, None, path, previous)
+    assert r.recovery_for_photo(photo("defect/0006"), None, path, previous) is None
+
+
+def make_reviewed_v1_failure(tmp_path, monkeypatch):
+    args, kwargs, accessed = setup_run(tmp_path, monkeypatch, pass_screen=False)
+    source, identity = args[5], args[6]
+    identity.update(name="mpi-efficientad-evaluation-v1", policy=e.POLICY, fit_zip_sha256=e.FIT_SHA,
+                    cohorts=source["cohorts"], environment={"fixture": True},
+                    sources_lf_sha256={"scripts/run_mpi_efficientad_evaluation.py": r.V1_RUNNER_SHA})
+    original_score = r.score_photo
+    def buggy(*a):
+        if len(accessed) == 4: raise TypeError("object supporting the buffer API required")
+        return original_score(*a)
+    monkeypatch.setattr(r, "score_photo", buggy)
+    with pytest.raises(TypeError, match="buffer API"): r.execute(*args, **kwargs)
+    monkeypatch.setattr(r, "score_photo", original_score)
+    return args, kwargs
+
+
+def test_reviewed_failure_preserved_and_time_counted_in_v2(tmp_path, monkeypatch):
+    args, kwargs = make_reviewed_v1_failure(tmp_path, monkeypatch)
+    old_root = args[0]
+    before = {f.relative_to(old_root).as_posix(): r.fit.sha256_file(f) for f in old_root.rglob("*") if f.is_file()}
+    provenance = r.reviewed_v1_failure(old_root, args[6])
+    assert provenance["present"] and not provenance["predictions_reused"]
+    assert provenance["files_sha256"] == {k: v for k, v in before.items() if k != ".run.lock"}
+    assert provenance["seconds"] > 0
+    args[0] = tmp_path / "v2"
+    args[-1] = tmp_path / "v2.zip"
+    args[6] = args[6] | {"name": e.NAME, "reviewed_v1_failure": provenance}
+    seen_prior = []
+    class Cost(Monitor):
+        def __init__(self, runtime, prior, *a): seen_prior.append(prior)
+    kwargs["monitor_factory"] = Cost
+    result = r.execute(*args, **kwargs)
+    assert seen_prior == [provenance["seconds"]]
+    assert result["cumulative_seconds"] == provenance["seconds"] + sum(a["seconds"] for a in r.attempts(args[0]))
+    assert {f.relative_to(old_root).as_posix(): r.fit.sha256_file(f) for f in old_root.rglob("*") if f.is_file()} == before
+    with zipfile.ZipFile(args[-1]) as z:
+        assert json.loads(z.read("report.json"))["reviewed_v1_failure"] == provenance
+
+
+@pytest.mark.parametrize("damage", ["error", "cost", "unfinished", "lock", "cache", "identity", "later_stage"])
+def test_unreviewed_previous_failures_not_bypassed(tmp_path, monkeypatch, damage):
+    args, _ = make_reviewed_v1_failure(tmp_path, monkeypatch)
+    root, identity = args[0], args[6]
+    finished = next(root.glob("attempt-*/finished.json"))
+    if damage in ("error", "cost"):
+        record = json.loads(finished.read_bytes())
+        record["error" if damage == "error" else "seconds"] = "CUDA OOM" if damage == "error" else -1
+        finished.write_text(json.dumps(record))
+    elif damage == "unfinished": finished.unlink()
+    elif damage == "lock": (root / ".run.lock").write_text("locked")
+    elif damage == "cache": (root / "test/photo-000/maps.npy").write_bytes(b"tampered")
+    elif damage == "identity": identity = identity | {"checkpoint_sha256": "other"}
+    else: (root / "screen").mkdir()
+    with pytest.raises((ValueError, OSError)): r.reviewed_v1_failure(root, identity)
+
+
+def test_previous_failure_cannot_reset_budget(tmp_path, monkeypatch):
+    args, kwargs, accessed = setup_run(tmp_path, monkeypatch)
+    args[6]["reviewed_v1_failure"] = {"seconds": e.POLICY["resource_plan"]["comparison_seconds"]}
+    with pytest.raises(RuntimeError, match="budget exhausted"): r.execute(*args, **kwargs)
+    assert not accessed

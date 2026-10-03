@@ -9,6 +9,7 @@ import shutil
 import sys
 import tempfile
 import time
+import traceback
 import zipfile
 
 import numpy as np
@@ -22,6 +23,64 @@ from scripts.run_mpi_efficientad_probe import publish, attempts
 from scripts.evaluate_mpi_normal_diversity import Monitor as SharedMonitor, EvaluationRuntime
 
 fit, ev, comparison = e.fit, e.inputs.ev, e.comparison
+V1_RUNNER_SHA = "f5e936b8335ece2fcfbb77dcefbfaaa73f436732d2c5c539ea5b6db063038f90"
+V1_ERROR = "TypeError: object supporting the buffer API required"
+
+
+def reviewed_v1_failure(root, identity):
+    """Read-only, narrowly scoped restart approval; never erase cost or reuse old predictions."""
+    if not root.exists():
+        return {"present": False, "seconds": 0.}
+    # This persistent file remains after normal process exit; existence is not an active lock.
+    if (root / ".run.lock").read_bytes() != b"0":
+        raise ValueError("Previous evaluation lock marker differs; request review")
+    with fit.locked_run(root):
+        return _reviewed_v1_failure(root, identity)
+
+
+def _reviewed_v1_failure(root, identity):
+    old = json.loads((root / "identity/value.json").read_bytes())
+    signature = fit.digest(old)
+    if e.value(root, "identity", signature) != old or old.get("name") != "mpi-efficientad-evaluation-v1":
+        raise ValueError("Unexpected previous evaluation identity")
+    for key in ("policy", "fit_zip_sha256", "fit_signature", "checkpoint_sha256", "cohorts", "contract", "environment"):
+        if old[key] != identity[key]:
+            raise ValueError(f"Previous evaluation {key} changed; review required")
+    if old["sources_lf_sha256"].get("scripts/run_mpi_efficientad_evaluation.py") != V1_RUNNER_SHA:
+        raise ValueError("Previous failure was not from the reviewed v1 implementation")
+    paths = sorted(root.glob("attempt-*"))
+    if len(paths) != 1:
+        raise ValueError("Expected exactly one reviewed v1 failure; preserve attempts for review")
+    path = paths[0]
+    record = json.loads((path / "finished.json").read_bytes())
+    started = json.loads((path / "started.json").read_bytes())
+    seconds = record["seconds"]
+    if (started["identity"] != signature or record["status"] != "failed" or record["error"] != V1_ERROR
+            or not np.isfinite(seconds) or seconds < 0 or record["cached_photos"] != 4):
+        raise ValueError("Previous failure differs from the reviewed 0054 buffer error")
+    if any((root / phase).exists() for phase in ("screen", "comparison", "warm-baseline", "warm-candidate", "stability", "result", "export")):
+        raise ValueError("Previous v1 progressed beyond the reviewed failure")
+    photos = old["cohorts"]["test"]
+    selected = e.POLICY["acceptance"]["regression_keys"][:4]
+    indices = [next(i for i, photo in enumerate(photos) if photo["key"] == key) for key in selected]
+    if ({f.name for f in (root / "test").iterdir()} != {f"photo-{i:03d}" for i in indices}
+            or any((root / "validation").iterdir())):
+        raise ValueError("Previous v1 cache differs from the first four fixed cases")
+    for i in indices:
+        read_cache(root, "test", i, signature, photos[i], old["contract"])
+    return {"present": True, "name": root.name, "identity_sha256": signature,
+            "seconds": float(seconds), "attempt": record, "predictions_reused": False,
+            "files_sha256": {f.relative_to(root).as_posix(): fit.sha256_file(f)
+                             for f in sorted(root.rglob("*")) if f.is_file() and f.name != ".run.lock"}}
+
+
+def recovery_for_photo(photo, recovered, path, previous):
+    """0054 is the fifth fixed screen case. Load only its previously approved recovery."""
+    if any(row["member"] == ev.REPAIR_MEMBER for row in photo["regions"]) and recovered is None:
+        recovered = ev.recovered_bytes(path, previous)
+        if not isinstance(recovered, bytes):
+            raise ValueError("Approved 0054 recovery did not return image bytes")
+    return recovered
 
 
 class Monitor(SharedMonitor):
@@ -232,7 +291,8 @@ def execute(root, archive_path, fit_root, recovery_path, records, source, identi
                 raise ValueError("Completed result missing samples")
             export(root, handoff, signature, report, identity)
             return report
-        prior = sum(a["seconds"] for a in previous)
+        prior_failure = identity.get("reviewed_v1_failure", {"seconds": 0.})
+        prior = prior_failure["seconds"] + sum(a["seconds"] for a in previous)
         if prior >= e.POLICY["resource_plan"]["comparison_seconds"]:
             raise RuntimeError("Cumulative 4-hour budget exhausted; review required")
         attempt = Path(tempfile.mkdtemp(prefix="attempt-", dir=root))
@@ -249,14 +309,16 @@ def execute(root, archive_path, fit_root, recovery_path, records, source, identi
                 gate = normal_gate(archive, runtime, monitor, records, source, fit_root)
                 fit.write_json(attempt / "normal-gate.json", gate)
                 gate_path = (attempt / "normal-gate.json").relative_to(root).as_posix()
-                # The recovered 0054 tile is outside the 12-case gate; do not decode it yet.
+                # Load approved recovery lazily when a selected photo actually requires it.
                 recovered = None
 
                 def collect(g, indices):
+                    nonlocal recovered
                     result = []
                     for n, i in enumerate(indices):
                         if (g, i) not in cached:
                             monitor.check()
+                            recovered = recovery_for_photo(photos[g][i], recovered, recovery_path, source["previous"])
                             raw, sample = score_photo(archive, photos[g][i], runtime, recovered, monitor, contract)
                             name = f"photo-{i:03d}"
                             with fit.phase_stage(root / g, name) as stage:
@@ -275,7 +337,6 @@ def execute(root, archive_path, fit_root, recovery_path, records, source, identi
                 publish(root, "screen", signature, screen)
                 if screen["passed"]:
                     print("2/4 Screen 12/12 passed. Observed defects55 + normals54/256; no masks.", flush=True)
-                    recovered = ev.recovered_bytes(recovery_path, source["previous"])
                     raw = {g: collect(g, list(range(len(photos[g])))) for g in ("test", "validation")}
                     full = e.compare(raw, source)
                     publish(root, "comparison", signature, full)
@@ -318,6 +379,7 @@ def execute(root, archive_path, fit_root, recovery_path, records, source, identi
             raise
         except BaseException as exc:
             error = f"{type(exc).__name__}: {exc}"
+            fit.write_json(attempt / "error-detail.json", {"error": error, "traceback": traceback.format_exc()})
             raise
         finally:
             try:
@@ -343,7 +405,8 @@ def execute(root, archive_path, fit_root, recovery_path, records, source, identi
                   "all_gates_passed": passed, "cached_photos": len(cached),
                   "next": "review_completed_comparison" if passed else "review_failed_gate_no_automatic_retraining",
                   "stability_skip_reason": None if sensitive else "screen, accuracy or candidate warm gate did not pass",
-                  "cumulative_seconds": sum(a["seconds"] for a in attempts(root)),
+                  "reviewed_v1_failure": prior_failure,
+                  "cumulative_seconds": prior_failure["seconds"] + sum(a["seconds"] for a in attempts(root)),
                   "test_masks_decoded": 0, "training_performed": False, "threshold_changed": False,
                   "automatic_pass_allowed": False, "service_model_changed": False,
                   "independent_performance_claim_allowed": False}
@@ -362,6 +425,10 @@ def main(argv=None):
     # Reader lock prevents a concurrent old training runner from touching the artifact.
     with fit.locked_run(fit_root):
         records, source, identity = e.prepare(project, project / "artifacts/handoff", fit_root)
+        identity["reviewed_v1_failure"] = reviewed_v1_failure(
+            project / "artifacts/analyses/mpi-efficientad-evaluation-v1", identity)
+        if identity["reviewed_v1_failure"]["present"]:
+            print("Reviewed v1 buffer error: old files preserved, prior time counted; all 12 cases rerun in v2.", flush=True)
         if environment() != identity["environment"]:
             raise ValueError("Environment differs from the reviewed fit")
         if fit.sha256_file(args.archive) != fit.EXPECTED_ARCHIVE_SHA256:

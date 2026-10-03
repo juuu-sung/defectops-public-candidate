@@ -12,7 +12,7 @@ from scripts import run_mpi_spatial_score as inputs
 from scripts import mpi_normal_diversity_evaluation_protocol as comparison
 
 fit = p.fit
-NAME = "mpi-efficientad-evaluation-v1"
+NAME = "mpi-efficientad-evaluation-v2"
 FIT_SHA = "2a60c4f4818a4c7927ff8ac7fed3d28b5bc9e163f3e878bb1e77a1e6f8d0e5a0"
 POLICY = {"acceptance": p.POLICY["future_evaluation"],
           "resource_plan": p.POLICY["resource_plan"],
