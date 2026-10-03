@@ -1,0 +1,213 @@
+{
+  "zip_sha256": "32654cfa0732d48411fec6e48d2a05a1bcd87cf302c43205f413bacf24826095",
+  "files_verified": 12,
+  "payload_hashes_verified": 11,
+  "source_files_verified": 131,
+  "photo_receipts_verified": 959,
+  "runtime_gates_verified": 2,
+  "counts": {
+    "baseline": {
+      "tp": 53,
+      "fn": 2,
+      "fp54": 3,
+      "tn54": 51,
+      "fp256": 14
+    },
+    "candidate": {
+      "tp": 8,
+      "fn": 47,
+      "fp54": 4,
+      "tn54": 50,
+      "fp256": 13
+    }
+  },
+  "reload": {
+    "contract_refitted": false,
+    "decision_changes": 0,
+    "maximum_raw_score_difference": 0,
+    "passed": true,
+    "photos": 297,
+    "raw_tolerance": 0.0001
+  },
+  "rank_diagnostics": {
+    "baseline": {
+      "image_auroc_observed": 0.9946127946127946,
+      "grid3_2_raw_auroc_observed": 0.9983164983164983,
+      "defect_score_quartiles": [
+        2.1048930264016805,
+        2.797320779200311,
+        2.9777775078456292,
+        3.1616644481304452,
+        3.928740166211995
+      ],
+      "normal_score_quartiles": [
+        -0.651374648845076,
+        0.1544887468466128,
+        0.6620123119500634,
+        1.3963062302271663,
+        2.6205288410446608
+      ],
+      "threshold": 2.3169610768645974,
+      "grid3_2_raw_boundary": 41.69589947553834,
+      "calibration_threshold_keys": [
+        "calibration/1365"
+      ],
+      "defect_winning_regions": {
+        "grid3-2_s1024": 54,
+        "grid4-2_s1024": 1
+      }
+    },
+    "candidate": {
+      "image_auroc_observed": 0.8494949494949495,
+      "grid3_2_raw_auroc_observed": 0.9468013468013468,
+      "defect_score_quartiles": [
+        1.205751495245586,
+        1.6788843896202628,
+        1.9579815149086746,
+        2.0776015360577924,
+        3.1525483640220813
+      ],
+      "normal_score_quartiles": [
+        -0.4956488535172039,
+        0.3647859045953604,
+        0.6806681355125944,
+        1.476393337268107,
+        2.4032575205077356
+      ],
+      "threshold": 2.262888086264987,
+      "grid3_2_raw_boundary": 0.48687018701426343,
+      "calibration_threshold_keys": [
+        "calibration/0616"
+      ],
+      "defect_winning_regions": {
+        "grid3-2_s1024": 49,
+        "grid4-2_s1024": 3,
+        "grid4-1_s1024": 1,
+        "grid1-1_s1024": 1,
+        "grid2-1_s1024": 1
+      }
+    }
+  },
+  "cases": {
+    "baseline": {
+      "detected": [
+        "defect/0000",
+        "defect/0001",
+        "defect/0002",
+        "defect/0003",
+        "defect/0004",
+        "defect/0005",
+        "defect/0006",
+        "defect/0007",
+        "defect/0008",
+        "defect/0009",
+        "defect/0010",
+        "defect/0011",
+        "defect/0012",
+        "defect/0013",
+        "defect/0014",
+        "defect/0015",
+        "defect/0016",
+        "defect/0017",
+        "defect/0018",
+        "defect/0020",
+        "defect/0021",
+        "defect/0022",
+        "defect/0023",
+        "defect/0025",
+        "defect/0026",
+        "defect/0027",
+        "defect/0028",
+        "defect/0029",
+        "defect/0030",
+        "defect/0031",
+        "defect/0032",
+        "defect/0033",
+        "defect/0034",
+        "defect/0035",
+        "defect/0036",
+        "defect/0037",
+        "defect/0038",
+        "defect/0039",
+        "defect/0040",
+        "defect/0041",
+        "defect/0042",
+        "defect/0043",
+        "defect/0044",
+        "defect/0045",
+        "defect/0046",
+        "defect/0047",
+        "defect/0048",
+        "defect/0049",
+        "defect/0050",
+        "defect/0051",
+        "defect/0052",
+        "defect/0053",
+        "defect/0054"
+      ],
+      "fp54": [
+        "good/0012",
+        "good/0023",
+        "good/0046"
+      ],
+      "fp256": [
+        "validation/0274",
+        "validation/0147",
+        "validation/1436",
+        "validation/0335",
+        "validation/1390",
+        "validation/0361",
+        "validation/0812",
+        "validation/0984",
+        "validation/0970",
+        "validation/0656",
+        "validation/0337",
+        "validation/0706",
+        "validation/0275",
+        "validation/0998"
+      ]
+    },
+    "candidate": {
+      "detected": [
+        "defect/0006",
+        "defect/0007",
+        "defect/0009",
+        "defect/0010",
+        "defect/0011",
+        "defect/0013",
+        "defect/0044",
+        "defect/0045"
+      ],
+      "fp54": [
+        "good/0012",
+        "good/0019",
+        "good/0040",
+        "good/0046"
+      ],
+      "fp256": [
+        "validation/0274",
+        "validation/0827",
+        "validation/0147",
+        "validation/0853",
+        "validation/0975",
+        "validation/1390",
+        "validation/0361",
+        "validation/0984",
+        "validation/0656",
+        "validation/0148",
+        "validation/0706",
+        "validation/0275",
+        "validation/1549"
+      ]
+    }
+  },
+  "minutes": 19.892757739999798,
+  "memory_GiB": {
+    "device_used_sample_peak_bytes": 4.06402587890625,
+    "rss_sample_peak_bytes": 2.7293128967285156,
+    "torch_cuda_peak_allocated_bytes": 2.667839527130127,
+    "torch_cuda_peak_reserved_bytes": 2.927734375
+  },
+  "decision": "not_adopted",
+  "verification_scope": "CPU verification of received records and scores; original archive, checkpoint and CUDA tensors were not independently recomputed on Mac."
+}

@@ -1,0 +1,15 @@
+{
+  "name": "mpi-knn3-screen-v1",
+  "single_change": "patch anomaly distance is the mean of 3 nearest original raw-feature bank rows",
+  "selection_salt": "mpi-knn3-screen-v1",
+  "selection_rule": "12 baseline true positives with lowest SHA256(salt NUL key), fixed before candidate GPU scores",
+  "regression_keys": ["defect/0006", "defect/0025", "defect/0048", "defect/0000", "defect/0054", "defect/0051", "defect/0013", "defect/0033", "defect/0038", "defect/0001", "defect/0034", "defect/0042"],
+  "calibration": "unchanged development128 median/Q90 and calibration169 higher Q95, max12, top1 map mean",
+  "gate": "all 12 selected prior detections retained; no threshold adjustment or replacement cases",
+  "reload_if_gate_passes": "first 8 fixed calibration photos and the same 12 regression cases; raw tolerance 1e-4, zero decision flips",
+  "scope": "screen only; no test109/validation256 full evaluation, masks, bootstrap, training or model adoption",
+  "resource_plan": {"comparison_seconds": 3600, "rss_GiB": 20, "selection_and_inference_reserved_GiB": 6},
+  "automatic_pass_allowed": false,
+  "service_model_changed": false,
+  "independent_performance_claim_allowed": false
+}
