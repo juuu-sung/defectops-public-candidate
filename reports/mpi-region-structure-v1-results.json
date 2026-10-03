@@ -1,0 +1,128 @@
+{
+  "mpi-region-threshold-feasibility-v1": {
+    "identity": "3ffcf2920b64c1bed58dbfc654dc667fd480b012625fabea34332fff92729d9d",
+    "payload": {
+      "candidate_boundaries_after_individual_budget_pruning": 79,
+      "deployable": false,
+      "elapsed_seconds": 0.00528083392418921,
+      "error": null,
+      "labels_used_for_fitting": true,
+      "peak_rss_bytes": 43958272,
+      "performance_evaluation": false,
+      "status": "feasible_label_aware_witness",
+      "visited_states": 1,
+      "witness_not_model": {
+        "DO_NOT_DEPLOY_label_fitted_boundaries": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          41.8514569503505,
+          null,
+          null,
+          null,
+          null
+        ],
+        "fp_a": 1,
+        "fp_b": 2,
+        "target_hits": 53
+      }
+    },
+    "payload_sha256": "afeb3097c20e5aa25425ee1f5f27f04a975c64c8cb4b93eab5430ce45e139b30"
+  },
+  "mpi-region-rank-v1": {
+    "identity": "a42bfb3a4c4ed1888e6270537f597dc22ee306ae9bb10a18bce6dcea2fddc7bf",
+    "payload": {
+      "automatic_pass_allowed": false,
+      "candidate_parameters": {
+        "decision": "any raw > region maximum; ties do not alert",
+        "normal_count": 297,
+        "per_region_alpha": "1/240",
+        "strict_upper_bounds": [
+          47.32923134943334,
+          49.52962154876895,
+          48.20348897794398,
+          51.715055116793,
+          42.325328838534475,
+          44.371989029209786,
+          47.737855992666105,
+          43.398567036884586,
+          44.257382788309236,
+          46.49676135109692,
+          42.94287495496796,
+          47.26002002343899
+        ],
+        "tail_denominator": 298
+      },
+      "conditions": {
+        "fp256": true,
+        "fp54": true,
+        "no_lost_tp": false,
+        "tp": false
+      },
+      "cost": {
+        "elapsed_seconds": 0.042229624930769205,
+        "peak_rss_bytes": 45465600
+      },
+      "counts": {
+        "candidate": {
+          "fn": 15,
+          "fp": 1,
+          "fp_validation": 10,
+          "tn": 53,
+          "tp": 40
+        },
+        "control": {
+          "fn": 2,
+          "fp": 3,
+          "fp_validation": 14,
+          "tn": 51,
+          "tp": 53
+        }
+      },
+      "decision": "not_adopted",
+      "gained_detections": [],
+      "independent_performance_claim_allowed": false,
+      "lost_baseline_detections": [
+        "defect/0017",
+        "defect/0021",
+        "defect/0022",
+        "defect/0023",
+        "defect/0025",
+        "defect/0027",
+        "defect/0028",
+        "defect/0034",
+        "defect/0035",
+        "defect/0041",
+        "defect/0043",
+        "defect/0044",
+        "defect/0047"
+      ],
+      "name": "mpi-region-rank-v1",
+      "point_passed": false,
+      "replay": {
+        "decision_changes": 0,
+        "maximum_absolute_difference": 0.0,
+        "passed": true,
+        "photos": 662
+      },
+      "stability": null,
+      "stability_status": "not_run_fixed_gate_failed",
+      "training_performed": false
+    },
+    "payload_sha256": "da2ad8d1e03ad13f0d2617da49b95615ff647fc4c03aead24cc8afde2b0f31a2"
+  },
+  "verification": {
+    "all_662_rank_predictions_checked_with_integer_pvalue_rule": true,
+    "oracle_witness_verified_independently": true,
+    "oracle_active_regions": 1,
+    "feasibility_report_sha256": "0f1f39ea1fe536be4ddc9fd9da936e1fed77ef19fded562c0c1033b2ed152b0c",
+    "rank_report_sha256": "05c95019b57470aaaac2a0cd481b93d77fde41f705e62fb566e2317fe4b71788",
+    "full_suite_before_rank_addition": 626,
+    "subtests": 52,
+    "targeted_final_rank_and_feasibility_suite": 31
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "mpi-unit-feature-v1",
+  "single_change": "L2-normalize every existing bank and query patch vector before native Euclidean search",
+  "bank_policy": "same 78643 original representatives; not a coreset optimized for the new metric",
+  "scoring": "unchanged top1-percent map mean, development128 median/Q90, calibration169 higher Q95, max12",
+  "reload": "all 297 normal photos; absolute raw tolerance 1e-4; zero decision flips",
+  "evaluation": "previously observed test109 and validation256; no masks; not independent final",
+  "early_stop": "point gate failure skips bootstrap; resource or replay failure stops before further scoring",
+  "acceptance": {
+    "bootstrap": {
+      "scopes": ["development_only", "calibration_only", "both"],
+      "repetitions_per_scope": 1000,
+      "generator": "PCG64",
+      "seeds": [20261001, 20261002, 20261003],
+      "minimum_tp_q025": 50,
+      "maximum_tp_q975_minus_q025_relative_to_baseline": 0.5,
+      "maximum_fp54_q975": 5,
+      "maximum_fp256_q975": 25
+    }
+  },
+  "resource_plan": {
+    "comparison_seconds": 7200,
+    "rss_GiB": 20,
+    "selection_and_inference_reserved_GiB": 6
+  },
+  "automatic_pass_allowed": false,
+  "service_model_changed": false,
+  "independent_performance_claim_allowed": false
+}

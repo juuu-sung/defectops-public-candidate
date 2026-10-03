@@ -1,5 +1,9 @@
 # MPI-C1-02 — 같은 64장을 더 다양하게 고르는 정상 학습 비교
 
+2026-10-02 최종 상태: **D단계 검산 완료·후보 비채택.** 검출50/55, 오경보4/54·19/256,
+보정 안정성 실패다. [D결과](../reports/mpi-normal-diversity-evaluation-v1-received-review.md)와
+[사이클 E결론](../reports/mpi-model-cycle-1-conclusion.md)을 참고한다. 아래는 사전 설계·진행 이력이다.
+
 작성일: 2026-10-01. **사전 설계 보존 /2026-10-02 학습·보정·재현 검산 완료 /자원 초과 이력 유지.**
 후속: [B단계 선정 준비 실행기](mpi-normal-diversity-preparation-v1.md)의 결과를2026-10-02 수령해
 [검산 완료](../reports/mpi-normal-diversity-preparation-v1-received-review.md)했다. 새64장 명단은 잠갔으며

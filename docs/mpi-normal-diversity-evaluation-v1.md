@@ -1,7 +1,10 @@
 # MPI-C1-02 D단계 — 새 정상 기준표가 실제 판단을 개선했는지 비교
 
 2026-10-02. C단계 전달물을 검산한 뒤 사용자가 “응 다음 작업 진행해보자”라고 동의하여 준비한 실행기입니다.
-상태: **코드·CPU 검증 완료 후 연구실 실행 대기. 새 모델의 불량 성능은 아직 미측정입니다.**
+현재 상태: **연구실 실행·수령 검산 완료, 성적·안정성 실패로 비채택입니다.**
+[D단계 결과](../reports/mpi-normal-diversity-evaluation-v1-received-review.md)와
+[E단계 결론](../reports/mpi-model-cycle-1-conclusion.md)을 확인하십시오.
+아래 실행 절차는 재현을 위한 과거 기록이며 지금 다시 실행할 필요는 없습니다.
 사전 규칙은 [MPI-C1-02 카드](mpi-normal-diversity-v1.md)와 [고정 설정](../configs/mpi-normal-diversity-v1.json)을 유지합니다.
 
 ## 1. 이번에 확인할 것
