@@ -1,0 +1,293 @@
+{
+  "zip_sha256": "932b2b7ccb5841ab624ad656739ad7c75ea7029a3159a7bd6157077d83de0db6",
+  "zip_members": 9,
+  "payload_hashes_verified": 8,
+  "source_files_verified": 133,
+  "sample_receipts_verified": 309,
+  "runtime_gates_verified": 1,
+  "baseline_replay_max_difference": 0,
+  "normal_contract_independent_recalculation_exact": true,
+  "regression_predictions_independent_recalculation_exact": true,
+  "report": {
+    "attempts_with_errors": 0,
+    "automatic_pass_allowed": false,
+    "cumulative_seconds": 466.5304459000472,
+    "decision": "stop_candidate",
+    "false_positive_rate_evaluated": false,
+    "full_evaluation_run": false,
+    "independent_performance_claim_allowed": false,
+    "new_training": false,
+    "normal_calibration_photos": 297,
+    "reload": {
+      "passed": false,
+      "status": "not_run_screen_failed"
+    },
+    "scored_photos": 309,
+    "screen": {
+      "lost_keys": [
+        "defect/0025",
+        "defect/0034"
+      ],
+      "passed": false,
+      "performance_estimate": false,
+      "predictions": [
+        {
+          "alert": true,
+          "key": "defect/0006",
+          "label": 1,
+          "photo_id": "0006",
+          "score": 3.235747796701057,
+          "winning_region": "grid3-2_s1024"
+        },
+        {
+          "alert": false,
+          "key": "defect/0025",
+          "label": 1,
+          "photo_id": "0025",
+          "score": 2.177820256159907,
+          "winning_region": "grid3-2_s1024"
+        },
+        {
+          "alert": true,
+          "key": "defect/0048",
+          "label": 1,
+          "photo_id": "0048",
+          "score": 2.684600048505575,
+          "winning_region": "grid3-2_s1024"
+        },
+        {
+          "alert": true,
+          "key": "defect/0000",
+          "label": 1,
+          "photo_id": "0000",
+          "score": 2.471243357142991,
+          "winning_region": "grid3-2_s1024"
+        },
+        {
+          "alert": true,
+          "key": "defect/0054",
+          "label": 1,
+          "photo_id": "0054",
+          "score": 2.85908143560116,
+          "winning_region": "grid3-2_s1024"
+        },
+        {
+          "alert": true,
+          "key": "defect/0051",
+          "label": 1,
+          "photo_id": "0051",
+          "score": 2.466237305591733,
+          "winning_region": "grid3-2_s1024"
+        },
+        {
+          "alert": true,
+          "key": "defect/0013",
+          "label": 1,
+          "photo_id": "0013",
+          "score": 2.8046216895139042,
+          "winning_region": "grid4-2_s1024"
+        },
+        {
+          "alert": true,
+          "key": "defect/0033",
+          "label": 1,
+          "photo_id": "0033",
+          "score": 2.5142836829746016,
+          "winning_region": "grid3-2_s1024"
+        },
+        {
+          "alert": true,
+          "key": "defect/0038",
+          "label": 1,
+          "photo_id": "0038",
+          "score": 2.553735402113951,
+          "winning_region": "grid3-2_s1024"
+        },
+        {
+          "alert": true,
+          "key": "defect/0001",
+          "label": 1,
+          "photo_id": "0001",
+          "score": 2.6832622081499324,
+          "winning_region": "grid3-2_s1024"
+        },
+        {
+          "alert": false,
+          "key": "defect/0034",
+          "label": 1,
+          "photo_id": "0034",
+          "score": 2.322700397912769,
+          "winning_region": "grid3-2_s1024"
+        },
+        {
+          "alert": true,
+          "key": "defect/0042",
+          "label": 1,
+          "photo_id": "0042",
+          "score": 2.5452982951160745,
+          "winning_region": "grid3-2_s1024"
+        }
+      ],
+      "retained": 10,
+      "selected_prior_detections": 12
+    },
+    "service_model_changed": false,
+    "stability_evaluated": false,
+    "status": "mean_three_small_regression_completed",
+    "test_masks_decoded": 0
+  },
+  "memory_GiB": {
+    "device_used_sample_peak_bytes": 4.05230712890625,
+    "rss_sample_peak_bytes": 2.1489295959472656,
+    "torch_cuda_peak_allocated_bytes": 2.666985034942627,
+    "torch_cuda_peak_reserved_bytes": 2.916015625
+  },
+  "contracts": [
+    {
+      "method": "baseline",
+      "threshold": 2.3169610768645974,
+      "grid3_2": {
+        "center": 34.10068746601662,
+        "region": "grid3-2_s1024",
+        "scale": 3.2780921895329627
+      },
+      "raw_grid3_2_boundary": 41.69589947553834,
+      "threshold_support": [
+        "calibration/1365"
+      ]
+    },
+    {
+      "method": "candidate",
+      "threshold": 2.4145251558613596,
+      "grid3_2": {
+        "center": 35.160980361263924,
+        "region": "grid3-2_s1024",
+        "scale": 3.637584241425124
+      },
+      "raw_grid3_2_boundary": 43.94401901874975,
+      "threshold_support": [
+        "calibration/1644"
+      ]
+    }
+  ],
+  "paired_regression": [
+    {
+      "key": "defect/0006",
+      "baseline_score": 3.7650294689399737,
+      "candidate_score": 3.235747796701057,
+      "baseline_margin": 1.4480683920753763,
+      "candidate_margin": 0.8212226408396974,
+      "baseline_grid3_2_raw": 46.44280116151019,
+      "candidate_grid3_2_raw": 46.931285555769755
+    },
+    {
+      "key": "defect/0025",
+      "baseline_score": 2.5515117544501704,
+      "candidate_score": 2.177820256159907,
+      "baseline_margin": 0.23455067758557302,
+      "candidate_margin": -0.23670489970145248,
+      "baseline_grid3_2_raw": 42.46477821978127,
+      "candidate_grid3_2_raw": 43.08298500572763
+    },
+    {
+      "key": "defect/0048",
+      "baseline_score": 3.1702738676088953,
+      "candidate_score": 2.684600048505575,
+      "baseline_margin": 0.8533127907442979,
+      "candidate_margin": 0.2700748926442156,
+      "baseline_grid3_2_raw": 44.4931374701058,
+      "candidate_grid3_2_raw": 44.92643919223693
+    },
+    {
+      "key": "defect/0000",
+      "baseline_score": 2.8685197345682387,
+      "candidate_score": 2.471243357142991,
+      "baseline_margin": 0.5515586577036413,
+      "candidate_margin": 0.05671820128163141,
+      "baseline_grid3_2_raw": 43.50395960342593,
+      "candidate_grid3_2_raw": 44.15033625393379
+    },
+    {
+      "key": "defect/0054",
+      "baseline_score": 3.2602103770409894,
+      "candidate_score": 2.85908143560116,
+      "baseline_margin": 0.943249300176392,
+      "candidate_margin": 0.44455627973980016,
+      "baseline_grid3_2_raw": 44.787957639229006,
+      "candidate_grid3_2_raw": 45.56112993635782
+    },
+    {
+      "key": "defect/0051",
+      "baseline_score": 2.8667361938545097,
+      "candidate_score": 2.466237305591733,
+      "baseline_margin": 0.5497751169899123,
+      "candidate_margin": 0.05171214973037319,
+      "baseline_grid3_2_raw": 43.498112992542545,
+      "candidate_grid3_2_raw": 44.13212631969917
+    },
+    {
+      "key": "defect/0013",
+      "baseline_score": 3.1847389534509314,
+      "candidate_score": 2.8046216895139042,
+      "baseline_margin": 0.867777876586334,
+      "candidate_margin": 0.3900965336525446,
+      "baseline_grid3_2_raw": 44.540555355025504,
+      "candidate_grid3_2_raw": 44.96208966650614
+    },
+    {
+      "key": "defect/0033",
+      "baseline_score": 2.944262093159943,
+      "candidate_score": 2.5142836829746016,
+      "baseline_margin": 0.6273010162953456,
+      "candidate_margin": 0.09975852711324196,
+      "baseline_grid3_2_raw": 43.752250037542204,
+      "candidate_grid3_2_raw": 44.30689906492466
+    },
+    {
+      "key": "defect/0038",
+      "baseline_score": 3.006893207173431,
+      "candidate_score": 2.553735402113951,
+      "baseline_margin": 0.6899321303088337,
+      "candidate_margin": 0.13921024625259149,
+      "baseline_grid3_2_raw": 43.95756060321157,
+      "candidate_grid3_2_raw": 44.450408016763085
+    },
+    {
+      "key": "defect/0001",
+      "baseline_score": 3.0795008517696894,
+      "candidate_score": 2.6832622081499324,
+      "baseline_margin": 0.762539774905092,
+      "candidate_margin": 0.2687370522885728,
+      "baseline_grid3_2_raw": 44.19557515586295,
+      "candidate_grid3_2_raw": 44.9215726852417
+    },
+    {
+      "key": "defect/0034",
+      "baseline_score": 2.744772464476929,
+      "candidate_score": 2.322700397912769,
+      "baseline_margin": 0.42781138761233173,
+      "candidate_margin": -0.09182475794859046,
+      "baseline_grid3_2_raw": 43.098304643863585,
+      "candidate_grid3_2_raw": 43.60999872626328
+    },
+    {
+      "key": "defect/0042",
+      "baseline_score": 2.9777775078456292,
+      "candidate_score": 2.5452982951160745,
+      "baseline_margin": 0.6608164309810318,
+      "candidate_margin": 0.1307731392547149,
+      "baseline_grid3_2_raw": 43.86211665665231,
+      "candidate_grid3_2_raw": 44.41971732930439
+    }
+  ],
+  "gate_comparison": {
+    "maximum_absolute_photo_score_difference": 0,
+    "maximum_absolute_region_score_difference": 0,
+    "normal_original_photos": 8,
+    "normal_region_scores": 96
+  },
+  "limitations": [
+    "No raw archive, checkpoint or CUDA tensor recomputation on Mac",
+    "No candidate reload, complete observed evaluation, false-positive estimate, bootstrap or independent final"
+  ]
+}
