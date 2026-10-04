@@ -11,9 +11,11 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 **[EfficientAD 고정 평가 결과](reports/mpi-efficientad-evaluation-v2-received-review.md)는 기존 검출12장 중0장 유지다.**
 정상8장 재현은 차이0이고 실행 오류는 해결됐지만 검출 보존 기준을 실패했다. 전체 비교·반복 속도·
 600회 민감도는 미실행이다. 전체 불량의 검출률0%라는 뜻은 아니며 기존 Q90·서비스는 유지한다.
-후속 동의로 [저장 지도 CPU 진단](docs/mpi-efficientad-map-diagnostics-v1.md)을 준비했다.
-같은12불량과 정상8장만 원본·ST·AE·합성지도·상위픽셀로 비교한다. 새 추론·학습·임곗값 변경 없이
-20사진·40개 비교 카드와 HTML을 내보낸다. 원인 판독은 연구실 ZIP 수령 후 진행한다.
+[저장 지도 진단 전체 ZIP](reports/mpi-efficientad-map-diagnostics-v1-received-review.md)을 수령·검산하고 대표 카드를 확인했다.
+일부 정상 외관에 ST가 강하게 반응하고 일부 결함에는 약한 반응이 남지만 원인은 미확정이다.
+후속 동의로 [저장10k·30k·70k 모델 비교](docs/mpi-efficientad-trajectory-v1.md)를 준비했다.
+학습 정상64장 전체 모음·입력 감사·최종 모델 재현 뒤 같은20사진의 원시 반응만 비교한다.
+새 학습·다른 시점에70k 임곗값 적용·서비스 교체는 없다. 실제 CUDA 결과는 수령 전이다.
 
 ### 직전 학습·검증 이력
 
