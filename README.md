@@ -6,7 +6,11 @@
 이미지로 공정 원인을 확정하거나 이상 점수를 심각도로 해석하지 않는다.
 MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 
-## 지금 진행 중 (2026-10-04)
+## 지금 진행 중 (2026-10-05)
+
+**SuperSimpleNet [Phase1 GPU 점검](reports/mpi-supersimplenet-probe-v1-received-review.md) 통과 후
+[Phase2 정식300epoch 실행기](docs/mpi-supersimplenet-fit-v1.md)를 준비했다.** 새 초기화→정상64장 학습→
+정상128/169장 보정→297장 재로딩 검증이다. 정식 결과는 아직 미수령이며 불량 평가는 포함하지 않는다.
 
 **SuperSimpleNet [Phase 0·1 실행 준비](docs/mpi-supersimplenet-probe-v1.md)를 추가했다.**
 기존 정상64장 중8장×12영역만 사용하는 batch8·100회 GPU 점검이며 정식 학습/불량 평가는 아니다.

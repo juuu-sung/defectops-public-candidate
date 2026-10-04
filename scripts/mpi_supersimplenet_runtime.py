@@ -37,6 +37,8 @@ def state_digest(module):
 
 
 class Runtime:
+    CHECKPOINT_PURPOSE = p.NAME
+
     def __init__(self, weights):
         import torch
         from torchvision import transforms
@@ -156,7 +158,7 @@ class Runtime:
         torch = self.torch
         np_state = np.random.get_state()
         torch.cuda.synchronize()
-        torch.save({"purpose": p.NAME, "identity": signature, "step": step,
+        torch.save({"purpose": self.CHECKPOINT_PURPOSE, "identity": signature, "step": step,
                     "model": self.model.state_dict(), "optimizer": self.optimizer.state_dict(),
                     "cpu_rng": torch.get_rng_state(), "cuda_rng": torch.cuda.get_rng_state_all(),
                     "python_rng": random.getstate(),
@@ -165,7 +167,7 @@ class Runtime:
     def load(self, path, signature, step):
         torch = self.torch
         payload = torch.load(path, map_location="cpu", weights_only=True)
-        if payload["purpose"] != p.NAME or payload["identity"] != signature or payload["step"] != step:
+        if payload["purpose"] != self.CHECKPOINT_PURPOSE or payload["identity"] != signature or payload["step"] != step:
             raise ValueError("Checkpoint identity differs")
         del self.optimizer, self.model
         torch.cuda.empty_cache()

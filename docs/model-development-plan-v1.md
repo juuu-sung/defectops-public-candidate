@@ -1,6 +1,11 @@
 # DefectOps 모델 개발 통합 계획 v1
 
-## 최신 결정 2026년 10월 4일
+## 최신 결정 2026년 10월 5일
+
+**현재 작업: SuperSimpleNet Phase2 정식 학습 실행 준비.** [점검 결과](../reports/mpi-supersimplenet-probe-v1-received-review.md)
+100회/36.8초·GPU예약5.14GiB·재로딩차이0을 검산했다. 사용자 승인에 따라
+[300epoch·정상 보정·재로딩](mpi-supersimplenet-fit-v1.md) 실행기를 준비했다. 아직 정식 학습 결과와
+불량 검출 성능은 없다. 아래 Phase0·1과 EfficientAD 기록은 이전 이력이다.
 
 **현재 작업: SuperSimpleNet Phase 0·1 실행 준비.** 사용자가 실험 설계에 따른 실행기·검증·
 GPU 점검 명령 준비를 승인했다. [정상 전용100회 점검](mpi-supersimplenet-probe-v1.md)을 추가했다.
