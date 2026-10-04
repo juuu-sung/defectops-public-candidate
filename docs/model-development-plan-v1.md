@@ -2,10 +2,10 @@
 
 ## 최신 결정 2026년 10월 5일
 
-**현재 작업: SuperSimpleNet Phase2 정식 학습 실행 준비.** [점검 결과](../reports/mpi-supersimplenet-probe-v1-received-review.md)
-100회/36.8초·GPU예약5.14GiB·재로딩차이0을 검산했다. 사용자 승인에 따라
-[300epoch·정상 보정·재로딩](mpi-supersimplenet-fit-v1.md) 실행기를 준비했다. 아직 정식 학습 결과와
-불량 검출 성능은 없다. 아래 Phase0·1과 EfficientAD 기록은 이전 이력이다.
+**현재 작업: SuperSimpleNet 고정 모델 평가 준비.** [정식 학습 결과](../reports/mpi-supersimplenet-fit-v1-received-review.md)
+300epoch·28,800회·정상297장 재로딩 차이0을 검산했다. 사용자 승인에 따라
+[정상 재현·고정12장·조건부 전체 비교](mpi-supersimplenet-evaluation-v1.md)를 준비했다.
+최종 모델과 경고 기준은 고정한다. 불량 검출 성능은 아직 없다. 아래 Phase0·1과 EfficientAD 기록은 이전 이력이다.
 
 **현재 작업: SuperSimpleNet Phase 0·1 실행 준비.** 사용자가 실험 설계에 따른 실행기·검증·
 GPU 점검 명령 준비를 승인했다. [정상 전용100회 점검](mpi-supersimplenet-probe-v1.md)을 추가했다.

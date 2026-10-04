@@ -8,9 +8,11 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 
 ## 지금 진행 중 (2026-10-05)
 
-**SuperSimpleNet [Phase1 GPU 점검](reports/mpi-supersimplenet-probe-v1-received-review.md) 통과 후
-[Phase2 정식300epoch 실행기](docs/mpi-supersimplenet-fit-v1.md)를 준비했다.** 새 초기화→정상64장 학습→
-정상128/169장 보정→297장 재로딩 검증이다. 정식 결과는 아직 미수령이며 불량 평가는 포함하지 않는다.
+**SuperSimpleNet [정식300epoch 결과](reports/mpi-supersimplenet-fit-v1-received-review.md)를 검산했고
+[고정 모델 평가 실행기](docs/mpi-supersimplenet-evaluation-v1.md)를 준비했다.**
+28,800회·약2시간26분34초·GPU예약5.63GiB, 정상297장 재로딩 차이0이다.
+다음은 정상 재현→고정 불량12장→통과 시 전체 비교·속도→성적·속도 통과 시 보정 민감도다.
+불량 성능은 아직 미측정이며, 추가 학습·경고 기준 변경·서비스 교체는 하지 않는다.
 
 **SuperSimpleNet [Phase 0·1 실행 준비](docs/mpi-supersimplenet-probe-v1.md)를 추가했다.**
 기존 정상64장 중8장×12영역만 사용하는 batch8·100회 GPU 점검이며 정식 학습/불량 평가는 아니다.
