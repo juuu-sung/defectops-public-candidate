@@ -8,6 +8,10 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 
 ## 지금 진행 중 (2026-10-04)
 
+**SuperSimpleNet [Phase 0·1 실행 준비](docs/mpi-supersimplenet-probe-v1.md)를 추가했다.**
+기존 정상64장 중8장×12영역만 사용하는 batch8·100회 GPU 점검이며 정식 학습/불량 평가는 아니다.
+연구실 결과 수령 전 CUDA 통과·성능 개선을 주장하지 않는다. 기존 Q90과 서비스는 유지한다.
+
 **[EfficientAD 고정 평가 결과](reports/mpi-efficientad-evaluation-v2-received-review.md)는 기존 검출12장 중0장 유지다.**
 정상8장 재현은 차이0이고 실행 오류는 해결됐지만 검출 보존 기준을 실패했다. 전체 비교·반복 속도·
 600회 민감도는 미실행이다. 전체 불량의 검출률0%라는 뜻은 아니며 기존 Q90·서비스는 유지한다.

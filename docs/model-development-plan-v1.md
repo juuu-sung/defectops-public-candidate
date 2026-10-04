@@ -2,6 +2,10 @@
 
 ## 최신 결정 2026년 10월 4일
 
+**현재 작업: SuperSimpleNet Phase 0·1 실행 준비.** 사용자가 실험 설계에 따른 실행기·검증·
+GPU 점검 명령 준비를 승인했다. [정상 전용100회 점검](mpi-supersimplenet-probe-v1.md)을 추가했다.
+정식300epoch 학습·시험·서비스 교체는 미실행이다. 아래 EfficientAD 기록과 Q90 기준선은 보존한다.
+
 **고정 평가 완료, EfficientAD 검출 보존0/12로 실패.**
 [검산 근거](../reports/mpi-efficientad-evaluation-v2-received-review.md): 정상 재현 차이0,
 실행 오류 없음, 전체 비교·반복 속도·600회 민감도 미실행. 전체 불량의 검출률0% 주장은 금지한다.
