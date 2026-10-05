@@ -2,12 +2,14 @@
 
 ## 최신 결정 2026년 10월 6일
 
-**현재 작업: 정상·합성 이상 gradient를 분리하는 읽기 전용 진단.**
-[강도 비교 검토](../reports/mpi-supersimplenet-noise-strength-v1-received-review.md)에서
-2배·4배 학습 후에도 같은 위치 구분 AUROC가 약0.5였다. 강도 탐색은 중단한다.
-사용자 승인에 따라 [신호 진단](mpi-supersimplenet-gradient-audit-v1.md)을 준비한다.
-기존 세 모델에서 공식 손실을 정상/이상별로 나누고 부위별 신호 크기·방향 및 전체 신호 재현을 측정한다.
-가중치 업데이트·검출부 초기화·실제 불량 시험은 없다. 결과 검토 후 필요하면 초기화 단일 요인 대조를 설계한다.
+**현재 작업: 검출부 초기화 여부만 바꾸는 500회 대조 실험.**
+[학습 신호 검토](../reports/mpi-supersimplenet-gradient-audit-v1-received-review.md)에서
+검출부 정상·이상 신호의 대립을 확인했지만 학습 실패의 단독 원인은 확정하지 않았다.
+사용자 승인에 따라 [검출부 초기화 대조](mpi-supersimplenet-head-reset-v1.md)를 준비한다.
+정식 원본의 검출부 파라미터·정규화 통계만 새로 만들고 변환부·특징 추출부는 보존한다.
+같은8타일·잡음0.015·학습률·500회·학습 난수에서 기존 변경 합성500 모델과 비교한다.
+최종500회와 정상 대조를 함께 검토하며 초기화 난수·중간 최고 모델을 자동 선택하지 않는다.
+실제 불량 시험·새 임곗값·서비스 변경은 없다. GPU 결과 확인 후 다음 확대 여부를 결정한다.
 
 **직전 작업: SuperSimpleNet 잡음 강도 한 요인의 제한 비교.**
 [위치 변경500 수령 검토](../reports/mpi-supersimplenet-varying-synthetic-v1-received-review.md)에서
