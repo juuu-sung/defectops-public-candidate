@@ -14,8 +14,11 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 [고정 모델 합성 이상 점검](docs/mpi-supersimplenet-synthetic-check-v1.md)에서도 사진·픽셀 구분력이 약했다.
 [작은 고정 합성 문제 500회 제한 학습](docs/mpi-supersimplenet-learnability-v1.md)은 완료했으며,
 위치 성적이 높아져도 정상 대조에서 같은 위치에 반응하는 문제가 남았다.
-다음은 [위치와 잡음을 바꾸는 500회 학습 및 공통 새 난수 평가](docs/mpi-supersimplenet-varying-synthetic-v1.md)다.
-같은 정상 한 사진의 8타일을 유지하고, 이전 고정500 모델과 새 모델을 동일 합성 문제에서 비교한다.
+이후 [위치와 잡음을 바꾸는 500회 결과](reports/mpi-supersimplenet-varying-synthetic-v1-received-review.md)도 수령했다.
+평가용 네 난수 평균 픽셀 AUROC 0.5035, 같은 위치 정상/합성 구분 AUROC 0.4999로 학습 구분력이 약했다.
+다음은 [잡음 강도 0.03·0.06 각각 500회 제한 비교](docs/mpi-supersimplenet-noise-strength-v1.md)다.
+같은 정상 한 사진의 8타일·학습률·난수를 유지하고 모든 모델을 공통 세 강도에서 검사한다.
+기존 0.015 모델은 재학습하지 않으며 더 강한 합성 문제의 성적만으로 개선을 선언하지 않는다.
 새 불량 시험·경고 기준 변경·서비스 전환은 없다.
 
 **SuperSimpleNet [Phase 0·1 실행 준비](docs/mpi-supersimplenet-probe-v1.md)를 추가했다.**
