@@ -1,8 +1,15 @@
 # DefectOps 모델 개발 통합 계획 v1
 
-## 최신 결정 2026년 10월 5일
+## 최신 결정 2026년 10월 6일
 
-**현재 작업: SuperSimpleNet 잡음 강도 한 요인의 제한 비교.**
+**현재 작업: 정상·합성 이상 gradient를 분리하는 읽기 전용 진단.**
+[강도 비교 검토](../reports/mpi-supersimplenet-noise-strength-v1-received-review.md)에서
+2배·4배 학습 후에도 같은 위치 구분 AUROC가 약0.5였다. 강도 탐색은 중단한다.
+사용자 승인에 따라 [신호 진단](mpi-supersimplenet-gradient-audit-v1.md)을 준비한다.
+기존 세 모델에서 공식 손실을 정상/이상별로 나누고 부위별 신호 크기·방향 및 전체 신호 재현을 측정한다.
+가중치 업데이트·검출부 초기화·실제 불량 시험은 없다. 결과 검토 후 필요하면 초기화 단일 요인 대조를 설계한다.
+
+**직전 작업: SuperSimpleNet 잡음 강도 한 요인의 제한 비교.**
 [위치 변경500 수령 검토](../reports/mpi-supersimplenet-varying-synthetic-v1-received-review.md)에서
 네 평가 난수 평균 픽셀 AUROC 0.5035, 같은 위치 정상 대비 합성 구분 0.4999로 구분력이 약했다.
 [후속 조건](mpi-supersimplenet-noise-strength-v1.md)은 같은 정상 한 사진의 8타일·500회·학습률·난수를
