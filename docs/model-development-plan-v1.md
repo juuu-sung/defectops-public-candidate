@@ -2,10 +2,10 @@
 
 ## 최신 결정 2026년 10월 5일
 
-**현재 작업: SuperSimpleNet 저장 지도 진단과 학습량 점검.** [고정12장 평가](../reports/mpi-supersimplenet-evaluation-v1-received-review.md)
-0/12 검출, 정상 재현 차이0을 검산했다. 사용자 승인에 따라
-[미탐12·정상8사진 지도 비교](mpi-supersimplenet-map-diagnostics-v1.md)를 준비한다.
-정상 사진 다양성 확대와 반복 학습 연장은 다른 실험으로 검토한다. 이번 실행에는 새 학습이 없다.
+**현재 작업: SuperSimpleNet 고정 모델 합성 이상 기능 점검.** [지도 진단 검토](../reports/mpi-supersimplenet-map-diagnostics-v1-received-review.md)에서
+위치 비교 가능한63결함영역 중 SSN 상위 반응과 정답이 겹친 영역은3개였다.
+사용자 승인에 따라 [합성 이상과 모드 비교](mpi-supersimplenet-synthetic-check-v1.md)를 준비한다.
+학습 정상8·개발 정상8사진만 사용한다. 정상 다양성 확대와 반복 연장은 후속 설계이며 가중치 업데이트는 없다.
 최종 모델과 경고 기준, Q90·서비스는 유지한다. 아래 Phase0·1과 EfficientAD 기록은 이전 이력이다.
 
 **현재 작업: SuperSimpleNet Phase 0·1 실행 준비.** 사용자가 실험 설계에 따른 실행기·검증·
