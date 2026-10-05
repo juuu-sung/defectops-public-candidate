@@ -14,6 +14,7 @@ import pytest
 from scripts import mpi_supersimplenet_head_reset_protocol as p
 from scripts import run_mpi_supersimplenet_head_reset as runner
 from scripts.mpi_supersimplenet_head_reset_runtime import Runtime as RealRuntime
+from scripts.mpi_supersimplenet_matched_eval_runtime import PUBLIC_VALIDATION
 from test_mpi_supersimplenet_varying import arrays, Monitor
 
 
@@ -40,6 +41,9 @@ def setup_run(tmp_path, monkeypatch):
         "baseline_signature": "varying", "baseline_fingerprints": fp(500),
         "baseline_training_targets": [str(i) for i in range(3)], "job": {"rows": [{}]*8}, "policy": p.POLICY.copy()}
     records = {"report.json": {"final_fingerprints": fp(0)}}
+    identity["previous_failure"] = {"seconds": 11., "files_sha256": {}, "initialization": {
+        "seed": p.POLICY["head_initialization_seed"], "before": fp(0), "after": fp(0, True),
+        "batchnorm_modules": 2, "batchnorm_fresh": True, "optimizer_empty": True}}
     references = {key: {f"s{s}__{n}": a for s in p.POLICY["evaluation_seeds"]
                        for n, a in arrays(step, s).items()}
                   for key, step in (("original", 0), ("baseline", 500))}
@@ -84,7 +88,12 @@ def setup_run(tmp_path, monkeypatch):
         def evaluate_seed(self, images, seed):
             changed = self.bad_evaluation_targets and self.reset
             return arrays(self.index + (10 if self.reset else 0), seed+int(changed)), {
-                "state_unchanged": True, "state_before_sha256": "same", "state_after_sha256": "same"}
+                "state_unchanged": True, "state_before_sha256": "same", "state_after_sha256": "same",
+                "public_eval_map_max_abs_difference": 0., "public_eval_score_max_abs_difference": 0.,
+                "public_batch_comparison": {"validation": PUBLIC_VALIDATION, "seed": seed,
+                    "public_batch": 8, "separated_batch": 8, "synthetic_batch": 16, "absolute_tolerance": 1e-4,
+                    "same_batch_map_max_abs": 0., "same_batch_score_max_abs": 0.,
+                    "cross_batch_map_max_abs": .0002, "cross_batch_score_max_abs": 0.}}
         def save(self, path, signature, step):
             assert self.reset
             path.write_text(json.dumps([signature, step]))
@@ -112,6 +121,7 @@ def test_execute_replay_reset_training_reload_export_and_noop(tmp_path, monkeypa
     assert report["completed_updates"] == 3 and report["unique_training_target_hashes"] == 3
     assert report["final_reload_max_abs_difference"] == 0 and report["test_images_decoded"] == 0
     assert report["all_training_targets_match_baseline"]
+    assert report["previous_failure_seconds"] == 11 and report["cumulative_compute_seconds"] >= 11
     assert seen.count("reset") == 1 and seen.count("baseline") == 1
     assert seen.index("baseline") < seen.index("reset") < seen.index(1)
     assert runner.execute(*args, runtime_factory=rt, monitor_factory=Monitor) == report
@@ -251,11 +261,12 @@ def test_official_head_constructor_boundary_and_rng_scope(monkeypatch):
 def test_prepare_keeps_reviewed_provenance_and_pins_new_sources(tmp_path, monkeypatch):
     before = {"sources_lf_sha256": {"old.py": "unchanged"}, "policy": p.n.POLICY,
               "baseline_training_targets": [str(i) for i in range(500)], "baseline_checkpoint_sha256": "pinned"}
-    monkeypatch.setattr(p.n, "prepare", lambda *a: ({"old": True}, before, {"baseline": True}))
+    monkeypatch.setattr(p.n, "prepare", lambda *a: ({"report.json": {"final_fingerprints": {}}}, before, {"baseline": True}))
+    monkeypatch.setattr(p, "read_previous_failure", lambda *a: {"seconds": 11})
     records, identity, references = p.prepare(runner.ROOT, tmp_path, tmp_path, tmp_path, tmp_path)
-    assert records == {"old": True} and references == {"baseline": True}
+    assert records == {"report.json": {"final_fingerprints": {}}} and references == {"baseline": True}
     assert identity["policy"] == p.POLICY and identity["baseline_checkpoint_sha256"] == "pinned"
-    assert len(identity["sources_lf_sha256"]) == 6 and before["sources_lf_sha256"] == {"old.py": "unchanged"}
+    assert len(identity["sources_lf_sha256"]) == 7 and before["sources_lf_sha256"] == {"old.py": "unchanged"}
     before["baseline_training_targets"].pop()
     with pytest.raises(ValueError): p.prepare(runner.ROOT, tmp_path, tmp_path, tmp_path, tmp_path)
 
@@ -266,7 +277,8 @@ def test_main_paths(tmp_path, monkeypatch):
     formal = tmp_path/"artifacts"/p.v.q.p.NAME
     fixed = tmp_path/"artifacts/analyses"/p.v.old.NAME
     varying = tmp_path/"artifacts/analyses"/p.v.NAME
-    for path in (formal, fixed, varying): path.mkdir(parents=True)
+    prior = tmp_path/"artifacts/analyses"/p.PREVIOUS_NAME
+    for path in (formal, fixed, varying, prior): path.mkdir(parents=True)
     monkeypatch.setattr(p.fit, "EXPECTED_ARCHIVE_SHA256", p.fit.sha256_file(archive))
     env = {k: "pinned" for k in ("torch", "torchvision", "anomalib", "timm", "supersimplenet_sources")}
     def prepare(project, handoffs, fit_root, fixed_root, varying_root):

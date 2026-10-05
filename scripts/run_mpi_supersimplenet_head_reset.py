@@ -68,6 +68,7 @@ def execute(root, archive, fit_root, varying_root, identity, records, references
         if (fit.sha256_file(original) != identity["checkpoint_sha256"] or
                 fit.sha256_file(baseline_path) != identity["baseline_checkpoint_sha256"]):
             raise ValueError("Original or baseline checkpoint changed")
+        p.check_previous_files(root.parent/p.PREVIOUS_NAME, identity["previous_failure"])
 
     check_originals()
     with fit.locked_run(root):
@@ -75,18 +76,21 @@ def execute(root, archive, fit_root, varying_root, identity, records, references
             raise ValueError("Output without identity; preserve and review")
         publish(root, "identity", signature, identity)
         previous = attempts(root)
-        prior_seconds = sum(a["seconds"] for a in previous)
+        prior_seconds = identity["previous_failure"]["seconds"] + sum(a["seconds"] for a in previous)
         prior_updates = sum(a["attempted_updates"] for a in previous)
         control = p.v.read_phase(root, "baseline-control", signature)[0] if (root/"baseline-control").exists() else None
         initialization = (p.v.old.e.value(root, "initialization", signature)
                           if (root/"initialization").exists() else None)
         if initialization is not None:
             p.validate_initialization(initialization, original_fp)
+            p.validate_same_initialization(initialization, identity["previous_failure"]["initialization"])
         trajectory = p.v.read_checkpoints(root, signature)
         if trajectory and (control is None or initialization is None):
             raise ValueError("Missing baseline or initialization receipt")
         if control is not None and control["fingerprints"] != identity["baseline_fingerprints"]:
             raise ValueError("Saved baseline fingerprint differs")
+        if control is not None:
+            p.validate_evaluations(control["evaluations"])
         for progress in trajectory:
             check_targets(progress["evaluations"], control)
             p.validate_progress(progress, identity, initialization)
@@ -103,6 +107,7 @@ def execute(root, archive, fit_root, varying_root, identity, records, references
         started = time.perf_counter()
         runtime = None
         error, interrupted, attempted = None, False, 0
+        failure_diagnostics = None
         monitor = monitor_factory(None, prior_seconds, started, p.POLICY)
         try:
             with monitor, zipfile.ZipFile(archive) as source, ExitStack() as stack:
@@ -115,6 +120,7 @@ def execute(root, archive, fit_root, varying_root, identity, records, references
                     if runtime.fingerprints() != identity["baseline_fingerprints"]:
                         raise ValueError("Loaded baseline differs")
                     evaluations, flat = evaluate(runtime, images, monitor)
+                    p.validate_evaluations(evaluations)
                     replay = compare_arrays(flat, references["baseline"])
                     control = {"step": 500, "losses": [], "optimizer_updates": 0, "evaluations": evaluations,
                                "fingerprints": runtime.fingerprints(), "previous_reference_max_abs_difference": replay}
@@ -126,7 +132,7 @@ def execute(root, archive, fit_root, varying_root, identity, records, references
                     monitor.runtime = None
                     runtime.release()
                     runtime = None
-                print("2/3 Original model copy; reset detection heads only, then 500 matched updates", flush=True)
+                print("2/3 Original model copy; reproduce v1 head initialization, then 500 matched updates", flush=True)
                 runtime = runtime_factory(original, identity["fit_signature"])
                 monitor.runtime = runtime
                 if runtime.fingerprints() != original_fp:
@@ -137,13 +143,16 @@ def execute(root, archive, fit_root, varying_root, identity, records, references
                     reload_verify(runtime, root, trajectory[-1], signature, images, monitor)
                 else:
                     # Check formal model replay BEFORE replacing its head.
+                    print("Checking original formal model before head reset...", flush=True)
                     _, original_arrays = evaluate(runtime, images, monitor)
                     original_delta = compare_arrays(original_arrays, references["original"])
                     fresh = runtime.reset_head()
                     fresh["original_replay_max_abs_difference"] = original_delta
                     p.validate_initialization(fresh, original_fp)
+                    p.validate_same_initialization(fresh, identity["previous_failure"]["initialization"])
                     publish(root, "initialization", signature, fresh)
                     initialization = fresh
+                    print("Head initialization matches v1. Checking step zero before ANY optimizer update...", flush=True)
                 for stop in p.POLICY["snapshots"]:
                     if stop <= completed:
                         continue
@@ -160,6 +169,11 @@ def execute(root, archive, fit_root, varying_root, identity, records, references
                             print(f"Head-reset learning {len(losses)}/500; loss={row['loss']:.6f}", flush=True)
                     evaluations, flat = evaluate(runtime, images, monitor)
                     check_targets(evaluations, control)
+                    p.validate_evaluations(evaluations)
+                    checks = [e["checks"]["public_batch_comparison"] for e in evaluations.values()]
+                    same = max(max(d["same_batch_map_max_abs"], d["same_batch_score_max_abs"]) for d in checks)
+                    cross = max(max(d["cross_batch_map_max_abs"], d["cross_batch_score_max_abs"]) for d in checks)
+                    print(f"Step {stop} public check: same-batch max={same:.8g}; 16-vs-8 max={cross:.8g}", flush=True)
                     progress = {"step": stop, "losses": losses.copy(), "evaluations": evaluations,
                                 "fingerprints": runtime.fingerprints()}
                     p.validate_progress(progress, identity, initialization)
@@ -177,12 +191,13 @@ def execute(root, archive, fit_root, varying_root, identity, records, references
                 check_originals()
         except BaseException as exc:
             error, interrupted = f"{type(exc).__name__}: {exc}", isinstance(exc, KeyboardInterrupt)
+            failure_diagnostics = getattr(exc, "diagnostics", None)
             raise
         finally:
             elapsed = time.perf_counter() - started
             fit.write_json(attempt/"finished.json", {"seconds": elapsed, "attempted_updates": attempted,
                 "status": "interrupted" if interrupted else ("failed" if error else "completed"),
-                "error": error, "memory": monitor.snapshot()})
+                "error": error, "diagnostics": failure_diagnostics, "memory": monitor.snapshot()})
             monitor.runtime = None
             if runtime is not None:
                 runtime.release()
@@ -192,6 +207,8 @@ def execute(root, archive, fit_root, varying_root, identity, records, references
         report = {"status": "head_reset_comparison_completed", "completed_updates": p.POLICY["updates"],
             "attempted_updates_including_replayed_work": prior_updates + attempted,
             "cumulative_compute_seconds": prior_seconds + elapsed,
+            "previous_failure_seconds": identity["previous_failure"]["seconds"],
+            "previous_failure_preserved": True, "public_eval_validation": p.PUBLIC_VALIDATION,
             "baseline_heldout": summary("baseline-control"),
             "trajectory": [{"step": x["step"], "heldout": summary(f"step-{x['step']:04d}")}
                            for x in trajectory],
@@ -220,10 +237,11 @@ def main(argv=None):
     fit_root = project/"artifacts"/p.v.q.p.NAME
     fixed_root = project/"artifacts/analyses"/p.v.old.NAME
     varying_root = project/"artifacts/analyses"/p.v.NAME
-    for path in (fit_root, fixed_root, varying_root):
+    previous_root = project/"artifacts/analyses"/p.PREVIOUS_NAME
+    for path in (fit_root, fixed_root, varying_root, previous_root):
         if not path.is_dir():
             raise ValueError(f"Preserved prior folder required: {path}")
-    with fit.locked_run(fit_root), fit.locked_run(fixed_root), fit.locked_run(varying_root):
+    with fit.locked_run(fit_root), fit.locked_run(fixed_root), fit.locked_run(varying_root), fit.locked_run(previous_root):
         records, identity, references = p.prepare(project, project/"artifacts/handoff", fit_root, fixed_root, varying_root)
         current = environment()
         for name in ("torch", "torchvision", "anomalib", "timm", "supersimplenet_sources"):

@@ -1,9 +1,23 @@
 """Official head reconstruction only; the previous varying runner stays immutable."""
 from scripts import mpi_supersimplenet_head_reset_protocol as p
 from scripts.mpi_supersimplenet_varying_runtime import Runtime as VaryingRuntime, environment
+from scripts.mpi_supersimplenet_matched_eval_runtime import Runtime as MatchedRuntime
 
 
 class Runtime(VaryingRuntime):
+    def evaluate_seed(self, images, seed):
+        if seed not in p.POLICY["evaluation_seeds"]:
+            raise ValueError("Unregistered evaluation seed")
+        self.optimizer.zero_grad(set_to_none=True)
+        self.model.eval()
+        flags = [(t, t.requires_grad) for t in self.model.parameters()]
+        self.model.requires_grad_(False)
+        try:
+            return MatchedRuntime.trial(self, images, seed)
+        finally:
+            for tensor, flag in flags:
+                tensor.requires_grad_(flag)
+
     def reset_head(self):
         if getattr(self, "control_only", False) or getattr(self, "reset_applied", False):
             raise ValueError("Read-only or already initialized; head reset forbidden")
