@@ -2,11 +2,15 @@
 
 ## 최신 결정 2026년 10월 5일
 
-**현재 작업: SuperSimpleNet 고정 모델 합성 이상 기능 점검.** [지도 진단 검토](../reports/mpi-supersimplenet-map-diagnostics-v1-received-review.md)에서
-위치 비교 가능한63결함영역 중 SSN 상위 반응과 정답이 겹친 영역은3개였다.
-사용자 승인에 따라 [합성 이상과 모드 비교](mpi-supersimplenet-synthetic-check-v1.md)를 준비한다.
-학습 정상8·개발 정상8사진만 사용한다. 정상 다양성 확대와 반복 연장은 후속 설계이며 가중치 업데이트는 없다.
-최종 모델과 경고 기준, Q90·서비스는 유지한다. 아래 Phase0·1과 EfficientAD 기록은 이전 이력이다.
+**현재 작업: SuperSimpleNet 작은 고정 합성 문제의 학습 가능성 확인.**
+[합성 이상과 모드 비교](mpi-supersimplenet-synthetic-check-v1.md) 48회 결과에서 추론 모드 사진 AUROC는
+학습 정상 묶음 0.5245·개발 정상 묶음 0.5067, 픽셀 AUROC는 각각 0.5021·0.5070이었다.
+이 수치는 반복 합성 실험별 AUROC의 평균이지 독립적인 실제 불량 정확도가 아니다.
+사용자 승인에 따라 [500회 제한 학습](mpi-supersimplenet-learnability-v1.md)을 준비한다.
+정상 한 사진의 고정 8타일과 동일 합성 이상을 사용하고, 최종 모델 복사본의 변환부·검출부만 업데이트한다.
+특징/잡음 크기와 손실·학습/추론 모드 구분력을 함께 기록한다. 작은 문제를 배울 수 있는지 확인하기 전
+256사진 확대·600 epoch 연장·새 불량 시험을 진행하지 않는다. 원본 최종 모델·경고 기준·Q90·서비스는 유지한다.
+아래 Phase0·1과 EfficientAD 기록은 이전 이력이다.
 
 **현재 작업: SuperSimpleNet Phase 0·1 실행 준비.** 사용자가 실험 설계에 따른 실행기·검증·
 GPU 점검 명령 준비를 승인했다. [정상 전용100회 점검](mpi-supersimplenet-probe-v1.md)을 추가했다.

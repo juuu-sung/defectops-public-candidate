@@ -10,10 +10,11 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 
 **SuperSimpleNet [고정12장 평가](reports/mpi-supersimplenet-evaluation-v1-received-review.md)는0/12 검출로 실패했다.**
 정상 재현 차이0이며 전체 비교·속도·민감도는 미실행이다. 전체55장 검출률0%라는 뜻은 아니다.
-저장 지도 진단에서도 실제 결함 위치 반응이 약했다. 다음은
-[고정 모델 합성 이상 기능 점검](docs/mpi-supersimplenet-synthetic-check-v1.md)이다.
-학습 정상8·개발 정상8사진의 특징에 공식 합성 이상을 넣고 같은 특징을 학습·추론 모드에서 비교한다.
-가중치 업데이트는0회이며 임시 통계는 복원한다. 추가 학습·임곗값 변경·서비스 전환은 하지 않는다.
+저장 지도 진단에서도 실제 결함 위치 반응이 약했다.
+[고정 모델 합성 이상 점검](docs/mpi-supersimplenet-synthetic-check-v1.md)에서도 사진·픽셀 구분력이 약했다.
+다음은 [작은 고정 합성 문제 500회 제한 학습](docs/mpi-supersimplenet-learnability-v1.md)이다.
+정상 한 사진의 8타일을 사용해 기존 모델 복사본의 특징 변환부·검출부만 학습하고,
+특징/잡음 크기와 손실·구분력의 변화를 함께 기록한다. 새 불량 시험·경고 기준 변경·서비스 전환은 없다.
 
 **SuperSimpleNet [Phase 0·1 실행 준비](docs/mpi-supersimplenet-probe-v1.md)를 추가했다.**
 기존 정상64장 중8장×12영역만 사용하는 batch8·100회 GPU 점검이며 정식 학습/불량 평가는 아니다.
