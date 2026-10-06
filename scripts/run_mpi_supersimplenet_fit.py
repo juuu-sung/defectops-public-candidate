@@ -31,14 +31,15 @@ CHECKPOINT_FILES = ["model.pt", "reference.npy", "progress.json"]
 def checkpoint_steps(root, signature, policy):
     steps = []
     interval, total = policy["checkpoint_interval"], policy["updates"]
-    expected_names = {f"step-{i:06d}" for i in range(0, total + 1, interval)}
+    schedule = sorted(set(range(0, total + 1, interval)) | {total})
+    expected_names = {f"step-{i:06d}" for i in schedule}
     if any(d.name not in expected_names for d in root.glob("step-*")):
         raise ValueError("Unexpected checkpoint directory; preserved")
-    for step in range(0, total + 1, interval):
+    for position, step in enumerate(schedule):
         name = f"step-{step:06d}"
         if not (root / name).exists():
             continue
-        if step and step - interval not in steps:
+        if position and schedule[position-1] not in steps:
             raise ValueError("Checkpoint gap; preserved")
         fit.read_phase(root, name, signature, CHECKPOINT_FILES)
         progress = json.loads((root / name / "progress.json").read_bytes())
@@ -77,9 +78,14 @@ def export(root, handoff, identity, report):
     temp.rename(handoff)
 
 
-def execute(root, archive, identity, weights, handoff, runtime_factory=Runtime, monitor_factory=Monitor):
+def execute(root, archive, identity, weights, handoff, runtime_factory=Runtime, monitor_factory=Monitor,
+            protocol=p):
+    # Explicit injection lets new signed experiments reuse the transaction engine,
+    # without mutating the original protocol or changing its default runtime.
+    p = protocol
     signature, policy, groups = fit.digest(identity), identity["policy"], identity["cohorts"]
     total, interval = policy["updates"], policy["checkpoint_interval"]
+    per_epoch = policy.get("updates_per_epoch", 96)
     with fit.locked_run(root):
         if not (root / "identity").exists() and any(x.name != ".run.lock" for x in root.iterdir()):
             raise ValueError("Output exists without identity; preserved")
@@ -114,7 +120,8 @@ def execute(root, archive, identity, weights, handoff, runtime_factory=Runtime, 
             return report
         prior = sum(a["seconds"] for a in previous)
         prior_updates = sum(a["attempted_updates"] for a in previous)
-        if prior >= policy["resource_plan"]["comparison_seconds"]:
+        time_cap = policy["resource_plan"]["comparison_seconds"]
+        if time_cap is not None and prior >= time_cap:
             raise RuntimeError("Cumulative time cap exhausted; review required")
         attempt = Path(tempfile.mkdtemp(prefix="attempt-", dir=root))
         fit.write_json(attempt / "started.json", {"identity": signature, "unix_seconds": time.time()})
@@ -143,6 +150,8 @@ def execute(root, archive, identity, weights, handoff, runtime_factory=Runtime, 
 
                 def save(step):
                     monitor.check()
+                    if hasattr(p, "check_disk"):
+                        p.check_disk(root, step)
                     with fit.phase_stage(root, f"step-{step:06d}") as stage:
                         maps = reference()
                         runtime.save(stage / "model.pt", signature, step)
@@ -177,7 +186,8 @@ def execute(root, archive, identity, weights, handoff, runtime_factory=Runtime, 
                     statistics, losses = state["statistics"], state["losses"]
                     reload_check(last)
                 else:
-                    print("1/4 Fresh initialization: 64 normal photos, 768 tiles. No probe checkpoint reuse.", flush=True)
+                    print(f"1/4 Fresh initialization: {len(groups['training']['photo_ids'])} normal photos, "
+                          f"{len(train_rows)} tiles. No probe checkpoint reuse.", flush=True)
                     statistics = {"initial_fingerprints": runtime.fingerprints(), "fresh_initialization": True}
                     if statistics["initial_fingerprints"] != identity["expected_fresh_fingerprints"]:
                         raise ValueError("Fresh model initialization differs from reviewed seed42 initialization")
@@ -196,15 +206,15 @@ def execute(root, archive, identity, weights, handoff, runtime_factory=Runtime, 
                     value["training_row_indices"] = list(row_indices)
                     losses.append(value)
                     monitor.check()
-                    if (index+1) % 96 == 0 and (index+1) % interval != 0:
-                        print(f"epoch {(index+1)//96}/300; train {index+1}/{total}; elapsed={prior+time.perf_counter()-started:.1f}s", flush=True)
-                    if (index + 1) % interval == 0:
+                    if (index+1) % per_epoch == 0 and (index+1) % interval != 0:
+                        print(f"epoch {(index+1)//per_epoch}/{policy.get('epochs', 300)}; train {index+1}/{total}; elapsed={prior+time.perf_counter()-started:.1f}s", flush=True)
+                    if (index + 1) % interval == 0 or index+1 == total:
                         save(index + 1)
                         last = index + 1
                         recent = losses[-interval:]
                         mean = float(np.mean([v["loss"] for v in recent]))
                         print(f"train {last}/{total}; recent mean loss={mean:.5g}; elapsed={prior+time.perf_counter()-started:.1f}s; saved", flush=True)
-                        if last % (50 * 96) == 0 or last == total:
+                        if last % (50 * per_epoch) == 0 or last == total:
                             reload_check(last)
                 final_fingerprints = runtime.fingerprints()
                 initial_fingerprints = statistics["initial_fingerprints"]
@@ -304,7 +314,7 @@ def execute(root, archive, identity, weights, handoff, runtime_factory=Runtime, 
             if key in memory:
                 memory[key] = max(a["memory"][key] for a in records)
         report = {"status": "supersimplenet_fit_normal_calibrated_ready_for_review", "model": "SuperSimpleNet",
-            "completed_epochs": total // 96, "final_fingerprints": final_fingerprints,
+            "completed_epochs": total // per_epoch, "final_fingerprints": final_fingerprints,
             "initial_fingerprints": initial_fingerprints, "synthetic_anomalous_presentations": synthetic_count,
             "identity_sha256": signature, "completed_updates": total,
             "cumulative_attempted_updates": sum(a["attempted_updates"] for a in records),
