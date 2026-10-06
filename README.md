@@ -8,13 +8,20 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 
 ## 지금 진행 중 (2026-10-06)
 
-**다음은 [SuperSimpleNet 구현 대조](docs/mpi-supersimplenet-implementation-parity-v1.md)다.**
+**다음은 [SuperSimpleNet 첫 업데이트 차이 점검](docs/mpi-supersimplenet-update-audit-v1.md)이다.**
+[구현 대조](docs/mpi-supersimplenet-implementation-parity-v1.md)는4조합 완료했다.
+출력·손실은 일치했으나 시작 전 모델의 기울기·첫 업데이트가 일부 달랐고 완료 모델은 통과했다.
+동일 구현 반복, 동일 손실 독립 경로, 저자 손실 경로를 시작 전 모델에서 비교하고
+업데이트 전후 정상·합성 지도와 점수 및 큰 차이의 원시 값을 기록한다.
+사용자 요청으로 이번 검사 시간 상한은 없애고 메모리·원본 보존 제한은 유지한다.
+새 검사의 CUDA 결과는 아직 미확인이다. 다음 학습은 자동으로 시작하지 않는다.
+
 [검출부 초기화 대조 v2](docs/mpi-supersimplenet-head-reset-v2.md)는500회 완료했으나
 같은 위치의 정상·합성 구분 AUROC는0.4996으로 개선 근거가 없다. 특징 변환부 시작 상태의 영향은 미확인이다.
 장시간 재학습 전에 저장된 학습 시작 전·완료 모델에서 동일 입력·가중치·합성 잡음을 사용해
 공식 경로와 독립 대조 구현의 출력·손실·기울기·AdamW1회 변화량을 비교한다.
 원 논문과의 알려진 보간 차이는 별도 기록한다. backbone은 공유하므로 원 논문 전체 재현이 아니다.
-실제 GPU 비교는 아직 미실행이다. 기존 모델·경고 기준·시험 자료·서비스는 유지하며 후속 학습은 자동 시작하지 않는다.
+해당 GPU 비교는 위 결과까지 완료했다. 기존 모델·경고 기준·시험 자료·서비스는 유지한다.
 아래 항목은 직전 진행 이력이다.
 
 **SuperSimpleNet [고정12장 평가](reports/mpi-supersimplenet-evaluation-v1-received-review.md)는0/12 검출로 실패했다.**
