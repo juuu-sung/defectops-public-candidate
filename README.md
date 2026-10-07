@@ -6,7 +6,17 @@
 이미지로 공정 원인을 확정하거나 이상 점수를 심각도로 해석하지 않는다.
 MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 
-## 지금 진행 중 (2026-10-07)
+## 지금 진행 중 (2026-10-08)
+
+**모델은 고정하고 [정상 개발자료128→256장 비교](docs/mpi-patchcore-development-scaling-v1.md)를 준비했다.**
+[PatchCore 학습256장 확대](reports/mpi-patchcore-scaling-v1-received-review.md)는 불량55/55 검출에 도달했지만
+정상 오경보1/54·16/256 및 보정 안정성은 미해결이다.
+[정상23타일 검토](reports/mpi-patchcore-scaling-normal-review-v1-received-review.md)에서는 여러 정상 부위의 반응과
+보정 경계의 영향을 구분했다. 추가 정상128장만 추론하고 기존 시험 점수를 재사용해 검출·오경보·600회 민감도를 비교한다.
+새 학습·bank 변경·시험 이미지 재열람은 없다. 실제 새128장 명단은 연구실의 고정 풀과 원본을 검증한 뒤 확정한다.
+서비스와 이전 경고 기준은 유지한다. 아래는 이전 단계의 기록이며 재학습 명령을 다시 실행하지 않는다.
+
+### 이전 PatchCore 학습 확대 준비 기록
 
 **[SuperSimpleNet 확대 학습 전체 비교](reports/mpi-supersimplenet-scaling-evaluation-v1-received-review.md)를 완료하고 A·C·D 모두 비채택으로 종결했다.**
 불량55장 검출은 A4 / C1 / D9장으로 Q90의53장보다 낮다. 정상54/256장 오경보는
