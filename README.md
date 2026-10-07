@@ -8,6 +8,9 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 
 ## 지금 진행 중 (2026-10-08)
 
+**전체지도 비교는 기존float32 지도와 진단float64 지도의 차이 검사에서 중단됐다.** 전체314만 후보 조회는 아직 시작하지 않았다. 허용오차를 바꾸거나 기존 실행을 재시도하지 않는다.
+`scripts/diagnose_mpi_patchcore_map_parity.py`로 저장된20타일 특징을 재사용해 기존 계산 재현·동일 이웃의 직접 거리·최근접 이웃 변경·지도와상위1% 점수 차이를 기록한다. 기존 실패 폴더는 읽기 전용이며 새 진단ZIP은 `artifacts/handoff/mpi-patchcore-map-parity-audit-v1.zip`이다. 실제 원인은 연구실 진단 수령 후 판단한다.
+
 **[개발자료 확대 결과](reports/mpi-patchcore-development-scaling-v1-received-review.md)는 55/55 검출 유지·오경보 16→15/256이며 전체 목표는 미달이다.**
 개발자료 구성에 대한 안정성은 좋아졌지만 경고선만 바꾸어서는 55/55와 오경보 ≤12/256을 동시에 달성할 수 없다.
 [정상14장과 불량0024 대조 결과](reports/mpi-patchcore-score-overlap-v1-received-review.md)를 수령했다.
