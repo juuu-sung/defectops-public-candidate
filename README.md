@@ -11,9 +11,10 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 **[개발자료 확대 결과](reports/mpi-patchcore-development-scaling-v1-received-review.md)는 55/55 검출 유지·오경보 16→15/256이며 전체 목표는 미달이다.**
 개발자료 구성에 대한 안정성은 좋아졌지만 경고선만 바꾸어서는 55/55와 오경보 ≤12/256을 동시에 달성할 수 없다.
 [정상14장과 불량0024 대조 결과](reports/mpi-patchcore-score-overlap-v1-received-review.md)를 수령했다.
-현재는 [대표 기준표와 전체 후보 비교](docs/mpi-patchcore-candidate-coverage-v1.md)를 준비했다.
-정상14고점수 타일과 불량의6정답 타일에서 같은 특징 질의를 고정하고 대표78,643개 대 원후보3,145,728개를 조회한다.
-전체 원특징은 기존 stride2 캐시이며 새 학습·지도 전체 재평가·경고선·서비스 변경은 없다. 시간 상한 없이 사진 단위 재개를 지원한다.
+[대표 압축 진단 결과](reports/mpi-patchcore-candidate-coverage-v1-received-review.md)는 정상과 결함의 거리 모두 감소해, 한 점의 개선을 오경보 감소로 해석할 수 없었다.
+현재는 [동일20타일 전체지도 비교](docs/mpi-patchcore-full-map-comparison-v1.md)를 준비했다.
+각 타일4,096개 위치 전부를 대표78,643개와 보관후보3,145,728개에서 조회하고 지도·상위1% 영역점수·결함위치 반응을 함께 비교한다.
+기존 stride2 캐시를 재사용하며 새 학습·보정·사진 판정·서비스 변경은 없다. 시간 상한 없이 학습사진 블록 단위 재개를 지원한다.
 
 ### 이전 개발자료 확대 준비 기록
 
