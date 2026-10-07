@@ -8,6 +8,13 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 
 ## 지금 진행 중 (2026-10-08)
 
+**[개발자료 확대 결과](reports/mpi-patchcore-development-scaling-v1-received-review.md)는 55/55 검출 유지·오경보 16→15/256이며 전체 목표는 미달이다.**
+개발자료 구성에 대한 안정성은 좋아졌지만 경고선만 바꾸어서는 55/55와 오경보 ≤12/256을 동시에 달성할 수 없다.
+현재는 [정상 14장과 불량 0024 대조](docs/mpi-patchcore-score-overlap-v1.md)를 준비했다.
+저장 점수 분석은 완료했고, 원본·지도 180타일을 GPU 없이 묶어 실제 반응 위치를 확인한다. 학습·경고선·서비스 변경은 없다.
+
+### 이전 개발자료 확대 준비 기록
+
 **모델은 고정하고 [정상 개발자료128→256장 비교](docs/mpi-patchcore-development-scaling-v1.md)를 준비했다.**
 [PatchCore 학습256장 확대](reports/mpi-patchcore-scaling-v1-received-review.md)는 불량55/55 검출에 도달했지만
 정상 오경보1/54·16/256 및 보정 안정성은 미해결이다.
