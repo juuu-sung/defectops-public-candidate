@@ -8,14 +8,15 @@ MVTec는 실제 공장 생산성·안전성 검증 자료가 아니다.
 
 ## 지금 진행 중 (2026-10-08)
 
-**전체지도 비교는 기존float32 지도와 진단float64 지도의 차이 검사에서 중단됐다.** 전체314만 후보 조회는 아직 시작하지 않았다. 허용오차를 바꾸거나 기존 실행을 재시도하지 않는다.
-`scripts/diagnose_mpi_patchcore_map_parity.py`로 저장된20타일 특징을 재사용해 기존 계산 재현·동일 이웃의 직접 거리·최근접 이웃 변경·지도와상위1% 점수 차이를 기록한다. 기존 실패 폴더는 읽기 전용이며 새 진단ZIP은 `artifacts/handoff/mpi-patchcore-map-parity-audit-v1.zip`이다. 실제 원인은 연구실 진단 수령 후 판단한다.
+**[지도 정밀도 진단](reports/mpi-patchcore-map-parity-audit-v1-received-review.md)을 수령하고 [고정밀 지도 검증과 전체 후보 비교 v2](docs/mpi-patchcore-full-map-comparison-v2.md)를 준비했다.**
+기존 거리로 지도 재생성은20영역 모두 차이0이며, 교차정밀도 지도 차이는19영역에서 허용오차를 넘었지만 영역 점수 최대차이는0.000494였다. 거리 수치 상쇄는 확인했고 지도 TF32 영향은 아직 가설이다.
+`scripts/run_mpi_patchcore_full_maps_v2.ps1`은 지도만 TF32 on/off와CPU64로 대조하고, 독립 기준 검증을 통과하면 동일20영역 전체314만 후보 비교로 이어간다. 양쪽 진단 지도는 실제 설치 커널의CPU64 계산으로 통일한다. 기존 모델·특징 추출·경고선과v1 실패 폴더는 보존한다. 새 handoff는 `mpi-patchcore-full-map-comparison-v2.zip`이며 실제 연구실 실행 결과는 아직 없다.
 
 **[개발자료 확대 결과](reports/mpi-patchcore-development-scaling-v1-received-review.md)는 55/55 검출 유지·오경보 16→15/256이며 전체 목표는 미달이다.**
 개발자료 구성에 대한 안정성은 좋아졌지만 경고선만 바꾸어서는 55/55와 오경보 ≤12/256을 동시에 달성할 수 없다.
 [정상14장과 불량0024 대조 결과](reports/mpi-patchcore-score-overlap-v1-received-review.md)를 수령했다.
 [대표 압축 진단 결과](reports/mpi-patchcore-candidate-coverage-v1-received-review.md)는 정상과 결함의 거리 모두 감소해, 한 점의 개선을 오경보 감소로 해석할 수 없었다.
-현재는 [동일20타일 전체지도 비교](docs/mpi-patchcore-full-map-comparison-v1.md)를 준비했다.
+현재는 [동일20타일 전체지도 비교 v2](docs/mpi-patchcore-full-map-comparison-v2.md)를 준비했다.
 각 타일4,096개 위치 전부를 대표78,643개와 보관후보3,145,728개에서 조회하고 지도·상위1% 영역점수·결함위치 반응을 함께 비교한다.
 기존 stride2 캐시를 재사용하며 새 학습·보정·사진 판정·서비스 변경은 없다. 시간 상한 없이 학습사진 블록 단위 재개를 지원한다.
 
