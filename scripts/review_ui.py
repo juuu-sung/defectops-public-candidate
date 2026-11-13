@@ -234,6 +234,9 @@ def render() -> None:
 
     item = case["item"]
     record = item["record"]
+    synthetic = record.get("source_kind") == "SYNTHETIC_DEMO"
+    if synthetic:
+        st.warning("합성 데모 · 이미지·지도·점수는 생성한 예시이며 실제 제품이나 모델 추론 결과가 아닙니다.")
     st.caption(f"검사 ID: {inspection_id} · 검토 revision: {item['review_revision']}")
     saved_message = st.session_state.pop(f"saved_message_{inspection_id}", None)
     if saved_message:
@@ -243,28 +246,28 @@ def render() -> None:
         st.text(f"오류 유형: {record.get('error_type', '알 수 없음')}")
         return
 
-    st.subheader("모델 결과")
+    st.subheader("합성 검사 예시 · 모델 추론 없음" if synthetic else "모델 결과")
     metric_columns = st.columns([1.4, 1, 1, 0.8])
     metric_columns[0].metric("모델 표시", MODEL_DECISION_LABELS[record["decision"]])
-    metric_columns[1].metric("원시 이상 점수", f"{record['raw_score']:.3f}")
-    metric_columns[2].metric("고정 임곗값", f"{record['image_threshold']:.3f}")
+    metric_columns[1].metric("모의 점수" if synthetic else "원시 이상 점수", f"{record['raw_score']:.3f}")
+    metric_columns[2].metric("모의 기준값" if synthetic else "고정 임곗값", f"{record['image_threshold']:.3f}")
     metric_columns[3].metric("검토 revision", item["review_revision"])
     comparison = (
         "탐색적 비교(PaDiM 평가 결과를 본 뒤 설정)"
         if record.get("comparison_status") == "exploratory_after_padim_test_observed"
         else "기준선"
     )
-    st.caption(
+    st.caption("합성 자료로 실제 검토 저장 기능을 시연합니다. 아래 수치는 성능 측정에 사용하지 않습니다." if synthetic else (
         f"모델 원본 판정: {record['decision']} · 모델: {record['model']} · 비교 상태: {comparison}. "
         "점수는 결함 확률이나 심각도가 아닙니다."
-    )
+    ))
 
     st.subheader("이미지 확인")
     original_column, overlay_column = st.columns(2)
     with original_column:
-        st.image(io.BytesIO(case["images"]["input"]), caption="검사 원본", width="stretch")
+        st.image(io.BytesIO(case["images"]["input"]), caption="합성 입력 그림" if synthetic else "검사 원본", width="stretch")
     with overlay_column:
-        st.image(io.BytesIO(case["images"]["overlay"]), caption="고정 anomaly map 오버레이와 영역", width="stretch")
+        st.image(io.BytesIO(case["images"]["overlay"]), caption="합성 반응 지도 · 추론 결과 아님" if synthetic else "고정 anomaly map 오버레이와 영역", width="stretch")
     with st.expander("히트맵·영역 좌표·실행 근거"):
         st.image(io.BytesIO(case["images"]["heatmap"]), caption="고정 범위 히트맵", width="stretch")
         st.json(
@@ -276,6 +279,8 @@ def render() -> None:
         )
 
     st.subheader("사람의 검토 의견")
+    if synthetic:
+        st.caption("합성 데모 기록 · 작성자 demo-reviewer · 실제 작업자 판단 아님")
     if item["latest_review"]:
         latest = item["latest_review"]
         st.info(

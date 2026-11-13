@@ -6,6 +6,7 @@
 
 ## 시연 전 준비
 
+- GPU·실제 자료 없이 실행할 수 있는 [합성 검토 시연](synthetic-demo.md)을 제공한다. README GIF는 그중 의견 저장·개정 보존 구간이다. 아래 SOP·승인·티켓 전체 흐름과 촬영 범위를 구분한다.
 - 비공개 저장소의 최신 commit을 사용한다.
 - 로컬 DB와 등록된 inspection bundle이 Git 제외 상태인지 확인한다.
 - `python scripts/serve_review_ui.py`로 `127.0.0.1` 전용 화면을 실행한다.
