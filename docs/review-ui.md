@@ -1,11 +1,12 @@
-# 맥북 로컬 작업자 검토 화면
+# 로컬 작업자 검토 화면
 
-연구실 Windows의 검사 결과 **전체 폴더**를 맥북으로 복사해 [검토 저장소](review-store.md)에
+같은 Windows 장비에서는 [API 자동 등록](api-review-integration.md)을 사용할 수 있다. 다른 장비로 옮기는 경우 연구실 Windows의 검사 결과 **전체 폴더**를 맥북으로 복사해 [검토 저장소](review-store.md)에
 등록한 뒤, 맥북에서 원본·오버레이·히트맵과 모델 점수/임곗값을 나란히 확인하는 화면이다.
+Windows에서는 `python3` 대신 `python`, 가상환경 활성화는 `.\.venv\Scripts\Activate.ps1`을 사용한다.
 모델 추론은 이 화면에서 수행하지 않는다. 등록된 검사 1건을 읽고 사람이 관찰한 의견을
 별도 이력으로 남긴다.
 
-## 실행 — 맥북에서만
+## 실행 — macOS 또는 Windows
 
 프로젝트 폴더에서 한 번만 설치한다. Python 3.11 이상이 필요하다.
 
@@ -21,7 +22,7 @@ python -m pip install -e '.[data]' -r requirements/ui.txt
 python scripts/serve_review_ui.py
 ```
 
-맥북 브라우저에서 `http://127.0.0.1:8501`을 열면 된다. 종료는 실행 중인 터미널에서
+실행한 컴퓨터의 브라우저에서 `http://127.0.0.1:8501`을 열면 된다. 종료는 실행 중인 터미널에서
 `Ctrl+C`를 누른다. 기본 DB는 `artifacts/review/reviews.sqlite3`이며 다른 로컬 DB가
 필요하면 `python scripts/serve_review_ui.py --db <DB 경로> --port 8502`를 사용한다.
 명령은 네트워크 전체가 아닌 `127.0.0.1`에만 연결한다. 이 화면에는 로그인 기능이 없으므로

@@ -2,9 +2,9 @@
 
 연구실 Windows에서 동결된 PatchCore fit/evaluation bundle을 서비스 시작 시 한 번 검증·로드하고,
 요청마다 같은 모델을 재사용한다. 학습·임곗값 조정·새 성능 평가는 하지 않는다. 이 단계는
-**127.0.0.1 로컬 접속 전용**이며 인증·외부 네트워크 공개·작업자 UI는 아직 없다.
-맥북 로컬 SQLite [검토 저장소](review-store.md)는 별도로 구현했지만 이 Windows API와
-직접 연결되지는 않는다.
+**127.0.0.1 로컬 접속 전용**이며 인증·외부 네트워크 공개는 없다.
+2026-11-14부터 같은 장비의 SQLite 검토 저장소에 자동 등록한다. 등록·복구와 같은 Windows 장비의 UI 실행은
+[API→검토 통합 안내](api-review-integration.md)를 우선 따른다. Mac과 Windows 사이의 자동 전송은 아니다.
 
 ## 계약과 안전 범위
 
@@ -35,7 +35,8 @@ $projectPath = "C:\개인 프로젝트\defectops"
 $defectPython = "$projectPath\.venv\Scripts\python.exe"
 
 & $defectPython -m pip install -r ".\requirements\api.txt"
-& $defectPython -m unittest discover -s tests -v
+& $defectPython -m pip install -e '.[test]'
+& $defectPython -m pytest -q
 
 & $defectPython scripts\serve_patchcore.py `
     --fit-run ".\artifacts\runs\patchcore-transistor-seed42" `

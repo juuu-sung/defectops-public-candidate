@@ -33,9 +33,9 @@
 
 ## 시스템 구조
 
-![Windows GPU 검사에서 파일 전달·등록을 거쳐 Mac의 사람 검토·SOP·승인·모의 티켓으로 연결되는 구조](docs/assets/inspection-workflow.svg)
+![동일 장비에서 GPU 검사 결과를 자동 등록하고 사람 검토·SOP·승인·모의 티켓으로 연결하는 구조](docs/assets/inspection-workflow.svg)
 
-검사 API와 검토 저장소 사이에는 현재 파일 전달·등록 단계가 있습니다. MPI-PCB의 입력 관찰·의견 저장 도구는 이 흐름과 **분리된 연구 도구**이며 서비스 모델을 교체하지 않습니다.
+검사 API가 같은 장비의 검토 DB에 결과를 자동 등록합니다. DB 등록 실패 시 산출물을 보존하고 같은 검사 ID로 재등록할 수 있습니다. 합성 자료 기반 통합 테스트를 완료했으며 실제 Windows GPU 연동 확인은 후속 단계입니다. [연구실 실행·복구 방법](docs/api-review-integration.md) MPI-PCB의 입력 관찰·의견 저장 도구는 이 흐름과 **분리된 연구 도구**이며 서비스 모델을 교체하지 않습니다.
 
 ## 대표 결과
 
@@ -88,11 +88,11 @@ GPU reserved는 장치 전체 메모리 사용량과 다릅니다. 1.16초는 �
 | 구성 | 상태 | 범위 |
 | --- | --- | --- |
 | Transistor 검사 API | 구현·실제 이미지 확인 | 고정 PatchCore 모델, 단일 worker, 로컬 접속 |
-| 작업자 검토·SOP·모의 티켓 | 구현·단일 사례 시연 완료 | Streamlit + SQLite, 수동 산출물 등록 |
+| 작업자 검토·SOP·모의 티켓 | 구현·단일 사례 시연 완료 | Streamlit + SQLite, 동일 장비 API 자동 등록 지원 |
 | 모델 비교와 GPU 실험 | 실행·보고서 보존 | MVTec AD, Real-IAD, VisA, MPI-PCB; 연구 조건별 결과 구분 |
 | MPI 입력 관찰·의견 저장 | 로컬 구현 | 입력 상태·근거·작성자·개정 기록; 기존 서비스와 분리 |
 | CPU 자동 검사 | CI 설정 구현 | push / PR에서 pytest; 실제 GPU 성능 검증과 분리 |
-| 검사와 검토의 자동 연결 | 후속 과제 | 전달·등록·실패 복구를 한 실행 흐름으로 통합 |
+| 검사와 검토의 자동 연결 | 구현·CPU 통합 검증 | 동일 장비 DB, 같은 ID 재등록·시작 시 복구; Windows GPU 연동 확인 대기 |
 
 현재 MPI 작업은 추가 학습보다 **부품이 보이지 않는 입력과 모델의 정상 오경보를 구분해 관찰 근거를 남기는 기능**에 집중합니다. 입력 확인 대상으로 분류했다고 기존 오경보를 제외하거나 정확도 향상으로 계산하지 않습니다. [입력 검토 기능과 사용법](docs/mpi-input-review-notes-v1.md)
 
@@ -135,7 +135,8 @@ python scripts/serve_review_ui.py --db artifacts/demo/synthetic-review-v1/review
 | 실행 목적 | 필요한 자료와 안내 |
 | --- | --- |
 | 실제 GPU 검사 | 고정 모델·평가 bundle, Windows CUDA 환경 → [검사 API 실행](docs/patchcore-local-api.md) |
-| 검사 결과 등록 | 원본·지도·기록을 포함한 검사 폴더 → [등록 절차](docs/review-store.md) |
+| API 결과 자동 등록 | 같은 장비의 검토 DB → [실행·복구 절차](docs/api-review-integration.md) |
+| 수동 산출물 가져오기 | 다른 장비에서 전달받은 검사 폴더 → [등록 절차](docs/review-store.md) |
 | 검토부터 모의 티켓까지 시연 | 등록된 검사 결과 → [5분 시연](docs/demo-runbook.md) |
 | MPI 입력 관찰 기록 | 지정 연구 ZIP → [별도 로컬 화면](docs/mpi-input-review-notes-v1.md) |
 
@@ -154,7 +155,7 @@ python scripts/serve_review_ui.py --db artifacts/demo/synthetic-review-v1/review
 
 공개 데이터에서 확인한 결과를 실제 제조 환경의 성능으로 일반화하지 않습니다. 모델 출력은 결함 확률·심각도·제품 합격이 아니며, 자동 합격은 허용하지 않습니다. 로컬 작성자 이름은 자기 기입으로 인증된 신원이 아닙니다.
 
-합성 자료 기반 공개 시연을 추가했습니다. 다음 개발은 **Transistor 검사 결과의 자동 등록과 실패·재시도 처리 → 전체 응답 시간 측정**으로 범위를 좁힙니다. 모델 연구에서는 정상 오경보와 보정 불안정이 미해결 과제로 남아 있습니다.
+합성 자료 기반 공개 시연을 추가했습니다. 검사 결과 자동 등록과 등록 재시도 기능을 구현했습니다. 다음은 **Windows GPU에서 실제 연결 확인 → 전체 응답 시간 측정 → 검사 요청 자체의 중복 방지**입니다. 모델 연구에서는 정상 오경보와 보정 불안정이 미해결 과제로 남아 있습니다.
 
 데이터 이용·재배포 조건은 출처별로 구분합니다. 원본 이미지·마스크·체크포인트·실제 검토 DB는 코드와 분리해 보관합니다. [데이터 안내](data/README.md)
 

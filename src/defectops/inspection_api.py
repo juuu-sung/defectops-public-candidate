@@ -6,6 +6,7 @@ import argparse
 import asyncio
 import os
 import tempfile
+from time import perf_counter
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -25,6 +26,7 @@ from defectops.padim_inspection import (
     run_inspection,
     validate_expected_model,
 )
+from defectops.review_registration import ReviewRegistration
 
 
 MAX_UPLOAD_BYTES = 50 * 1024 * 1024
@@ -84,6 +86,7 @@ def create_app(
     evaluation: Path,
     *,
     output_root: Path | None = None,
+    review_database: Path | None = None,
     runtime_loader: Callable[[Path, Path, Path], PadimRuntime] = load_inference_runtime,
     inspection_runner: Callable[..., dict[str, Any]] = run_inspection,
 ) -> FastAPI:
@@ -92,17 +95,22 @@ def create_app(
     artifact_root = (output_root or project_root / "artifacts" / "inspections").resolve()
     fit_path = fit_run.resolve()
     evaluation_path = evaluation.resolve()
+    registration = ReviewRegistration(artifact_root, review_database) if review_database is not None else None
     if output_root is None:
         fit_path.relative_to((project_root / "artifacts" / "runs").resolve())
         evaluation_path.relative_to((project_root / "artifacts" / "evaluations").resolve())
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        artifact_root.mkdir(parents=True, exist_ok=True)
+        if registration is not None:
+            # Fail startup before loading the GPU model if the configured DB cannot be opened.
+            await run_in_threadpool(registration.initialize)
+            app.state.review_recovery = await run_in_threadpool(registration.reconcile)
         resolved_fit = fit_path.resolve(strict=True)
         resolved_evaluation = evaluation_path.resolve(strict=True)
         runtime = runtime_loader(project_root, resolved_fit, resolved_evaluation)
         validate_expected_model(runtime.fit_config["model"], "patchcore")
-        artifact_root.mkdir(parents=True, exist_ok=True)
         app.state.runtime = runtime
         app.state.inspection_lock = asyncio.Lock()
         try:
@@ -111,6 +119,14 @@ def create_app(
             app.state.runtime = None
 
     app = FastAPI(title="DefectOps local PatchCore inspection", lifespan=lifespan)
+
+    async def finish(record: dict, status_code: int) -> JSONResponse:
+        response = dict(record)
+        if registration is not None:
+            start = perf_counter()
+            state = await run_in_threadpool(registration.inspect, record['inspection_id'], register=True)
+            response['review_registration'] = dict(state, elapsed_ms=(perf_counter()-start)*1000)
+        return JSONResponse(status_code=status_code, content=response)
 
     @app.get("/healthz")
     async def healthz(request: Request) -> dict[str, Any]:
@@ -127,6 +143,10 @@ def create_app(
                 "reserved_bytes": runtime.torch.cuda.memory_reserved(),
             },
             "automatic_pass_allowed": False,
+            "review_registration": {
+                "enabled": registration is not None,
+                "startup_recovery": getattr(request.app.state, 'review_recovery', None),
+            },
         }
 
     @app.post("/v1/inspections", status_code=201)
@@ -138,13 +158,13 @@ def create_app(
             failure = _failure_record(
                 output_path, "UnsupportedMediaType", "Expected Content-Type: image/png"
             )
-            return JSONResponse(status_code=415, content=failure)
+            return await finish(failure, 415)
         declared_size = request.headers.get("content-length", "")
         if declared_size.isdecimal() and int(declared_size) > MAX_UPLOAD_BYTES:
             failure = _failure_record(
                 output_path, "InputTooLarge", "Input PNG exceeds the 50 MiB safety limit"
             )
-            return JSONResponse(status_code=413, content=failure)
+            return await finish(failure, 413)
 
         with tempfile.TemporaryDirectory(prefix="defectops-api-") as temp_dir:
             input_path = Path(temp_dir) / "upload.png"
@@ -159,13 +179,13 @@ def create_app(
                                 "InputTooLarge",
                                 "Input PNG exceeds the 50 MiB safety limit",
                             )
-                            return JSONResponse(status_code=413, content=failure)
+                            return await finish(failure, 413)
                         stream.write(chunk)
             except Exception as exc:
                 if output_path.exists():
                     raise
                 failure = _failure_record(output_path, type(exc).__name__, str(exc))
-                return JSONResponse(status_code=400, content=failure)
+                return await finish(failure, 400)
 
             args = argparse.Namespace(
                 input=input_path,
@@ -184,19 +204,18 @@ def create_app(
                     )
             except InputValidationError:
                 failure = read_json(output_path / "inspection.json")
-                return JSONResponse(status_code=422, content=failure)
+                return await finish(failure, 422)
             except Exception:
                 # The inspection runner writes a detailed failure record to disk.
-                return JSONResponse(
-                    status_code=500,
-                    content={
+                return await finish(
+                    {
                         "status": "INSPECTION_FAILED",
                         "inspection_id": inspection_id,
                         "automatic_pass": False,
                         "automatic_pass_allowed": False,
-                    },
+                    }, 500,
                 )
-        return JSONResponse(status_code=201, content=result)
+        return await finish(result, 201)
 
     @app.get("/v1/inspections/{inspection_id}")
     async def get_inspection(inspection_id: str) -> dict[str, Any]:
@@ -205,7 +224,19 @@ def create_app(
             path = _safe_named_file(directory, "inspection.json")
         except (FileNotFoundError, ValueError) as exc:
             raise HTTPException(status_code=404, detail="Inspection not found") from exc
-        return read_json(path)
+        result = read_json(path)
+        if registration is not None:
+            result['review_registration'] = await run_in_threadpool(registration.inspect, inspection_id)
+        return result
+
+    @app.post("/v1/inspections/{inspection_id}/review-registration")
+    async def retry_review_registration(inspection_id: str) -> JSONResponse:
+        if registration is None:
+            raise HTTPException(status_code=409, detail="Review registration is disabled")
+        _inspection_directory(artifact_root, inspection_id)
+        state = await run_in_threadpool(registration.inspect, inspection_id, register=True)
+        code = {'REGISTERED': 200, 'PENDING': 503, 'BLOCKED': 409}[state['status']]
+        return JSONResponse(status_code=code, content=state)
 
     @app.get("/v1/inspections/{inspection_id}/artifacts/{filename}")
     async def get_artifact(inspection_id: str, filename: str) -> FileResponse:
