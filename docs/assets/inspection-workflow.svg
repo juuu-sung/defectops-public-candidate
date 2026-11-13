@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="450" viewBox="0 0 960 450" role="img" aria-labelledby="title desc">
+  <title id="title">DefectOps 검사와 사람 검토 흐름</title>
+  <desc id="desc">Windows GPU 검사: 이미지 입력, 입력 검증, 상주 PatchCore, 결과 저장. 파일 전달 후 CLI 수동 등록을 거쳐 Mac 로컬 검토: 무결성 확인과 등록, 사람 의견, 모의 SOP, 명시적 승인과 모의 티켓. 검토 개정과 근거는 SQLite에 저장. MPI 입력 관찰 도구는 별도.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#607a9e"/></marker>
+  </defs>
+  <rect width="960" height="450" rx="18" fill="#f4f7fb"/>
+  <g font-family="Apple SD Gothic Neo, Noto Sans CJK KR, Arial, sans-serif">
+    <text x="28" y="40" font-size="23" font-weight="700" fill="#172b43">검사 결과가 검토 근거로 이어지는 과정</text>
+    <text x="28" y="78" font-size="14" font-weight="600" fill="#506176">01  검사 · Windows / GPU</text>
+    <g fill="#ffffff" stroke="#cbd6e4">
+      <rect x="28" y="96" width="198" height="82" rx="9"/><rect x="263" y="96" width="198" height="82" rx="9"/>
+      <rect x="498" y="96" width="198" height="82" rx="9"/><rect x="733" y="96" width="198" height="82" rx="9"/>
+    </g>
+    <g font-size="18" font-weight="700" fill="#172b43" text-anchor="middle">
+      <text x="127" y="129">이미지 입력</text><text x="362" y="129">입력 검증</text><text x="597" y="129">상주 PatchCore</text><text x="832" y="129">결과 저장</text>
+    </g>
+    <g font-size="13" fill="#506176" text-anchor="middle">
+      <text x="127" y="154">로컬 검사 API</text><text x="362" y="154">형식 · 크기 · 실패 기록</text><text x="597" y="154">한 번 로드 · 요청 간 재사용</text><text x="832" y="154">점수 · 지도 · 실행 출처</text>
+    </g>
+    <g stroke="#607a9e" stroke-width="2" fill="none" marker-end="url(#arrow)">
+      <path d="M231 137H257"/><path d="M466 137H492"/><path d="M701 137H727"/>
+      <path d="M832 180V221H14V326H24" stroke-dasharray="5 5"/>
+    </g>
+    <rect x="300" y="205" width="370" height="31" rx="8" fill="#e6edf6"/>
+    <text x="485" y="226" font-size="14" font-weight="600" fill="#385476" text-anchor="middle">현재 연결 방식: 파일 전달 후 CLI 등록</text>
+    <text x="28" y="264" font-size="14" font-weight="600" fill="#087f78">02  사람 검토 · Mac / 로컬</text>
+    <g fill="#eaf6f3" stroke="#94c9bf">
+      <rect x="28" y="285" width="198" height="82" rx="9"/><rect x="263" y="285" width="198" height="82" rx="9"/>
+      <rect x="498" y="285" width="198" height="82" rx="9"/><rect x="733" y="285" width="198" height="82" rx="9"/>
+    </g>
+    <g font-size="18" font-weight="700" fill="#075f59" text-anchor="middle">
+      <text x="127" y="318">무결성 확인 · 등록</text><text x="362" y="318">사람 의견</text><text x="597" y="318">모의 SOP</text><text x="832" y="318">승인 · 모의 티켓</text>
+    </g>
+    <g font-size="13" fill="#3d6d67" text-anchor="middle">
+      <text x="127" y="343">산출물 해시 확인</text><text x="362" y="343">원본·지도 확인 · 개정 저장</text><text x="597" y="343">원문 · 문서 개정 연결</text><text x="832" y="343">명시적 승인 · 외부 전송 없음</text>
+    </g>
+    <g stroke="#607a9e" stroke-width="2" fill="none" marker-end="url(#arrow)">
+      <path d="M231 326H257"/><path d="M466 326H492"/><path d="M701 326H727"/>
+    </g>
+    <text x="28" y="403" font-size="14" fill="#172b43">SQLite에 검토·근거·승인 이력 보존 · 검토가 바뀌면 이전 승인 재사용 차단</text>
+    <text x="28" y="429" font-size="13" fill="#506176">로컬 프로토타입 · 자동 합격 없음 · MPI 입력 관찰·의견 저장은 별도 연구 도구</text>
+  </g>
+</svg>

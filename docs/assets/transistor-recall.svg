@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="370" viewBox="0 0 960 370" role="img" aria-labelledby="title desc">
+  <title id="title">Transistor: three-seed mean defect recall</title>
+  <desc id="desc">PaDiM configuration 60.0 percent, PatchCore configuration 92.5 percent. Same 40 defect and 60 normal test images, seeds 42, 43, 44. Exploratory comparison with different backbones; not independent field validation.</desc>
+  <rect width="960" height="370" rx="18" fill="#f4f7fb"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="36" y="42" font-size="23" font-weight="700" fill="#172b43">Transistor · Model comparison</text>
+    <text x="36" y="68" font-size="14" fill="#506176">Mean defect recall across 3 seeds · same 40 defect + 60 normal test images</text>
+    <g stroke="#dce3ec" stroke-width="1">
+      <path d="M190 102V245 M355 102V245 M520 102V245 M685 102V245 M850 102V245"/>
+    </g>
+    <text x="36" y="140" font-size="18" fill="#172b43">PaDiM</text>
+    <rect x="190" y="111" width="396" height="44" rx="6" fill="#607a9e"/>
+    <text x="601" y="140" font-size="19" font-weight="700" fill="#172b43">60.0%</text>
+    <text x="36" y="211" font-size="18" fill="#172b43">PatchCore</text>
+    <rect x="190" y="182" width="610.5" height="44" rx="6" fill="#087f78"/>
+    <text x="815" y="211" font-size="19" font-weight="700" fill="#08645f">92.5%</text>
+    <g font-size="13" fill="#506176" text-anchor="middle">
+      <text x="190" y="266">0%</text><text x="355" y="266">25%</text><text x="520" y="266">50%</text><text x="685" y="266">75%</text><text x="850" y="266">100%</text>
+    </g>
+    <path d="M36 288H924" stroke="#dce3ec"/>
+    <text x="36" y="314" font-size="13" fill="#506176">Exploratory comparison · different feature backbones · previously observed test set</text>
+    <text x="36" y="339" font-size="13" fill="#506176">Source: reports/transistor-multiseed-exploratory-v1.md · Not a production performance claim</text>
+  </g>
+</svg>
