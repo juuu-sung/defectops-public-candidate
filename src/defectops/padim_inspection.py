@@ -145,6 +145,31 @@ def _patchcore_bundle_statuses(
     raise ValueError("PatchCore bundle comparison status is not allowed here")
 
 
+def _validate_evaluation_config_snapshot(
+    saved: Any, current: dict[str, Any], model_name: str,
+) -> None:
+    """Compare snapshots, allowing only the historical MVTec mask default.
+
+    Before Real-IAD support, PatchCore decoded uint8 masks with ``> 0``
+    and omitted ground_truth_threshold. This is equivalent to ``>= 1``.
+    Normalize a copy for comparison; never rewrite the stored evaluation.
+    """
+    comparable = saved
+    if (
+        model_name == "patchcore"
+        and isinstance(saved, dict)
+        and "ground_truth_threshold" not in saved
+        and current.get("comparison_status") in {
+            EXPECTED_COMPARISON_STATUS, EXPECTED_PREREGISTERED_STATUS,
+        }
+        and type(current.get("ground_truth_threshold")) is int
+        and current["ground_truth_threshold"] == 1
+    ):
+        comparable = {**saved, "ground_truth_threshold": 1}
+    if comparable != current:
+        raise ValueError("Evaluation configuration snapshot differs from evaluation.json")
+
+
 def validate_inference_bundles(
     fit_path: Path,
     evaluation_path: Path,
@@ -219,8 +244,9 @@ def validate_inference_bundles(
         evaluation_config = load_evaluation_config(evaluation_config_path)
     else:
         evaluation_config = load_patchcore_evaluation_config(evaluation_config_path)
-    if evaluation.get("evaluation_config") != evaluation_config:
-        raise ValueError("Evaluation configuration snapshot differs from evaluation.json")
+    _validate_evaluation_config_snapshot(
+        evaluation.get("evaluation_config"), evaluation_config, model_name,
+    )
 
     fit_commit = fit_run.get("git", {}).get("commit")
     evaluation_commit = evaluation.get("evaluator_git", {}).get("commit")

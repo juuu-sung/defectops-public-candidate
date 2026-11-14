@@ -78,6 +78,8 @@ Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/v1/inspections/$inspe
 
 ## 재시작과 한계
 
+- 과거 MVTec PatchCore 평가 JSON에는 `ground_truth_threshold`가 없을 수 있다. 당시 uint8 정답 마스크의 `> 0`은 현재 `>= 1`과 같으므로, 기존 탐색/사전등록 MVTec 프로토콜에서 이 항목만 누락된 경우 비교 시 기본값 1을 적용한다. 원본 JSON·TOML·해시와 모델 경고선은 수정하지 않는다. 명시된 값의 불일치, 다른 필드 차이, Real-IAD에는 이 예외를 적용하지 않는다.
+
 - API 시작 시 출력 루트의 정규 UUID 이름을 가진 기존 항목을 순회해 재등록한다. `healthz.review_registration.startup_recovery`에 성공·대기·차단 건수를 표시한다. 이는 시작 시점 집계이며 실시간 대기 건수가 아니다.
 - 완성된 검사 폴더가 복구의 근거다. 별도 백그라운드 자동 재시도 작업은 없다. DB가 다시 사용 가능해지면 같은 ID 재등록 또는 API 재시작으로 복구한다.
 - 등록 도중 서버가 종료되어도 DB의 트랜잭션과 반복 등록 검사로 중복을 방지한다. 중간에 깨진 파일은 자동 수리하거나 재추론하지 않는다.
