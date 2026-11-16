@@ -62,7 +62,7 @@ if ($LASTEXITCODE -ne 0) { throw 'git pull failed; stop here' }
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\scripts\run_mpi_supersimplenet_parity.ps1'
 ```
 
-기본 원본은 `C:\Users\user\Downloads\extracted.zip`이며 실제 사용자 프로필 경로를 자동 사용한다.
+기본 원본은 `$env:USERPROFILE\Downloads\extracted.zip`이며 실제 사용자 프로필 경로를 자동 사용한다.
 다른 위치라면 `-Archive 'D:\데이터\extracted.zip'`을 뒤에 붙인다.
 GPU 검사 시간 상한은 누적15분, RAM20GiB, PyTorch reserved6GiB다.
 준비 단계의 파일 무결성 검사 시간은 별도이며 실제 소요시간은 아직 측정하지 않았다.

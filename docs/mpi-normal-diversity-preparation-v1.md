@@ -40,7 +40,7 @@ git pull --ff-only
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\scripts\run_mpi_normal_diversity_preparation.ps1'
 ```
 
-원본은 기본적으로 `C:\Users\user\Downloads\extracted.zip`을 사용한다(실제 사용자 홈 기준).
+원본은 기본적으로 `$env:USERPROFILE\Downloads\extracted.zip`을 사용한다(실제 사용자 홈 기준).
 다른 곳에 있다면 실행 명령 뒤에 `-Archive '실제 전체 경로\extracted.zip'`을 붙인다.
 기존 모델 `artifacts\mpi-pcb-normal-bank-pilot-v1\fit\model.pt`와 과거 `artifacts\handoff` ZIP들을 그대로 사용한다.
 과거 전달물은 정상 준비·fit·외부v2·score-probe·score-validation·spatial-score가 필요하다.

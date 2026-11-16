@@ -85,7 +85,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\prepare_mpi_p
 
 입력 파일:
 
-- `C:\Users\user\Downloads\extracted.zip` (실제 사용자 프로필의 Downloads 사용)
+- `$env:USERPROFILE\Downloads\extracted.zip` (실제 사용자 프로필의 Downloads 사용)
 - `artifacts\data-audit\mpi-pcb-normal-pool-integrity-v1.json`
 - `artifacts\data-audit\mpi-pcb-normal-preflight-v4.json`
 - `artifacts\handoff\mpi-pcb-external-evaluation-v2.zip`

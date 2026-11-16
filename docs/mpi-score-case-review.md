@@ -43,7 +43,7 @@ git pull --ff-only
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\scripts\run_mpi_score_case_review.ps1'
 ```
 
-기본 원본 경로: `C:\Users\user\Downloads\extracted.zip` (`USERPROFILE` 기준).
+기본 원본 경로: `$env:USERPROFILE\Downloads\extracted.zip` (`USERPROFILE` 기준).
 다른 곳에 있으면 실행 명령 뒤에 `-Archive '실제경로'`를 지정한다.
 
 전달 파일:

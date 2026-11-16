@@ -70,7 +70,7 @@ Anomalib 반복 실행과 동일 손실을 쓰는 독립 계산 경로의 출력
 ## 연구실 Windows 실행
 
 다른 GPU 작업은 정상 종료하고 기존 학습 폴더와 모든 handoff ZIP을 유지한다.
-기본 원본은 `C:\Users\user\Downloads\extracted.zip`이며 실제 사용자 폴더는 자동으로 찾는다.
+기본 원본은 `$env:USERPROFILE\Downloads\extracted.zip`이며 실제 사용자 폴더는 자동으로 찾는다.
 
 ```powershell
 Set-Location 'C:\개인 프로젝트\defectops'

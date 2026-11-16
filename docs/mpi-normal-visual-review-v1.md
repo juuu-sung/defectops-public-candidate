@@ -29,7 +29,7 @@
 
 프로젝트의 기존 가상환경과 Pillow를 사용합니다. GPU와 모델 파일은 필요하지 않으며,
 다른 GPU 작업을 종료할 필요도 없습니다. 원본 압축파일의 기본 위치는
-`C:\Users\user\Downloads\extracted.zip`이며 실제 사용자 프로필 경로를 자동 사용합니다.
+`$env:USERPROFILE\Downloads\extracted.zip`이며 실제 사용자 프로필 경로를 자동 사용합니다.
 
 ```powershell
 Set-Location 'C:\개인 프로젝트\defectops'
