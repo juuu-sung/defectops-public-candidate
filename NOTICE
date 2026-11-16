@@ -1,0 +1,15 @@
+DefectOps
+Copyright 2026 juuu-sung
+
+Original DefectOps code and documentation are licensed under the Apache License,
+Version 2.0, except for third-party material carrying its own license notice.
+
+This project includes an adapted reference implementation from SuperSimpleNet:
+Copyright (c) 2024 Blaž Rolih. Licensed under the MIT License.
+The original notice is retained in scripts/mpi_supersimplenet_parity_reference.py
+and reproduced in licenses/SuperSimpleNet-MIT.txt.
+See THIRD_PARTY_NOTICES.md for the pinned source, adaptation scope and dependencies.
+
+Dataset images, masks, external pretrained weights, laboratory checkpoints and
+real review databases are not included in this source distribution. Their rights
+are not granted by the DefectOps license.

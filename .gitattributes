@@ -1,0 +1,7 @@
+# The runtime checks this manifest's exact bytes. Never convert line endings.
+/src/defectops/history_migrations/*.json -text
+
+# Keep distributed license texts stable across checkouts.
+/LICENSE text eol=lf
+/NOTICE text eol=lf
+/licenses/*.txt text eol=lf

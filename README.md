@@ -7,9 +7,9 @@
 
 `Python` · `PyTorch / Anomalib` · `FastAPI` · `Streamlit` · `SQLite` · `pytest / GitHub Actions`
 
-[대표 결과](#대표-결과) · [시스템 구조](#시스템-구조) · [실행하기](#실행하기) · [핵심 성과 3가지](docs/portfolio-highlights.md) · [5분 시연 절차](docs/demo-runbook.md)
+[대표 결과](#대표-결과) · [시스템 구조](#시스템-구조) · [실행하기](#실행하기) · [핵심 성과 3가지](docs/portfolio-highlights.md) · [5분 시연 절차](docs/demo-runbook.md) · [Apache-2.0](LICENSE)
 
-> **현재 범위:** 공개 데이터 기반 연구·로컬 검토 프로토타입입니다. Transistor 검사·검토 흐름과 MPI-PCB 연구 도구를 구현했으며, 실제 생산 배포와 자동 합격 판정은 제공하지 않습니다. 문서 정리 기준: 2026-11-16.
+> **현재 범위:** 공개 데이터 기반 연구·로컬 검토 프로토타입입니다. Transistor 검사·검토 흐름과 MPI-PCB 연구 도구를 구현했으며, 실제 생산 배포와 자동 합격 판정은 제공하지 않습니다. 문서 정리 기준: 2026-11-17.
 
 ## 23초 합성 시연
 
@@ -40,6 +40,8 @@
 **연구실 Windows GPU에서 실제 이미지 1건의 검사 → 자동 등록 → 검토 의견 저장 → 모의 SOP 근거 연결을 확인했습니다.** 실행자의 확인에 따르면 `REGISTERED` 응답과 이미지 표시가 정상 동작했고, 검토 revision 1과 SOP 연결이 브라우저 새로고침 후에도 유지됐습니다. 이번 연결 사례의 승인·티켓 발행과 서버 재시작 후 복구는 아직 확인 전입니다. [확인 범위·실행·복구 방법](docs/api-review-integration.md)
 
 MPI-PCB의 입력 관찰·의견 저장 도구는 이 흐름과 **분리된 연구 도구**이며 서비스 모델을 교체하지 않습니다.
+
+**기존 모델의 출처 연결도 단일 사례로 검증했습니다.** 개인정보를 정리한 Git 이력에서 모델·평가 원본을 보존한 채 Windows GPU 검사를 실행했고, 기존 결과와 원점수·임곗값·이상 지도 값이 정확히 일치했습니다. 검토 목록 자동 등록도 확인했습니다. [2026-11-17 회귀검증 근거와 범위](reports/history-privacy-lab-validation-2026-11-17.md)
 
 ## 대표 결과
 
@@ -96,6 +98,7 @@ GPU reserved는 장치 전체 메모리 사용량과 다릅니다. 1.16초는 �
 | 모델 비교와 GPU 실험 | 실행·보고서 보존 | MVTec AD, Real-IAD, VisA, MPI-PCB; 연구 조건별 결과 구분 |
 | MPI 입력 관찰·의견 저장 | 로컬 구현 | 입력 상태·근거·작성자·개정 기록; 기존 서비스와 분리 |
 | CPU 자동 검사 | CI 설정 구현 | push / PR에서 pytest; 실제 GPU 성능 검증과 분리 |
+| 이력 정리 후 기존 모델 연결 | Windows GPU 단일 사례 회귀검증 완료 | 고정 커밋 대응표, 원본 보존, 점수·지도 일치; [호환 조건](docs/history-privacy-compatibility.md) |
 | 검사와 검토의 자동 연결 | CPU 통합 검증·Windows GPU 단일 사례 확인 | API 자동 등록, 의견·SOP 연결 및 새로고침 후 유지 확인; 서버 재시작 복구는 로컬 테스트로 검증 |
 
 현재 MPI 작업은 추가 학습보다 **부품이 보이지 않는 입력과 모델의 정상 오경보를 구분해 관찰 근거를 남기는 기능**에 집중합니다. 입력 확인 대상으로 분류했다고 기존 오경보를 제외하거나 정확도 향상으로 계산하지 않습니다. [입력 검토 기능과 사용법](docs/mpi-input-review-notes-v1.md)
@@ -139,6 +142,7 @@ python scripts/serve_review_ui.py --db artifacts/demo/synthetic-review-v1/review
 | 실행 목적 | 필요한 자료와 안내 |
 | --- | --- |
 | 실제 GPU 검사 | 고정 모델·평가 bundle, Windows CUDA 환경 → [검사 API 실행](docs/patchcore-local-api.md) |
+| 이력 정리 전 모델 연결 | 전체 Git 이력과 지원되는 모델 묶음 → [CPU 사전 검증·실행 절차](docs/history-privacy-compatibility.md) |
 | API 결과 자동 등록 | 같은 장비의 검토 DB → [실행·복구 절차](docs/api-review-integration.md) |
 | 수동 산출물 가져오기 | 다른 장비에서 전달받은 검사 폴더 → [등록 절차](docs/review-store.md) |
 | 검토부터 모의 티켓까지 시연 | 등록된 검사 결과 → [5분 시연](docs/demo-runbook.md) |
@@ -162,6 +166,15 @@ python scripts/serve_review_ui.py --db artifacts/demo/synthetic-review-v1/review
 합성 자료 기반 공개 시연과 검사 결과 자동 등록·등록 재시도 기능을 구현했습니다. Windows GPU에서 자동 등록부터 의견·SOP 연결까지 단일 사례를 확인했습니다. 다음은 **같은 사례의 승인·모의 티켓 확인 → 서버 재시작 후 복구 확인 → 전체 응답 시간 측정 → 검사 요청 자체의 중복 방지**입니다. 모델 연구에서는 정상 오경보와 보정 불안정이 미해결 과제로 남아 있습니다.
 
 데이터 이용·재배포 조건은 출처별로 구분합니다. 원본 이미지·마스크·체크포인트·실제 검토 DB는 코드와 분리해 보관합니다. [데이터 안내](data/README.md)
+
+## 라이선스와 배포 범위
+
+DefectOps 자체 코드·문서는 별도 표시가 없으면 **[Apache License 2.0](LICENSE)**을 적용합니다.
+외부 코드의 기존 고지는 [NOTICE](NOTICE)와 [외부 코드·의존성 안내](THIRD_PARTY_NOTICES.md)에 정리했습니다.
+SuperSimpleNet에서 옮긴 대조 구현은 원저자의 MIT 고지를 유지합니다.
+
+데이터셋 이미지·마스크, 외부 사전학습 가중치, 연구실 체크포인트와 실제 검토 DB는
+소스 배포에 포함하지 않습니다. 각각의 이용 조건은 코드 라이선스와 별도로 적용됩니다.
 
 ---
 

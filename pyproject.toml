@@ -6,6 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "defectops"
 version = "0.1.0"
 description = "Human-in-the-loop visual anomaly inspection and response copilot"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [{name = "juuu-sung"}]
+classifiers = ["License :: OSI Approved :: Apache Software License"]
 requires-python = ">=3.11"
 dependencies = []
 
@@ -20,6 +24,9 @@ test = [
   "streamlit==1.64.0",
   "pytest==9.1.1",
 ]
+
+[tool.setuptools]
+license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md", "licenses/*.txt"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
