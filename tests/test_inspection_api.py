@@ -11,19 +11,18 @@ from fastapi.testclient import TestClient
 from PIL import Image
 
 from defectops.inspection_api import create_app
-from defectops.padim_inspection import _execute_inspection
+from defectops.padim_inspection import run_inspection
 
 
 class ResidentInspectionTests(unittest.TestCase):
     def test_existing_inspection_pipeline_reuses_runtime_without_loading(self):
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            fit_path = root / "fit"
-            evaluation_path = root / "evaluation"
-            output_path = root / "output"
-            fit_path.mkdir()
-            evaluation_path.mkdir()
-            output_path.mkdir()
+            root = Path(directory).resolve()
+            fit_path = root / "artifacts/runs/fit"
+            evaluation_path = root / "artifacts/evaluations/evaluation"
+            output_path = root / "artifacts/inspections/output"
+            fit_path.mkdir(parents=True)
+            evaluation_path.mkdir(parents=True)
             input_path = root / "input.png"
             Image.new("RGB", (1024, 1024), (0, 0, 0)).save(input_path)
             anomaly_map = np.zeros((256, 256), dtype=np.float32)
@@ -58,6 +57,9 @@ class ResidentInspectionTests(unittest.TestCase):
                 current_git={"commit": "c" * 40, "branch": "main"},
                 checkpoint_sha256="d" * 64,
                 setup_ms=24_000.0,
+                git_provenance={"fit": {"method": "audited_identical_tree_migration",
+                                        "original_commit": "a" * 40,
+                                        "resolved_commit": "c" * 40}},
                 versions={},
                 torch=SimpleNamespace(
                     version=SimpleNamespace(cuda="12.8"),
@@ -70,19 +72,21 @@ class ResidentInspectionTests(unittest.TestCase):
             ), patch(
                 "defectops.padim_inspection.predict_validated_png",
                 return_value=prediction,
+            ), patch(
+                "defectops.padim_inspection.__file__",
+                str(root / "src/defectops/padim_inspection.py"),
             ):
-                result = _execute_inspection(
-                    output_path,
-                    root,
-                    fit_path,
-                    evaluation_path,
-                    input_path,
-                    "patchcore",
-                    runtime,
-                    "api-upload",
+                result = run_inspection(
+                    SimpleNamespace(output=output_path, fit_run=fit_path,
+                                    evaluation=evaluation_path, input=input_path),
+                    expected_model="patchcore", runtime=runtime, input_source="api-upload",
                 )
             self.assertEqual(result["decision"], "REVIEW_REQUIRED")
             self.assertTrue(result["model_reused"])
+            self.assertEqual(result["trace"]["git_provenance"], runtime.git_provenance)
+            self.assertEqual(result["trace"]["fit_git_commit"], "a" * 40)
+            saved = json.loads((output_path / "inspection.json").read_text())
+            self.assertEqual(saved["trace"]["git_provenance"], runtime.git_provenance)
             self.assertEqual(result["latency_ms"]["setup_and_model_load"], 0.0)
             self.assertEqual(result["input"]["source_path"], "api-upload")
             self.assertEqual(
@@ -110,6 +114,7 @@ class InspectionApiTests(unittest.TestCase):
                 "comparison_status": "exploratory_after_padim_test_observed",
             },
             setup_ms=123.0,
+            git_provenance={"fit": {"method": "audited_identical_tree_migration"}},
             torch=SimpleNamespace(
                 cuda=SimpleNamespace(
                     memory_allocated=lambda: 100,
@@ -181,6 +186,7 @@ class InspectionApiTests(unittest.TestCase):
     def test_startup_loads_once_and_two_requests_reuse_runtime(self):
         with TestClient(self.make_app()) as client:
             health = client.get("/healthz")
+            self.assertEqual(health.json()["git_provenance"], self.runtime.git_provenance)
             self.assertEqual(health.status_code, 200)
             self.assertEqual(health.json()["fit_run_id"], "patchcore-transistor-seed42")
             self.assertEqual(health.json()["gpu_memory"]["reserved_bytes"], 200)

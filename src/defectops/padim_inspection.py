@@ -9,10 +9,9 @@ import math
 import platform
 import random
 import shutil
-import subprocess
 import sys
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -21,6 +20,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from defectops.evaluation_metrics import connected_components_4
+from defectops.history_provenance import resolve_commit_ancestry
 from defectops.manifest import canonical
 from defectops.padim_evaluation import load_evaluation_config
 from defectops.padim_experiment import (
@@ -63,6 +63,7 @@ class PadimRuntime:
     model: Any
     device: Any
     setup_ms: float
+    git_provenance: dict[str, Any] = field(default_factory=dict)
 
 
 def colorize_anomaly_values(values: np.ndarray) -> np.ndarray:
@@ -100,17 +101,8 @@ def _safe_named_file(root: Path, name: Any) -> Path:
     return path
 
 
-def _require_ancestor(project_root: Path, commit: str, label: str) -> None:
-    if not isinstance(commit, str) or len(commit) != 40:
-        raise ValueError(f"{label} is missing a full Git commit")
-    result = subprocess.run(
-        ["git", "-C", str(project_root), "merge-base", "--is-ancestor", commit, "HEAD"],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(f"{label} commit is not an ancestor of the inspection commit")
+def _require_ancestor(project_root: Path, commit: str, label: str) -> dict[str, str]:
+    return resolve_commit_ancestry(project_root, commit, label)
 
 
 def _verify_manifest_hash(manifest: dict[str, Any]) -> None:
@@ -176,6 +168,7 @@ def validate_inference_bundles(
     project_root: Path,
     *,
     allow_preregistered_additional: bool = False,
+    provenance: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], Path]:
     """Validate immutable PaDiM or PatchCore bundles without reopening test data."""
     fit_run = read_json(_safe_named_file(fit_path, "run.json"))
@@ -250,8 +243,8 @@ def validate_inference_bundles(
 
     fit_commit = fit_run.get("git", {}).get("commit")
     evaluation_commit = evaluation.get("evaluator_git", {}).get("commit")
-    _require_ancestor(project_root, fit_commit, "Fit")
-    _require_ancestor(project_root, evaluation_commit, "Evaluation")
+    fit_provenance = _require_ancestor(project_root, fit_commit, "Fit")
+    evaluation_provenance = _require_ancestor(project_root, evaluation_commit, "Evaluation")
     if evaluation.get("fit", {}).get("run_id") != fit_run.get("run_id"):
         raise ValueError("Evaluation references a different fit run")
     if evaluation.get("fit", {}).get("git_commit") != fit_commit:
@@ -303,6 +296,8 @@ def validate_inference_bundles(
         threshold = calibration_contract.get(level, {}).get("threshold")
         if not isinstance(threshold, (int, float)) or not math.isfinite(float(threshold)):
             raise ValueError(f"Calibration contract has no finite {level} threshold")
+    if provenance is not None:
+        provenance.update(fit=fit_provenance, evaluation=evaluation_provenance)
     return fit_run, fit_config, calibration_contract, checkpoint_path
 
 
@@ -344,11 +339,13 @@ def load_inference_runtime(
     """Validate the immutable bundles and load one reusable CUDA model."""
     setup_started = time.perf_counter()
     current_git = git_state(project_root)
+    provenance: dict[str, Any] = {}
     fit_run, fit_config, calibration_contract, checkpoint_path = validate_inference_bundles(
         fit_path,
         evaluation_path,
         project_root,
         allow_preregistered_additional=allow_preregistered_additional,
+        provenance=provenance,
     )
     if sys.version_info[:2] != (3, 12):
         raise RuntimeError(
@@ -447,6 +444,7 @@ def load_inference_runtime(
         model=model,
         device=device,
         setup_ms=(time.perf_counter() - setup_started) * 1000.0,
+        git_provenance=provenance,
     )
 
 
@@ -689,6 +687,7 @@ def _execute_inspection(
             "inspection_git": runtime.current_git,
             "fit_run_id": runtime.fit_run["run_id"],
             "fit_git_commit": runtime.fit_run["git"]["commit"],
+            "git_provenance": getattr(runtime, "git_provenance", {}),
             "evaluation_id": evaluation_path.name,
             "manifest_sha256": runtime.fit_run["manifest_sha256"],
             "checkpoint_sha256": runtime.checkpoint_sha256,

@@ -133,6 +133,7 @@ def create_app(
         runtime: PadimRuntime = request.app.state.runtime
         return {
             "status": "ready",
+            "git_provenance": getattr(runtime, "git_provenance", {}),
             "model": "patchcore",
             "comparison_status": runtime.fit_run.get("comparison_status"),
             "fit_run_id": runtime.fit_run["run_id"],
