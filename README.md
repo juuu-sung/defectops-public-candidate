@@ -169,7 +169,7 @@ python scripts/serve_review_ui.py --db artifacts/demo/synthetic-review-v1/review
 
 ## 라이선스와 배포 범위
 
-DefectOps 자체 코드·문서는 별도 표시가 없으면 **[Apache License 2.0](LICENSE)**을 적용합니다.
+DefectOps 자체 코드·문서는 별도 표시가 없으면 [Apache License 2.0](LICENSE)을 적용합니다.
 외부 코드의 기존 고지는 [NOTICE](NOTICE)와 [외부 코드·의존성 안내](THIRD_PARTY_NOTICES.md)에 정리했습니다.
 SuperSimpleNet에서 옮긴 대조 구현은 원저자의 MIT 고지를 유지합니다.
 
