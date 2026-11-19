@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "evaluation_id": "patchcore-transistor-seed42-eval-v1",
+  "checkpoint_sha256": "13e3cad9465c7cdbf8ca95acd9905637c42ae24140607d9d580e5ad00986ea8d",
+  "manifest_sha256": "9695055446c1aafdb77dc28eb91d270b8b7335e650c7e74f400d386e9d8bf585",
+  "score_threshold": 38.70416,
+  "pixel_threshold": 33.102806091308594,
+  "map_size_hw": [
+    256,
+    256
+  ],
+  "area_cut": 1639,
+  "area_fraction": 0.025,
+  "rule": "score >= score_threshold OR count(raw_map >= pixel_threshold) >= area_cut"
+}

@@ -60,6 +60,7 @@ class ResidentInspectionTests(unittest.TestCase):
                 git_provenance={"fit": {"method": "audited_identical_tree_migration",
                                         "original_commit": "a" * 40,
                                         "resolved_commit": "c" * 40}},
+                device=SimpleNamespace(type="cuda"),
                 versions={},
                 torch=SimpleNamespace(
                     version=SimpleNamespace(cuda="12.8"),
@@ -115,6 +116,7 @@ class InspectionApiTests(unittest.TestCase):
             },
             setup_ms=123.0,
             git_provenance={"fit": {"method": "audited_identical_tree_migration"}},
+            device=SimpleNamespace(type="cuda"),
             torch=SimpleNamespace(
                 cuda=SimpleNamespace(
                     memory_allocated=lambda: 100,
@@ -126,6 +128,15 @@ class InspectionApiTests(unittest.TestCase):
 
     def tearDown(self):
         self.temp.cleanup()
+
+    def test_cpu_health_does_not_query_cuda(self):
+        self.runtime.device = SimpleNamespace(type="cpu")
+        self.runtime.torch = SimpleNamespace()
+        with TestClient(self.make_app()) as client:
+            health = client.get("/healthz").json()
+            self.assertEqual(health["device"], "cpu")
+            self.assertIsNone(health["gpu_memory"])
+            self.assertEqual(health["model"], "patchcore")
 
     def load_runtime(self, project_root, fit_path, evaluation_path):
         self.load_count += 1

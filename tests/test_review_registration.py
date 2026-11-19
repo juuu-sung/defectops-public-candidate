@@ -27,6 +27,7 @@ def setup(tmp_path):
     db = tmp_path/'review/reviews.sqlite3'
     state = SimpleNamespace(calls=0, loads=0, root=root, db=db)
     runtime = SimpleNamespace(fit_config={'model':'patchcore'}, fit_run={'run_id':'synthetic'},
+                              device=SimpleNamespace(type='cuda'),
                               setup_ms=0, torch=SimpleNamespace(cuda=SimpleNamespace(
                                   memory_allocated=lambda:0, memory_reserved=lambda:0)))
 

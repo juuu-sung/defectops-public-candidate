@@ -7,9 +7,23 @@
 
 `Python` · `PyTorch / Anomalib` · `FastAPI` · `Streamlit` · `SQLite` · `pytest / GitHub Actions`
 
-[대표 결과](#대표-결과) · [시스템 구조](#시스템-구조) · [실행하기](#실행하기) · [핵심 성과 3가지](docs/portfolio-highlights.md) · [5분 시연 절차](docs/demo-runbook.md) · [Apache-2.0](LICENSE)
+[3D 검사 워크스페이스](#3d-검사-워크스페이스) · [대표 결과](#대표-결과) · [시스템 구조](#시스템-구조) · [실행하기](#실행하기) · [핵심 성과 3가지](docs/portfolio-highlights.md) · [5분 시연 절차](docs/demo-runbook.md) · [Apache-2.0](LICENSE)
 
-> **현재 범위:** 공개 데이터 기반 연구·로컬 검토 프로토타입입니다. Transistor 검사·검토 흐름과 MPI-PCB 연구 도구를 구현했으며, 실제 생산 배포와 자동 합격 판정은 제공하지 않습니다. 문서 정리 기준: 2026-11-17.
+> **현재 범위:** 공개 데이터 기반 연구·로컬 검토 프로토타입입니다. Transistor 검사·검토 흐름과 MPI-PCB 연구 도구를 구현했으며, 실제 생산 배포와 자동 합격 판정은 제공하지 않습니다. 문서 정리 기준: 2026-11-19.
+
+## 3D 검사 워크스페이스
+
+Three.js 작업대에서 트랜지스터 원본과 이상 지도를 겹쳐 보고 검토 의견을 남길 수 있습니다. 합성 시연은 Python 3만 있으면 실행할 수 있습니다. 저장소 루트에서 아래 명령을 실행하고 [로컬 작업대 열기](http://127.0.0.1:8791/)를 선택하세요.
+
+```sh
+python3 -m http.server 8791 --bind 127.0.0.1 --directory output/defectops-inspection-lab
+```
+
+![합성 트랜지스터와 검토 단계를 표시한 3D 검사 워크스페이스](output/defectops-inspection-lab/screenshots/01-workspace.png)
+
+연구실의 PatchCore 모델과 평가 묶음이 있으면 **실제 사진 검사**에서 1024 × 1024 RGB PNG를 올려 새 점수와 이상 지도를 확인할 수 있습니다. [작업대 사용법](output/defectops-inspection-lab/) · [Mac에서 실제 모델 연결하기](docs/patchcore-local-api.md#mac에서-기존-모델-실행하기) · [초기 3D 흐름 시연](output/defectops-workflow-3d/)
+
+트랜지스터 테스트 100장에서 Mac CPU와 연구실 GPU의 사진별 판정이 일치했습니다. 기존 기준은 미탐 3장·오경보 1장, 같은 사진에서 고른 점수·면적 결합 기준은 미탐 0장·오경보 2장이었습니다. 독립 촬영분에서의 성능은 아직 측정하지 않았습니다. [비교 결과와 사진별 수치](reports/transistor-inspection-100/)
 
 ## 23초 합성 시연
 
@@ -143,6 +157,7 @@ python scripts/serve_review_ui.py --db artifacts/demo/synthetic-review-v1/review
 | --- | --- |
 | 실제 GPU 검사 | 고정 모델·평가 bundle, Windows CUDA 환경 → [검사 API 실행](docs/patchcore-local-api.md) |
 | 이력 정리 전 모델 연결 | 전체 Git 이력과 지원되는 모델 묶음 → [CPU 사전 검증·실행 절차](docs/history-privacy-compatibility.md) |
+| Mac에서 실제 사진 검사 | 연구실의 트랜지스터 모델·보정 폴더 2개와 1024 × 1024 RGB PNG → [Mac CPU 및 3D 작업대 실행](docs/patchcore-local-api.md#mac에서-기존-모델-실행하기) |
 | API 결과 자동 등록 | 같은 장비의 검토 DB → [실행·복구 절차](docs/api-review-integration.md) |
 | 수동 산출물 가져오기 | 다른 장비에서 전달받은 검사 폴더 → [등록 절차](docs/review-store.md) |
 | 검토부터 모의 티켓까지 시연 | 등록된 검사 결과 → [5분 시연](docs/demo-runbook.md) |

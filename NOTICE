@@ -10,6 +10,10 @@ The original notice is retained in scripts/mpi_supersimplenet_parity_reference.p
 and reproduced in licenses/SuperSimpleNet-MIT.txt.
 See THIRD_PARTY_NOTICES.md for the pinned source, adaptation scope and dependencies.
 
+The two 3D demos include Three.js r170, licensed under the MIT License.
+The workflow prototype also includes OrbitControls from the same release.
+Each demo includes the upstream notice in vendor/LICENSE-three.txt.
+
 Dataset images, masks, external pretrained weights, laboratory checkpoints and
 real review databases are not included in this source distribution. Their rights
 are not granted by the DefectOps license.

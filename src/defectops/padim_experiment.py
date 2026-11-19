@@ -148,8 +148,8 @@ def load_experiment(config_path: Path, manifest: dict[str, Any], seed: int | Non
     }
 
 
-def git_state(project_root: Path) -> dict[str, str]:
-    """Require and return a clean, committed Git state."""
+def git_state(project_root: Path, *, require_clean: bool = True) -> dict[str, str]:
+    """Record source provenance; experiments require a clean commit."""
     def run(*args: str) -> str:
         result = subprocess.run(
             ["git", "-C", str(project_root), *args],
@@ -162,16 +162,19 @@ def git_state(project_root: Path) -> dict[str, str]:
     commit = run("rev-parse", "HEAD")
     branch = run("branch", "--show-current")
     dirty = run("status", "--porcelain")
-    if dirty:
+    if require_clean and dirty:
         raise RuntimeError("Refusing to run from a dirty Git worktree; commit or revert code/config changes first")
-    return {"commit": commit, "branch": branch}
+    state = {"commit": commit, "branch": branch}
+    if not require_clean:
+        state["worktree"] = "modified" if dirty else "clean"
+    return state
 
 
-def installed_versions() -> dict[str, str]:
-    """Validate the tested Windows package combination."""
+def installed_versions(expected_packages: dict[str, str] | None = None) -> dict[str, str]:
+    """Check the requested runtime versions; default to the lab CUDA stack."""
     actual: dict[str, str] = {}
     mismatches = []
-    for package, expected in EXPECTED_PACKAGES.items():
+    for package, expected in (EXPECTED_PACKAGES if expected_packages is None else expected_packages).items():
         try:
             actual[package] = importlib.metadata.version(package)
         except importlib.metadata.PackageNotFoundError:

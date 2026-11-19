@@ -41,6 +41,9 @@ from defectops.patchcore_experiment import (
 )
 
 
+INFERENCE_TIME_KEY = {"cpu": "cpu_inference", "cuda": "gpu_inference_and_map_transfer"}
+
+
 class InputValidationError(ValueError):
     """Raised when an inspection image violates the frozen input contract."""
 
@@ -335,11 +338,14 @@ def load_inference_runtime(
     evaluation_path: Path,
     *,
     allow_preregistered_additional: bool = False,
+    device_type: str = "cuda",
 ) -> PadimRuntime:
-    """Validate the immutable bundles and load one reusable CUDA model."""
+    """Load the same immutable checkpoint and calibration onto the selected device."""
     setup_started = time.perf_counter()
-    current_git = git_state(project_root)
     provenance: dict[str, Any] = {}
+    if device_type not in {"cuda", "cpu"}:
+        raise ValueError("Inspection device must be cuda or cpu")
+    current_git = git_state(project_root, require_clean=device_type == "cuda")
     fit_run, fit_config, calibration_contract, checkpoint_path = validate_inference_bundles(
         fit_path,
         evaluation_path,
@@ -347,11 +353,14 @@ def load_inference_runtime(
         allow_preregistered_additional=allow_preregistered_additional,
         provenance=provenance,
     )
-    if sys.version_info[:2] != (3, 12):
+    if device_type == "cuda" and sys.version_info[:2] != (3, 12):
         raise RuntimeError(
             f"The lab inspection requires Python 3.12, found {platform.python_version()}"
         )
-    versions = installed_versions()
+    expected = EXPECTED_PACKAGES
+    if device_type == "cpu":
+        expected = {key: value.split("+")[0] for key, value in EXPECTED_PACKAGES.items()}
+    versions = installed_versions(expected)
 
     import torch
     import torch.nn.functional as functional
@@ -359,23 +368,25 @@ def load_inference_runtime(
     from anomalib.models import Padim, Patchcore
 
     if (
-        torch.__version__ != EXPECTED_PACKAGES["torch"]
-        or torchvision.__version__ != EXPECTED_PACKAGES["torchvision"]
+        torch.__version__ != expected["torch"]
+        or torchvision.__version__ != expected["torchvision"]
     ):
         raise RuntimeError(
             "Imported torch/torchvision versions differ from the validated combination"
         )
-    if not torch.cuda.is_available() or torch.version.cuda != "12.8":
-        raise RuntimeError("Inspection requires the validated CUDA 12.8 GPU environment")
-
     seed = fit_config["model_seed"]
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
-    device = initialize_cuda_device(torch)
+    if device_type == "cuda":
+        if not torch.cuda.is_available() or torch.version.cuda != "12.8":
+            raise RuntimeError("Inspection requires the validated CUDA 12.8 GPU environment")
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+        device = initialize_cuda_device(torch)
+    else:
+        device = torch.device("cpu")
 
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
     if (
@@ -481,7 +492,8 @@ def predict_validated_png(
     inference_started = time.perf_counter()
     with torch.no_grad():
         predictions = runtime.model.model(image_batch)
-    torch.cuda.synchronize()
+    if runtime.device.type == "cuda":
+        torch.cuda.synchronize()
     inference_ms = (time.perf_counter() - inference_started) * 1000.0
     score_values = predictions.pred_score.detach().cpu().reshape(-1)
     if score_values.numel() != 1:
@@ -508,7 +520,7 @@ def predict_validated_png(
         "latency_ms": {
             "decode_and_checksum": decode_ms,
             "preprocess": preprocess_ms,
-            "gpu_inference_and_map_transfer": inference_ms,
+            INFERENCE_TIME_KEY[runtime.device.type]: inference_ms,
             "sample_total": (time.perf_counter() - sample_started) * 1000.0,
         },
     }
@@ -641,6 +653,8 @@ def _execute_inspection(
     postprocess_ms = (time.perf_counter() - postprocess_started) * 1000.0
     total_ms = (time.perf_counter() - total_started) * 1000.0
 
+    device_type = runtime.device.type
+    inference_timer = INFERENCE_TIME_KEY[device_type]
     result = {
         "schema_version": 1,
         "status": "completed",
@@ -697,17 +711,16 @@ def _execute_inspection(
             "setup_and_model_load": 0.0 if model_reused else runtime.setup_ms,
             "decode": prediction_latency["decode_and_checksum"],
             "preprocess": prediction_latency["preprocess"],
-            "gpu_inference_and_map_transfer": prediction_latency[
-                "gpu_inference_and_map_transfer"
-            ],
+            inference_timer: prediction_latency[inference_timer],
             "postprocess_and_artifact_write": postprocess_ms,
             "total": total_ms,
         },
         "environment": {
             "python": platform.python_version(),
             "packages": runtime.versions,
+            "device": device_type,
             "torch_cuda_runtime": runtime.torch.version.cuda,
-            "gpu": runtime.torch.cuda.get_device_name(),
+            "gpu": runtime.torch.cuda.get_device_name() if device_type == "cuda" else None,
         },
         "artifacts": {
             "input": input_copy_path.name,

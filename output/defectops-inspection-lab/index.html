@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f7f8f4">
+  <meta name="description" content="트랜지스터 사진의 실제 PatchCore 이상 점수와 지도를 확인하고, 합성 사례로 검토와 승인 이력을 체험하는 DefectOps 검사 작업대">
+  <title>DefectOps · 검사 워크스페이스</title>
+  <link rel="icon" href="./mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <a class="skip-link" href="#workspace">작업 공간으로 바로가기</a>
+  <header class="topbar">
+    <div class="bar-inner">
+      <a class="brand" href="#workspace" aria-label="DefectOps 검사 작업 공간"><span id="brand-icon"></span><strong>DefectOps</strong></a>
+      <span class="brand-division" lang="en">Inspection Lab</span>
+      <nav class="global-nav" aria-label="페이지 탐색">
+        <a class="nav-current" href="#workspace">작업 공간</a>
+        <a href="#history">처리 이력</a>
+      </nav>
+      <span class="simulation"><i></i>합성 시연 · 실제 모델 추론 없음</span>
+      <button class="about-link" id="about-open" type="button"><span data-icon="book"></span>프로젝트 안내</button>
+    </div>
+  </header>
+  <main class="wrap" id="workspace">
+    <div class="hero">
+      <div><h1>외관 검사 워크스페이스</h1><p>트랜지스터 원본과 이상 지도를 비교하고, 작업자의 관찰이 어떤 근거로 모의 승인까지 이어지는지 확인하세요.</p></div>
+      <span class="duration"><span data-icon="clock"></span>2–3분 체험</span>
+      <button type="button" id="mobile-start" class="mobile-start"><span data-icon="play"></span><span id="mobile-start-label">시연 시작</span></button>
+    </div>
+    <nav class="mode-switch" aria-label="검사 모드">
+      <a id="demo-mode-link" href="./" aria-current="page">합성 시연</a>
+      <a id="live-mode-link" href="?mode=live">실제 사진 검사</a>
+    </nav>
+    <section aria-label="합성 검사 사례 선택" class="case-picker" id="cases"></section>
+    <nav id="steps" class="steps" aria-label="검사 단계"></nav>
+    <div class="workspace-grid">
+      <section class="card scene-card" aria-labelledby="scene-title">
+        <div class="scene-heading"><div class="heading-with-icon"><span class="section-icon" data-icon="cube"></span><h2 id="scene-title">3D 검사 작업대</h2></div><span class="scene-hint"><span data-icon="mouse"></span><span id="scene-hint">드래그로 회전</span></span></div>
+        <div class="viewport" id="viewport"><p class="loading">작업대 준비 중…</p></div>
+        <div class="scene-toolbar">
+          <div class="legend" aria-label="작업 구역 상태"><span><i class="active-dot"></i>선택</span><span><i class="complete-dot"></i>완료</span><span><i></i>대기</span></div>
+          <div class="camera-tools" role="group" aria-label="3D 시점 조작">
+            <button type="button" data-camera="left" title="작업대 회전" aria-label="작업대 회전"><span data-icon="orbit"></span></button>
+            <span class="tool-divider"></span>
+            <button type="button" data-camera="out" title="축소" aria-label="축소"><span data-icon="minus"></span></button>
+            <button type="button" data-camera="in" title="확대" aria-label="확대"><span data-icon="plus"></span></button>
+            <span class="tool-divider"></span>
+            <button type="button" data-camera="reset" title="시점 초기화" aria-label="시점 초기화"><span data-icon="rotate"></span></button>
+          </div>
+        </div>
+      </section>
+      <section class="card action-card" id="panel" aria-label="현재 단계 작업"></section>
+    </div>
+    <p class="storage-error" id="storage-error" role="alert" hidden></p>
+    <section id="live-comparison" class="card live-comparison" aria-labelledby="live-compare-title" hidden></section>
+    <section class="card history-card" id="history" aria-labelledby="history-title">
+      <div class="history-heading"><div class="heading-with-icon"><span class="section-icon neutral" data-icon="history"></span><h2 id="history-title">처리 이력</h2></div>
+        <div class="history-tools"><span class="local-note"><span data-icon="disk"></span>이 브라우저에만 저장</span><button type="button" class="text-button" id="reset-open"><span data-icon="rotate"></span>사례 초기화</button></div></div>
+      <div class="history-tabs" role="group" aria-label="처리 이력 보기"><button id="tab-events" type="button">처리 기록 <span>0</span></button><button id="tab-reviews" type="button">검토 개정 <span>0</span></button></div>
+      <div id="history-body"></div>
+    </section>
+  </main>
+  <dialog id="about" aria-labelledby="about-title"><div class="dialog-inner">
+    <div class="dialog-heading"><span class="section-icon" data-icon="book"></span><button class="icon-btn" aria-label="프로젝트 안내 닫기" data-close type="button"><span data-icon="close"></span></button></div>
+    <h2 id="about-title">DefectOps 프로젝트 안내</h2><p class="dialog-lede">AI가 살펴볼 위치를 제안하면, 사람이 원본을 확인하고 판단의 근거를 남깁니다.</p>
+    <h3>모델 연구</h3><p>PaDiM, PatchCore, EfficientAD, SuperSimpleNet 등을 비교하며 미탐·오경보·위치 반응과 실행 자원을 살폈습니다. PatchCore는 정상 외관의 특징을 메모리 뱅크에 모아 비교합니다. MPI-PCB 등 다른 품목의 실험은 연구 후보로 관리합니다.</p>
+    <h3>실제 로컬 프로토타입</h3><p>FastAPI가 저장된 트랜지스터 PatchCore를 재사용하고, Streamlit과 SQLite에 검토 개정과 SOP 근거를 남깁니다. GPU 자동 등록 사례는 SOP 연결까지, 이전 수동 등록 사례는 승인과 모의 티켓까지 확인했습니다.</p>
+    <h3>이 작업대의 검사 모드</h3><p>합성 시연에서는 고정 도식과 점수로 승인 흐름을 체험합니다. 실제 사진 검사에서는 선택한 PNG를 PatchCore API에 보내 그 사진의 점수와 이상 지도를 확인합니다. 장비는 작업 순서를 보여주는 모형이며, 제품 합격 판정과 설비 제어는 수행하지 않습니다.</p>
+    <div class="dialog-foot"><a href="https://github.com/juuu-sung/defectops" target="_blank" rel="noreferrer">공개 프로젝트 ↗</a><a href="LICENSE" target="_blank" rel="noreferrer">Apache-2.0</a><a href="vendor/LICENSE-three.txt" target="_blank" rel="noreferrer">Three.js · MIT</a></div>
+  </div></dialog>
+  <dialog id="reset-dialog" aria-labelledby="reset-title"><div class="dialog-inner">
+    <div class="dialog-heading"><span class="section-icon neutral" data-icon="rotate"></span><button class="icon-btn" data-close type="button" aria-label="초기화 창 닫기"><span data-icon="close"></span></button></div>
+    <h2 id="reset-title">이 사례의 기록을 초기화할까요?</h2><p id="reset-description"></p>
+    <div class="dialog-actions"><button class="secondary" data-close type="button" autofocus>취소</button><button class="primary" id="reset-confirm" type="button">기록 초기화</button></div>
+  </div></dialog>
+  <dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-inner">
+    <div class="dialog-heading"><h2 id="image-title">원본·이상 지도 비교</h2><button class="icon-btn" data-close type="button" aria-label="이미지 비교 닫기"><span data-icon="close"></span></button></div><div id="image-content"></div>
+  </div></dialog>
+  <div id="toast" class="toast" role="status" aria-atomic="true"></div>
+  <script type="module" src="./main.js"></script>
+</body></html>

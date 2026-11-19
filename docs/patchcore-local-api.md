@@ -1,7 +1,7 @@
 # PatchCore 상주 검사 API — 로컬 smoke test
 
-연구실 Windows에서 동결된 PatchCore fit/evaluation bundle을 서비스 시작 시 한 번 검증·로드하고,
-요청마다 같은 모델을 재사용한다. 학습·임곗값 조정·새 성능 평가는 하지 않는다. 이 단계는
+연구실 Windows에서 동결한 PatchCore fit/evaluation bundle을 서비스 시작 시 한 번 검증·로드하고,
+요청마다 같은 모델을 재사용한다. 연구실에서는 CUDA로, Apple Silicon Mac에서는 CPU로 실행할 수 있다. 이 단계는
 **127.0.0.1 로컬 접속 전용**이며 인증·외부 네트워크 공개는 없다.
 2026-11-14부터 같은 장비의 SQLite 검토 저장소에 자동 등록한다. 등록·복구와 같은 Windows 장비의 UI 실행은
 [API→검토 통합 안내](api-review-integration.md)를 우선 따른다. Mac과 Windows 사이의 자동 전송은 아니다.
@@ -10,7 +10,7 @@
 
 - 시작 시 기존 fit/evaluation의 commit·manifest·checkpoint·calibration 계약을 검증한다.
   오류가 있거나 PaDiM bundle이면 서버가 시작되지 않는다.
-- worker 1개가 PatchCore 1개를 GPU에 유지한다. 요청은 잠금으로 한 번에 하나씩 처리한다.
+- worker 1개가 선택한 장치에 PatchCore 1개를 유지한다. 요청은 잠금으로 한 번에 하나씩 처리한다.
 - `POST /v1/inspections`: `Content-Type: image/png`인 1024×1024 RGB PNG 원본 바이트를
   최대 50 MiB까지 받는다. 모델 파일 경로·임곗값은 요청에서 받지 않는다.
 - 기존 단일 이미지 검사와 같은 JSON·heatmap·overlay·원시 map을 각 inspection ID 아래에
@@ -21,6 +21,48 @@
   test 불량 40장 중 3장을 놓쳤다.
 - inspection ID는 서버가 생성한다. 파일 조회는 허용된 이름과 저장된 SHA-256 일치 여부를
   확인한다. 인증이 없으므로 포트를 다른 장비에 공개하거나 방화벽을 열지 않는다.
+
+## Mac에서 기존 모델 실행하기
+
+**1. 연구실 Windows에서 학습·평가 폴더 두 개를 복사한다.** 프로젝트 루트에서 아래 PowerShell 명령을 실행한다. 체크포인트에는 특징 추출기 가중치와 정상 특징 메모리 뱅크가 있다. 평가 폴더에는 고정한 임곗값과 이를 검증할 기록이 있다. 두 폴더의 이름을 유지한다.
+
+```powershell
+tar.exe -czf "$env:USERPROFILE\Downloads\defectops-transistor-patchcore.tar.gz" -C artifacts runs/patchcore-transistor-seed42 evaluations/patchcore-transistor-seed42-eval-v1
+```
+
+압축 파일을 Mac의 다운로드 폴더로 옮긴 뒤, Mac의 프로젝트 루트에서 푼다.
+
+```sh
+mkdir -p artifacts
+tar -xzf ~/Downloads/defectops-transistor-patchcore.tar.gz -C artifacts
+```
+
+**2. Mac의 CPU 환경을 준비한다.** Apple Silicon Mac에 Python 3.11을 설치한 뒤 아래 두 명령을 한 번 실행한다.
+
+```sh
+python3.11 -m venv artifacts/envs/patchcore-cpu
+artifacts/envs/patchcore-cpu/bin/python -m pip install -r requirements/patchcore-cpu.txt
+```
+
+**3. Mac에서 모델 서버를 시작한다.** 프로젝트 루트에서 실행한 뒤 터미널을 열어 둔다. 서버는 파일의 체크섬과 저장된 보정값을 확인한 후 체크포인트를 CPU에 올린다. 모델 출처 검증에는 공개 저장소의 전체 Git 이력이 필요하다. `git clone https://github.com/juuu-sung/defectops.git`으로 받으면 이 이력을 함께 가져온다. [기존 모델의 이력 확인 방식](history-privacy-compatibility.md)
+
+```sh
+artifacts/envs/patchcore-cpu/bin/python scripts/serve_patchcore.py \
+  --device cpu \
+  --fit-run artifacts/runs/patchcore-transistor-seed42 \
+  --evaluation artifacts/evaluations/patchcore-transistor-seed42-eval-v1 \
+  --no-review-registration --port 8000
+```
+
+다른 터미널에서 `curl -sS http://127.0.0.1:8000/healthz`로 상태를 확인한다. `status`는 `ready`, `model`은 `patchcore`, `device`는 `cpu`, `fit_run_id`는 `patchcore-transistor-seed42`다. 시연 명령은 사진과 산출물을 Mac에 저장하고, SQLite 검토 목록 자동 등록은 끈다.
+
+**4. 3D 작업대에서 검사한다.** 두 번째 터미널에서도 같은 프로젝트 루트에서 실행한다.
+
+```sh
+artifacts/envs/patchcore-cpu/bin/python output/defectops-inspection-lab/serve_lab.py
+```
+
+**실제 사진 검사 → 트랜지스터 사진 선택 → 실제 추론 실행** 순서로 진행한다. 예를 들어 `data/transistor/test/bent_lead/000.png`의 기존 연구실 GPU 기록은 점수 약 52.6997, 경고 기준 약 40.7913이다. 같은 원본과 모델을 사용했는지는 입력·체크포인트 체크섬으로 확인하고, Mac이 새로 계산한 점수·이상 지도와 대조한다. [실제 사진 검사 열기](http://127.0.0.1:8791/?mode=live) · [작업대 조작 안내](../output/defectops-inspection-lab/README.md)
 
 ## 연구실 Windows 설치·시작
 
@@ -126,5 +168,4 @@ allocated `0.203 GiB`, reserved `0.395 GiB`였다. 이는 한 시점의 사용�
 - 장기 보관·삭제 정책, 다중 요청 부하 시험
 - 새 holdout에서 ROI 마스크나 복합 REVIEW 규칙 검증
 
-따라서 이 API는 같은 연구실 컴퓨터에서 GPU 상주 검사 흐름을 확인하는 기술 단계다. 맥북 UI가
-접속하려면 먼저 인증·전송 경로와 운영 권한을 설계해야 한다.
+연구실 GPU와 Mac CPU 실행 방식 모두 같은 컴퓨터의 로컬 주소를 사용한다. 각 장비에서 등록한 검토 이력은 해당 장비의 SQLite에 보관한다.

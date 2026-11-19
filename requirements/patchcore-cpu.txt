@@ -1,0 +1,13 @@
+# Local inference using the lab checkpoint on an Apple Silicon Mac.
+-r api.txt
+torch==2.8.0
+torchvision==0.23.0
+anomalib==2.2.0
+timm==1.0.20
+lightning==2.5.5
+pytorch-lightning==2.5.5
+torchmetrics==1.8.2
+numpy==2.3.3
+Pillow==11.3.0
+opencv-python==4.11.0.86
+requests==2.34.2

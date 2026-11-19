@@ -19,6 +19,8 @@ DefectOps의 자체 코드·문서는 별도 표시가 없으면 [Apache-2.0](LI
 잡음을 외부에서 동일하게 주입해 계산 경로를 비교하는 용도이며 논문 전체의 재현 구현을
 뜻하지 않습니다. 파일 안의 MIT 고지 전문을 보존하며 루트 Apache-2.0으로 대체하지 않습니다.
 
+두 3D 시연은 Three.js r170 (0.170.0)을 포함하고, 초기 흐름 시연은 같은 버전의 OrbitControls도 사용합니다. MIT 라이선스의 저작권 고지를 각 배포 폴더에 보존합니다. [Three.js r170 원본](https://github.com/mrdoob/three.js/tree/r170) · [검사 워크스페이스의 MIT 고지](output/defectops-inspection-lab/vendor/LICENSE-three.txt) · [초기 시연의 MIT 고지](output/defectops-workflow-3d/vendor/LICENSE-three.txt)
+
 ## 별도로 설치하는 주요 의존성
 
 아래 라이브러리 전체를 이 저장소에 복사해 배포하지 않습니다. 설치되는 각 패키지와 그

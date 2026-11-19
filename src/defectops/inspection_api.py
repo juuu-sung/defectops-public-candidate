@@ -1,4 +1,4 @@
-"""Local-only PatchCore HTTP inspection service with one resident CUDA runtime."""
+"""Local-only PatchCore HTTP inspection service with one resident model."""
 
 from __future__ import annotations
 
@@ -131,10 +131,12 @@ def create_app(
     @app.get("/healthz")
     async def healthz(request: Request) -> dict[str, Any]:
         runtime: PadimRuntime = request.app.state.runtime
+        device = runtime.device.type
         return {
             "status": "ready",
             "git_provenance": getattr(runtime, "git_provenance", {}),
             "model": "patchcore",
+            "device": device,
             "comparison_status": runtime.fit_run.get("comparison_status"),
             "fit_run_id": runtime.fit_run["run_id"],
             "process_id": os.getpid(),
@@ -142,7 +144,7 @@ def create_app(
             "gpu_memory": {
                 "allocated_bytes": runtime.torch.cuda.memory_allocated(),
                 "reserved_bytes": runtime.torch.cuda.memory_reserved(),
-            },
+            } if device == "cuda" else None,
             "automatic_pass_allowed": False,
             "review_registration": {
                 "enabled": registration is not None,
